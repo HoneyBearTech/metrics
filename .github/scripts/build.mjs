@@ -28,7 +28,6 @@ const git = sgit(__metrics)
 const staged = new Set()
 const secrets = Object.assign(JSON.parse(`${await fs.readFile(__test_secrets)}`), {$regex: /\$\{\{\s*secrets\.(?<secret>\w+)\s*\}\}/})
 const {plugins, templates} = await metadata({log: false, diff: true})
-const workflow = []
 
 //Plugins
 for (const id of Object.keys(plugins)) {
@@ -47,7 +46,6 @@ for (const id of Object.keys(plugins)) {
 
   //Tests
   console.log(`Generating tests/plugins/${community ? "community/" : ""}${id}.yml`)
-  workflow.push(...examples.map(example => testcase(plugins[id].name, "prod", example)).filter(t => t))
   await fs.writeFile(tests.path, yaml.dump(examples.map(example => testcase(plugins[id].name, "test", example)).filter(t => t)))
   staged.add(tests.path)
 }
@@ -68,7 +66,6 @@ for (const id of Object.keys(templates)) {
 
   //Tests
   console.log(`Generating tests/templates/${id}.yml`)
-  workflow.push(...examples.map(example => testcase(templates[id].name, "prod", example)).filter(t => t))
   await fs.writeFile(tests.path, yaml.dump(examples.map(example => testcase(templates[id].name, "test", example)).filter(t => t), {quotingType: '"', noCompatMode: true}))
   staged.add(tests.path)
 }
@@ -89,9 +86,6 @@ for (const step of ["config", "documentation"]) {
       break
   }
 }
-
-//Example workflows
-await update({source: paths.join(__metrics, ".github/scripts/files/examples.yml"), output: ".github/workflows/examples.yml", context: {steps: yaml.dump(workflow, {quotingType: '"', noCompatMode: true})}})
 
 //Commit and push
 if (mode === "publish") {
@@ -162,7 +156,6 @@ async function template(id) {
 function testcase(name, env, args) {
   const {prod = {}, test = {}, ...step} = JSON.parse(JSON.stringify(args))
   const context = {prod, test}[env] ?? {}
-  const {with: overrides} = context
   if (context.skip)
     return null
 
@@ -172,19 +165,6 @@ function testcase(name, env, args) {
   for (const [k, v] of Object.entries(result.with)) {
     if ((env === "test") && (secrets.$regex.test(v)))
       result.with[k] = v.replace(secrets.$regex, secrets[v.match(secrets.$regex)?.groups?.secret])
-  }
-
-  if (env === "prod") {
-    result.if = "${{ success() || failure() }}"
-    result.uses = "lowlighter/metrics@master"
-    Object.assign(result.with, {output_action: "none", delay: 120})
-
-    for (const {property, value} of [{property: "user", value: "lowlighter"}, {property: "plugins_errors_fatal", value: "yes"}]) {
-      if (!(property in result.with))
-        result.with[property] = value
-    }
-    if ((overrides?.output_action) && (overrides?.committer_branch === "examples"))
-      Object.assign(result.with, {output_action: overrides.output_action, committer_branch: "examples"})
   }
 
   if (env === "test") {
