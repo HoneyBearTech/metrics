@@ -131,11 +131,12 @@ export default async function({login, imports, data, q, account}, {enabled = fal
               ...await frame.evaluate(() => {
                 //Only strip the label when it is separated as a badge (new line or several spaces), so titles such as "Something Explicit" are kept
                 const clean = text => (text || "").replace(/(?:\s*[\r\n]\s*|\s{2,})Explicit(?:\s+Content)?\s*$/i, "").trim()
+                const cover = document.querySelector("div[style^='--image-src:']")
                 return [...document.querySelectorAll("ol li")].map(tr => ({
                   name: clean(tr.querySelector("h3")?.innerText ?? ""),
                   artist: clean(tr.querySelector("h4")?.innerText ?? ""),
                   //Spotify doesn't provide artworks so we fallback on playlist artwork instead
-                  artwork: window.getComputedStyle(document.querySelector("div[style^='--image-src:']") ?? null)?.backgroundImage.match(/^url\("(?<url>https:...+)"\)$/)?.groups?.url ?? null,
+                  artwork: cover ? window.getComputedStyle(cover).backgroundImage.match(/^url\("(?<url>https:...+)"\)$/)?.groups?.url ?? null : null,
                 }))
               }),
             ]
