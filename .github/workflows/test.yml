@@ -10,6 +10,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
 
   # Run linter to ensure new code respect coding rules
@@ -19,6 +23,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Setup NodeJS
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -36,19 +42,18 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Format code with dprint
         run: |
           npm install -g dprint@0.41.0
           mkdir -v -p /home/runner/.cache/dprint/cache
           npx dprint fmt --config .github/config/dprint.json
-      - name: Build metrics:${{ github.head_ref || 'master' }}
-        env:
-          GIT_REF: ${{ github.head_ref || 'master' }}
-        run: docker build -t "metrics:${GIT_REF//[^a-z]/-}" .
+      # Build and test run in the same job, so a fixed local tag is enough
+      - name: Build test image
+        run: docker build -t metrics:ci .
       - name: Run tests
-        env:
-          GIT_REF: ${{ github.head_ref || 'master' }}
-        run: docker run --rm --entrypoint="" "metrics:${GIT_REF//[^a-z]/-}" npm run test-metrics
+        run: docker run --rm --entrypoint="" metrics:ci npm run test-metrics
 
   # Run CodeQL on branch
   analyze:
@@ -62,6 +67,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Setup CodeQL
         uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
