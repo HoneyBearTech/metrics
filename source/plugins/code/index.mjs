@@ -20,6 +20,7 @@ export default async function({login, q, imports, data, rest, account}, {enabled
       days = Infinity
     skipped.push(...data.shared["repositories.skipped"])
     const pages = Math.ceil(load / 100)
+    const authored = (account !== "organization") && (context.mode !== "repository")
 
     //Get user recent code
     console.debug(`metrics/compute/${login}/plugins > code > querying api`)
@@ -43,7 +44,7 @@ export default async function({login, q, imports, data, rest, account}, {enabled
                   Promise.all(
                     (await imports.pushed({rest, repository, before, head})).commits
                       .filter(({parents = []}) => parents.length <= 1)
-                      .filter(({author, commit}) => data.shared["commits.authoring"].filter(authoring => author?.login?.toLocaleLowerCase().includes(authoring) || commit?.author?.email?.toLocaleLowerCase().includes(authoring) || commit?.author?.name?.toLocaleLowerCase().includes(authoring)).length)
+                      .filter(({author, commit}) => (!authored) || data.shared["commits.authoring"].filter(authoring => author?.login?.toLocaleLowerCase().includes(authoring) || commit?.author?.email?.toLocaleLowerCase().includes(authoring) || commit?.author?.name?.toLocaleLowerCase().includes(authoring)).length)
                       .map(async commit => ({created: new Date(created), ...(commit.files ? commit : await rest.request(commit.url).then(({data}) => data).catch(() => null))})),
                   )
                 ),
