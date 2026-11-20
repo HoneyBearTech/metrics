@@ -17,7 +17,7 @@ function event({type, number, repo = "octo-org/octo-repo", payload = {}, created
 
 //Dates relative to now (events older than the days input are filtered out)
 const ago = minutes => new Date(Date.now() - minutes * 60 * 1000).toISOString()
-const dates = {merged: ago(60), reopened: ago(180)}
+const dates = {merged: ago(60), reopened: ago(180), quickly: ago(30)}
 
 //Pull requests details as returned by the pulls api
 const pulls = {
@@ -27,6 +27,7 @@ const pulls = {
     5: {number: 5, title: "Update dependencies", body: "Bump packages", user: {login: "Octo-User"}, merged: true, merged_at: dates.merged, additions: 3, deletions: 3, changed_files: 2},
     6: {number: 6, title: "Opened by a bot", body: "", user: {login: "some-bot"}, merged: false, merged_at: null, additions: 1, deletions: 1, changed_files: 1},
     7: {number: 7, title: "Closed, reopened then merged", body: "", user: {login: "Octo-User"}, merged: true, merged_at: dates.reopened, additions: 1, deletions: 1, changed_files: 1},
+    9: {number: 9, title: "Closed, reopened then merged quickly", body: "", user: {login: "Octo-User"}, merged: true, merged_at: dates.quickly, additions: 1, deletions: 1, changed_files: 1},
     8: {number: 8, title: "Closed without merging", body: "", user: {login: "Octo-User"}, merged: false, merged_at: null, additions: 1, deletions: 1, changed_files: 1},
   },
 }
@@ -44,6 +45,8 @@ function client() {
     pulls: {
       async get({owner, repo, pull_number}) {
         calls.push(`${owner}/${repo}/${pull_number}`)
+        if (pull_number === 500)
+          throw Object.assign(new Error("Server Error"), {status: 500})
         const data = pulls[`${owner}/${repo}`]?.[pull_number]
         if (!data)
           throw Object.assign(new Error("Not Found"), {status: 404})
@@ -130,6 +133,20 @@ export function reopened() {
     event({type: "PullRequestEvent", number: 8, payload: {action: "closed", number: 8}, created_at: ago(360)}),
     event({type: "PullRequestEvent", number: 7, payload: {action: "opened", number: 7}, created_at: ago(420)}),
   ])
+}
+
+/**Only the closing nearest to the merge time is labelled as merged, even when the pull request was closed, reopened then merged within minutes */
+export function quickly() {
+  return run([
+    event({type: "PullRequestEvent", number: 9, payload: {action: "closed", number: 9}, created_at: ago(30)}),
+    event({type: "PullRequestEvent", number: 9, payload: {action: "reopened", number: 9}, created_at: ago(31)}),
+    event({type: "PullRequestEvent", number: 9, payload: {action: "closed", number: 9}, created_at: ago(32)}),
+  ])
+}
+
+/**A pull request is requested at most once per run, even when its failures are transient and not cached */
+export function failing() {
+  return run(Array.from({length: 60}, (_, i) => event({type: "PullRequestReviewCommentEvent", number: 500, payload: {action: "created", comment: {user: {login: "Octo-User"}, body: `Comment ${i}`, performed_via_github_app: null}}})), {limit: 2})
 }
 
 /**Pull requests lookups are capped so many unreadable pull requests cannot cause many requests */

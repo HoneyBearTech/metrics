@@ -37,6 +37,18 @@ describe("Activity plugin with trimmed pull request events", () => {
     expect(calls.sort()).toEqual(["octo-org/octo-repo/7", "octo-org/octo-repo/8"])
   })
 
+  test("Only labels the closing nearest to the merge time as merged when closings are minutes apart", () => {
+    const {events, calls} = esm("activity.mjs", "quickly")
+    expect(events.map(({action, number}) => `${action} ${number}`)).toEqual(["merged 9", "closed 9"])
+    expect(calls).toEqual(["octo-org/octo-repo/9"])
+  })
+
+  test("Requests each pull request at most once per run when it keeps failing", () => {
+    const {events, calls} = esm("activity.mjs", "failing")
+    expect(events).toEqual([])
+    expect(calls).toEqual(["octo-org/octo-repo/500"])
+  })
+
   test("Caps pull request lookups and keeps other events", () => {
     const {events, calls} = esm("activity.mjs", "capped")
     //limit is 2, so at most max(2 * 3, 10) = 10 distinct pull requests are looked up, a pull request already looked up does not count twice
