@@ -284,6 +284,7 @@ readonly
 reated
 recenttracks
 regexp
+renovatebot
 rlreset
 roadmap
 rssi
