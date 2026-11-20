@@ -269,6 +269,66 @@ async function pushcommits({rest, repository, before, head}) {
   return {total: 0, commits: []}
 }
 
+/**Pull requests cache (per rest client so results are never shared between tokens, short lived and bounded as web instances keep their clients) */
+const _pulled = {clients: new WeakMap(), ttl: 10 * 60 * 1000, max: 200}
+
+/**Details of a pull request (pull request events payloads do not include them anymore, so they are fetched from pulls api) */
+export async function pulled({rest, repository = "", number = 0}) {
+  if (!rest)
+    return null
+  if (!_pulled.clients.has(rest))
+    _pulled.clients.set(rest, new Map())
+  const cache = _pulled.clients.get(rest)
+  for (const [key, {expire}] of cache) {
+    if ((expire > Date.now()) && (cache.size < _pulled.max))
+      break
+    cache.delete(key)
+  }
+  const key = `${repository}/pulls/${number}`
+  if (!cache.has(key)) {
+    //Failures that may be transient (server errors, rate limits, network errors) are not kept so a later call can retry
+    const entry = {expire: Date.now() + _pulled.ttl}
+    entry.result = pullrequest({rest, repository, number}).then(({data, transient}) => {
+      if ((transient) && (cache.get(key) === entry))
+        cache.delete(key)
+      return data
+    })
+    cache.set(key, entry)
+  }
+  return cache.get(key).result
+}
+
+/**Fetch a pull request (never throws, data is null when it cannot be read and transient is set when the failure may not be permanent) */
+async function pullrequest({rest, repository, number}) {
+  const [owner, repo] = repository.split("/")
+  const pull_number = Number(number)
+  //Malformed event
+  if ((!owner) || (!repo) || (!Number.isInteger(pull_number)) || (pull_number < 1))
+    return {data: null, transient: false}
+  try {
+    const {data} = await rest.pulls.get({owner, repo, pull_number})
+    if (!data)
+      return {data: null, transient: false}
+    return {data: {...data, merged: Boolean(data.merged || data.merged_at)}, transient: false}
+  }
+  catch (error) {
+    console.debug(`metrics/pulled > ${repository} > could not fetch pull request ${pull_number} (${error})`)
+    return {data: null, transient: !unreadable(error)}
+  }
+}
+
+/**Check whether an api error means the resource cannot be read (not found, gone, forbidden without rate limit, unprocessable) rather than a transient failure */
+function unreadable(error) {
+  const status = Number(error?.status ?? error?.response?.status)
+  const headers = error?.response?.headers ?? {}
+  const ratelimited = (`${headers["x-ratelimit-remaining"]}` === "0") || (headers["retry-after"] !== undefined) || (/rate limit/i.test(`${error?.message ?? ""} ${error?.response?.data?.message ?? ""}`))
+  if ([404, 410, 422].includes(status))
+    return true
+  if (status === 403)
+    return !ratelimited
+  return false
+}
+
 /**Run command (use this to execute commands and process whole output at once, may not be suitable for large outputs) */
 export async function run(command, options, {prefixed = true, log = true, debug = true} = {}) {
   const prefix = {win32: "wsl"}[process.platform] ?? ""

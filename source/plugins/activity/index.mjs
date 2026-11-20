@@ -37,13 +37,53 @@ export default async function({login, data, rest, q, account, imports}, {enabled
     }
     console.debug(`metrics/compute/${login}/plugins > activity > ${events.length} events loaded`)
 
+    //Pull request details (null when it cannot be read, when its author is ignored or when too many pull requests were looked up)
+    //Each pull request is requested at most once per run (even when a failure was not cached by pulled()), and lookups are capped on distinct pull requests
+    const lookups = {max: Math.max(limit * 3, 10), requests: new Map()}
+    const pullrequest = async ({repo, number}) => {
+      const key = `${repo}#${number}`
+      if (!lookups.requests.has(key)) {
+        if (lookups.requests.size >= lookups.max) {
+          console.debug(`metrics/compute/${login}/plugins > activity > skipped pull request ${key} (lookup limit of ${lookups.max} reached)`)
+          return null
+        }
+        lookups.requests.set(key, imports.pulled({rest, repository: repo, number}))
+      }
+      const pr = await lookups.requests.get(key)
+      if ((!pr?.user?.login) || (!imports.filters.text(pr.user.login, ignored)))
+        return null
+      return pr
+    }
+
+    //Closings of each pull request among loaded events (a pull request can be closed, reopened then merged, so only its closing nearest to the merge time is labelled as merged)
+    const closings = new Map()
+    for (const event of events) {
+      const {type, payload, repo, created_at} = event
+      if ((type !== "PullRequestEvent") || (payload?.action !== "closed"))
+        continue
+      const key = `${repo?.name}#${payload.pull_request?.number ?? payload.number}`
+      if (!closings.has(key))
+        closings.set(key, [])
+      closings.get(key).push({event, time: new Date(created_at).getTime()})
+    }
+    const merging = ({repo, number, event, merged_at}) => {
+      const merged = new Date(merged_at).getTime()
+      if (!Number.isFinite(merged))
+        return false
+      const [nearest] = (closings.get(`${repo}#${number}`) ?? [])
+        .filter(({time}) => Math.abs(time - merged) <= 5 * 60 * 1000)
+        .sort((a, b) => (Math.abs(a.time - merged) - Math.abs(b.time - merged)) || (b.time - a.time))
+      return nearest?.event === event
+    }
+
     //Extract activity events
     const candidates = (await Promise.all(
       events
         .filter(({actor}) => account === "organization" ? true : actor.login?.toLocaleLowerCase() === login.toLocaleLowerCase())
         .filter(({created_at}) => Number.isFinite(days) ? new Date(created_at) > new Date(Date.now() - days * 24 * 60 * 60 * 1000) : true)
         .filter(event => visibility === "public" ? event.public : true)
-        .map(async ({type, payload, actor: {login: actor}, repo: {name: repo}, created_at}) => {
+        .map(async event => {
+          const {type, payload, actor: {login: actor}, repo: {name: repo}, created_at} = event
           //See https://docs.github.com/en/free-pro-team@latest/developers/webhooks-and-events/github-event-types
           const timestamp = new Date(created_at)
           if (!imports.filters.repo(repo, skipped))
@@ -109,37 +149,60 @@ export default async function({login, data, rest, q, account, imports}, {enabled
             case "PublicEvent": {
               return {type: "public", actor, timestamp, repo}
             }
-            //Pull requests events
+            //Pull requests events (payload does not include pull request details anymore, so they are only fetched for displayed events)
             case "PullRequestEvent": {
               if (!["opened", "closed"].includes(payload.action))
                 return null
-              const {action, pull_request: {user: {login: user}, title, number, body: content, additions: added, deletions: deleted, changed_files: changed, merged}} = payload
-              if (!imports.filters.text(user, ignored))
-                return null
-              return {type: "pr", actor, timestamp, repo, action: (action === "closed") && (merged) ? "merged" : action, user, title, number, content: await imports.markdown(content, {mode: markdown, codelines}), lines: {added, deleted}, files: {changed}}
+              const {action} = payload, number = payload.pull_request?.number ?? payload.number
+              return {
+                type: "pr",
+                async resolve() {
+                  const pr = await pullrequest({repo, number})
+                  if (!pr)
+                    return null
+                  const {user: {login: user}, title, body: content, additions: added, deletions: deleted, changed_files: changed, merged_at} = pr
+                  //Pull request current merge state also applies to its earlier closings (closed, reopened then merged), so only the closing nearest to the merge time is labelled as merged
+                  const merged = (action === "closed") && (Boolean(merged_at)) && (merging({repo, number, event, merged_at}))
+                  return {type: "pr", actor, timestamp, repo, action: merged ? "merged" : action, user, title, number, content: await imports.markdown(content, {mode: markdown, codelines}), lines: {added, deleted}, files: {changed}}
+                },
+              }
             }
             //Reviewed a pull request
             case "PullRequestReviewEvent": {
-              const {review: {state: review}, pull_request: {user: {login: user}, number, title}} = payload
-              if (!imports.filters.text(user, ignored))
-                return null
-              return {type: "review", actor, timestamp, repo, review, user, number, title}
+              const {review: {state: review}} = payload, number = payload.pull_request?.number ?? payload.number
+              return {
+                type: "review",
+                async resolve() {
+                  const pr = await pullrequest({repo, number})
+                  if (!pr)
+                    return null
+                  const {user: {login: user}, title} = pr
+                  return {type: "review", actor, timestamp, repo, review, user, number, title}
+                },
+              }
             }
             //Commented on a pull request
             case "PullRequestReviewCommentEvent": {
               if (!["created"].includes(payload.action))
                 return null
-              const {pull_request: {user: {login: user}, title, number}, comment: {body: content, performed_via_github_app: mobile}} = payload
-              if (!imports.filters.text(user, ignored))
-                return null
-              return {type: "comment", on: "pr", actor, timestamp, repo, content: await imports.markdown(content, {mode: markdown, codelines}), user, mobile, number, title}
+              const {comment: {body: content, performed_via_github_app: mobile}} = payload, number = payload.pull_request?.number ?? payload.number
+              return {
+                type: "comment",
+                async resolve() {
+                  const pr = await pullrequest({repo, number})
+                  if (!pr)
+                    return null
+                  const {user: {login: user}, title} = pr
+                  return {type: "comment", on: "pr", actor, timestamp, repo, content: await imports.markdown(content, {mode: markdown, codelines}), user, mobile, number, title}
+                },
+              }
             }
             //Pushed commits (payload does not list them anymore, so they are only fetched for displayed events)
             case "PushEvent": {
               const {before, head, ref} = payload
               return {
                 type: "push",
-                async pushed() {
+                async resolve() {
                   let {total: size, commits} = await imports.pushed({rest, repository: repo, before, head})
                   commits = commits.filter(({sha, author, commit}) => (sha) && (imports.filters.text(commit?.author?.email, ignored)) && ((!author?.login) || (imports.filters.text(author.login, ignored))))
                   if (!commits.length)
@@ -174,11 +237,11 @@ export default async function({login, data, rest, q, account, imports}, {enabled
       .filter(event => event)
       .filter(event => filter.includes("all") || filter.includes(event.type))
 
-    //Fetch pushed commits only for events that may be displayed
+    //Resolve lazy events (pushed commits, pull requests details) only for events that may be displayed
     const activity = []
     while ((candidates.length) && (activity.length < limit)) {
       const batch = candidates.splice(0, limit - activity.length)
-      activity.push(...(await Promise.all(batch.map(event => event.pushed?.() ?? event))).filter(event => event))
+      activity.push(...(await Promise.all(batch.map(event => event.resolve?.() ?? event))).filter(event => event))
     }
 
     //Results
