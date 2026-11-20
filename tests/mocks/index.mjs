@@ -69,6 +69,14 @@ export default async function({graphql, rest}) {
     //Mocked
     rest = new Proxy(unmocked, {
       get(target, section) {
+        if ((section === "request") && (typeof mocks.github.rest.request === "function")) {
+          return new Proxy(target[section], {
+            apply(target, that, args) {
+              console.debug("metrics/mocking > rest.request")
+              return mocks.github.rest.request({faker}, target, that, args)
+            },
+          })
+        }
         if (Reflect.has(mocks.github.rest, section)) {
           return new Proxy(target[section], {
             get(target, property) {

@@ -42,14 +42,16 @@ export default async function({login, data, rest, imports, q, account}, {enabled
     console.debug(`metrics/compute/${login}/plugins > habits > filtered out ${commits.length} push events over last ${days} days`)
     habits.commits.fetched = commits.length
 
-    //Retrieve edited files and filter edited lines (those starting with +/-) from patches
+    //Retrieve edited files and filter edited lines (those starting with +/-) from patches (push events payloads do not list commits anymore)
     console.debug(`metrics/compute/${login}/plugins > habits > loading patches`)
+    const pushed = await Promise.all(commits.map(({repo: {name: repository}, payload: {before, head}}) => imports.pushed({rest, repository, before, head})))
+    const authored = account !== "organization"
     const patches = [
       ...await Promise.allSettled(
-        commits
-          .flatMap(({payload}) => payload.commits)
-          .filter(({author}) => data.shared["commits.authoring"].filter(authoring => author?.login?.toLocaleLowerCase().includes(authoring) || author?.email?.toLocaleLowerCase().includes(authoring) || author?.name?.toLocaleLowerCase().includes(authoring)).length)
-          .map(async commit => (await rest.request(commit)).data.files),
+        pushed
+          .flatMap(({commits}) => commits)
+          .filter(({author, commit}) => (!authored) || data.shared["commits.authoring"].filter(authoring => author?.login?.toLocaleLowerCase().includes(authoring) || commit?.author?.email?.toLocaleLowerCase().includes(authoring) || commit?.author?.name?.toLocaleLowerCase().includes(authoring)).length)
+          .map(async commit => commit.files ?? (await rest.request(commit.url)).data.files ?? []),
       ),
     ]
       .filter(({status}) => status === "fulfilled")

@@ -1,0 +1,7 @@
+query AchievementsProjects {
+  $account(login: "$login") {
+    projectsV2 {
+      totalCount
+    }
+  }
+}

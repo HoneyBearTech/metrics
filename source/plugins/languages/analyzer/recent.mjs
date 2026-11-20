@@ -1,6 +1,6 @@
 //Imports
 import linguist from "linguist-js"
-import { filters } from "../../../app/metrics/utils.mjs"
+import { filters, pushed } from "../../../app/metrics/utils.mjs"
 import { Analyzer } from "./analyzer.mjs"
 
 /**Recent analyzer */
@@ -61,20 +61,22 @@ export class RecentAnalyzer extends Analyzer {
     this.results.latest = Math.round((new Date().getTime() - new Date(commits.slice(-1).shift()?.created_at).getTime()) / (1000 * 60 * 60 * 24))
     this.results.commits = commits.length
 
-    //Retrieve edited files and filter edited lines (those starting with +/-) from patches
+    //Retrieve edited files and filter edited lines (those starting with +/-) from patches (push events payloads do not list commits anymore)
     this.debug("fetching patches")
+    const authored = (this.account !== "organization") && (this.context.mode !== "repository")
+    const pushes = await Promise.all(commits.map(({repo: {name: repository}, payload: {before, head}}) => pushed({rest: this.rest, repository, before, head})))
     const patches = [
       ...await Promise.allSettled(
-        commits
-          .flatMap(({payload}) => payload.commits)
-          .filter(({committer}) => filters.text(committer?.email, this.authoring, {debug: false}))
-          .map(commit => commit.url)
-          .map(async commit => (await this.rest.request(commit)).data),
+        pushes
+          .flatMap(({commits}) => commits)
+          .filter(({parents = []}) => parents.length <= 1)
+          .filter(({author, commit}) => (!authored) || (this.authoring.filter(authoring => author?.login?.toLocaleLowerCase().includes(authoring) || commit?.author?.email?.toLocaleLowerCase().includes(authoring) || commit?.author?.name?.toLocaleLowerCase().includes(authoring)).length))
+          .map(async commit => commit.files ? commit : (await this.rest.request(commit.url)).data),
       ),
     ]
       .filter(({status}) => status === "fulfilled")
       .map(({value}) => value)
-      .filter(({parents}) => parents.length <= 1)
+      .filter(({parents = [], files}) => (parents.length <= 1) && (Array.isArray(files)))
       .map(({sha, commit: {message, committer}, verification, files}) => ({
         sha,
         name: `${message} (authored by ${committer.name} on ${committer.date})`,

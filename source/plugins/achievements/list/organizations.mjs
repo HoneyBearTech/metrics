@@ -2,6 +2,14 @@
 export default async function({list, login, data, computed, imports, graphql, queries, rest, rank, leaderboard}) {
   //Initialization
   const {organization} = await graphql(queries.achievements.organizations({login}))
+  //Projects (classic) were removed by GitHub, count projects (queried apart as it may require additional token scopes)
+  organization.projectsV2 = {totalCount: 0}
+  try {
+    organization.projectsV2.totalCount = (await graphql(queries.achievements.projects({login, account: "organization"}))).organization?.projectsV2?.totalCount ?? 0
+  }
+  catch (error) {
+    console.debug(`metrics/compute/${login}/plugins > achievements > could not count projects (${error})`)
+  }
   const scores = {followers: 0, created: organization.repositories.totalCount, stars: organization.popular.nodes?.[0]?.stargazers?.totalCount ?? 0, forks: Math.max(0, ...data.user.repositories.nodes.map(({forkCount}) => forkCount))}
   const ranks = await graphql(queries.achievements.ranking(scores))
   const requirements = {stars: 5, followers: 3, forks: 1, created: 1}
@@ -39,8 +47,8 @@ export default async function({list, login, data, computed, imports, graphql, qu
 
   //Managers
   {
-    const value = organization.projects.totalCount
-    const unlock = organization.projects.nodes?.shift()
+    const value = organization.projectsV2.totalCount
+    const unlock = organization.projectsV2.nodes?.shift()
 
     list.push({
       title: "Managers",
