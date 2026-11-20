@@ -38,12 +38,19 @@ export default async function({login, q, imports, data, rest, account}, {enabled
                 .filter(({repo: {name: repo}}) => imports.filters.repo(repo, skipped))
                 .filter(event => visibility === "public" ? event.public : true)
                 .filter(({created_at}) => Number.isFinite(days) ? new Date(created_at) > new Date(Date.now() - days * 24 * 60 * 60 * 1000) : true)
-                .flatMap(({created_at: created, payload}) => Promise.all(payload.commits.map(async commit => ({created: new Date(created), ...(await rest.request(commit.url)).data})))),
+                //Push events payloads do not list commits anymore, so they are fetched and filtered before loading their content
+                .map(async ({created_at: created, repo: {name: repository}, payload: {before, head}}) =>
+                  Promise.all(
+                    (await imports.pushed({rest, repository, before, head})).commits
+                      .filter(({parents = []}) => parents.length <= 1)
+                      .filter(({author, commit}) => data.shared["commits.authoring"].filter(authoring => author?.login?.toLocaleLowerCase().includes(authoring) || commit?.author?.email?.toLocaleLowerCase().includes(authoring) || commit?.author?.name?.toLocaleLowerCase().includes(authoring)).length)
+                      .map(async commit => ({created: new Date(created), ...(commit.files ? commit : await rest.request(commit.url).then(({data}) => data).catch(() => null))})),
+                  )
+                ),
             ]),
           ]
             .flat()
-            .filter(({parents}) => parents.length <= 1)
-            .filter(({author}) => data.shared["commits.authoring"].filter(authoring => author?.login?.toLocaleLowerCase().includes(authoring) || author?.email?.toLocaleLowerCase().includes(authoring) || author?.name?.toLocaleLowerCase().includes(authoring)).length),
+            .filter(({files, parents = []}) => (Array.isArray(files)) && (parents.length <= 1)),
         )
       }
     }
