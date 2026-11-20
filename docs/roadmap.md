@@ -16,7 +16,7 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 
 ## In progress
 
-- Spelling check passing: flagged words added to its dictionary (PR #11)
+- Spelling check passing: flagged words added to its dictionary (PR #11, and `renovatebot` from Renovate's setup in PR #27)
 
 ## Next
 
