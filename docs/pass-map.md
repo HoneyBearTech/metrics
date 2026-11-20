@@ -12,3 +12,4 @@
 | 2026-11-20 | fork-workflows | Upstream-only workflows removed; one CI workflow (lint, Docker build and stand-in tests, code scanning) passing on the fork for the first time; labeler and spelling fixed; every action pinned to an exact commit | #10 |
 | 2026-11-20 | spelling-dict | 35 dictionary entries added and 3 replaced so the spelling check passes; master's main CI passed in full for the first time | #11 |
 | 2026-11-20 | spelling-renovate | `renovatebot` (from Renovate's setup file) added to the spelling dictionary | #27 |
+| 2026-11-20 | spelling-openssf | `openssf` (a Renovate label) added to the spelling dictionary | #30 |
