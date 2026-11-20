@@ -103,3 +103,7 @@ The first real run on the owner's profile showed two problems the stand-in tests
 ## 2026-11-20 - spelling-renovate
 
 Renovate's setup file reached master after PR #11's branch was made, so its schema link added one new word (`renovatebot`) that PR #11's check never saw. Added to the dictionary; the file itself is unchanged. The security review and the audit found nothing to fix.
+
+## 2026-11-20 - spelling-openssf
+
+PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flagged the word, but spelling isn't a required check, so it was merged and master's check failed. Added to the dictionary; `renovate.json` is unchanged. Making spelling a required check would prevent a repeat; that's a repo setting left to Sean. The security review and the audit found nothing to fix.
