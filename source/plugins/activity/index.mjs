@@ -37,6 +37,14 @@ export default async function({login, data, rest, q, account, imports}, {enabled
     }
     console.debug(`metrics/compute/${login}/plugins > activity > ${events.length} events loaded`)
 
+    //Pull request details (null when it cannot be read or when its author is ignored)
+    const pullrequest = async ({repo, number}) => {
+      const pr = await imports.pulled({rest, repository: repo, number})
+      if ((!pr?.user?.login) || (!imports.filters.text(pr.user.login, ignored)))
+        return null
+      return pr
+    }
+
     //Extract activity events
     const candidates = (await Promise.all(
       events
@@ -109,37 +117,58 @@ export default async function({login, data, rest, q, account, imports}, {enabled
             case "PublicEvent": {
               return {type: "public", actor, timestamp, repo}
             }
-            //Pull requests events
+            //Pull requests events (payload does not include pull request details anymore, so they are only fetched for displayed events)
             case "PullRequestEvent": {
               if (!["opened", "closed"].includes(payload.action))
                 return null
-              const {action, pull_request: {user: {login: user}, title, number, body: content, additions: added, deletions: deleted, changed_files: changed, merged}} = payload
-              if (!imports.filters.text(user, ignored))
-                return null
-              return {type: "pr", actor, timestamp, repo, action: (action === "closed") && (merged) ? "merged" : action, user, title, number, content: await imports.markdown(content, {mode: markdown, codelines}), lines: {added, deleted}, files: {changed}}
+              const {action} = payload, number = payload.pull_request?.number ?? payload.number
+              return {
+                type: "pr",
+                async resolve() {
+                  const pr = await pullrequest({repo, number})
+                  if (!pr)
+                    return null
+                  const {user: {login: user}, title, body: content, additions: added, deletions: deleted, changed_files: changed, merged} = pr
+                  return {type: "pr", actor, timestamp, repo, action: (action === "closed") && (merged) ? "merged" : action, user, title, number, content: await imports.markdown(content, {mode: markdown, codelines}), lines: {added, deleted}, files: {changed}}
+                },
+              }
             }
             //Reviewed a pull request
             case "PullRequestReviewEvent": {
-              const {review: {state: review}, pull_request: {user: {login: user}, number, title}} = payload
-              if (!imports.filters.text(user, ignored))
-                return null
-              return {type: "review", actor, timestamp, repo, review, user, number, title}
+              const {review: {state: review}} = payload, number = payload.pull_request?.number ?? payload.number
+              return {
+                type: "review",
+                async resolve() {
+                  const pr = await pullrequest({repo, number})
+                  if (!pr)
+                    return null
+                  const {user: {login: user}, title} = pr
+                  return {type: "review", actor, timestamp, repo, review, user, number, title}
+                },
+              }
             }
             //Commented on a pull request
             case "PullRequestReviewCommentEvent": {
               if (!["created"].includes(payload.action))
                 return null
-              const {pull_request: {user: {login: user}, title, number}, comment: {body: content, performed_via_github_app: mobile}} = payload
-              if (!imports.filters.text(user, ignored))
-                return null
-              return {type: "comment", on: "pr", actor, timestamp, repo, content: await imports.markdown(content, {mode: markdown, codelines}), user, mobile, number, title}
+              const {comment: {body: content, performed_via_github_app: mobile}} = payload, number = payload.pull_request?.number ?? payload.number
+              return {
+                type: "comment",
+                async resolve() {
+                  const pr = await pullrequest({repo, number})
+                  if (!pr)
+                    return null
+                  const {user: {login: user}, title} = pr
+                  return {type: "comment", on: "pr", actor, timestamp, repo, content: await imports.markdown(content, {mode: markdown, codelines}), user, mobile, number, title}
+                },
+              }
             }
             //Pushed commits (payload does not list them anymore, so they are only fetched for displayed events)
             case "PushEvent": {
               const {before, head, ref} = payload
               return {
                 type: "push",
-                async pushed() {
+                async resolve() {
                   let {total: size, commits} = await imports.pushed({rest, repository: repo, before, head})
                   commits = commits.filter(({sha, author, commit}) => (sha) && (imports.filters.text(commit?.author?.email, ignored)) && ((!author?.login) || (imports.filters.text(author.login, ignored))))
                   if (!commits.length)
@@ -174,11 +203,11 @@ export default async function({login, data, rest, q, account, imports}, {enabled
       .filter(event => event)
       .filter(event => filter.includes("all") || filter.includes(event.type))
 
-    //Fetch pushed commits only for events that may be displayed
+    //Resolve lazy events (pushed commits, pull requests details) only for events that may be displayed
     const activity = []
     while ((candidates.length) && (activity.length < limit)) {
       const batch = candidates.splice(0, limit - activity.length)
-      activity.push(...(await Promise.all(batch.map(event => event.pushed?.() ?? event))).filter(event => event))
+      activity.push(...(await Promise.all(batch.map(event => event.resolve?.() ?? event))).filter(event => event))
     }
 
     //Results

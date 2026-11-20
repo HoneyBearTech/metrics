@@ -269,6 +269,46 @@ async function pushcommits({rest, repository, before, head}) {
   return {total: 0, commits: []}
 }
 
+/**Pull requests cache (per rest client so results are never shared between tokens, short lived and bounded as web instances keep their clients) */
+const _pulled = {clients: new WeakMap(), ttl: 10 * 60 * 1000, max: 200}
+
+/**Details of a pull request (pull request events payloads do not include them anymore, so they are fetched from pulls api) */
+export async function pulled({rest, repository = "", number = 0}) {
+  if (!rest)
+    return null
+  if (!_pulled.clients.has(rest))
+    _pulled.clients.set(rest, new Map())
+  const cache = _pulled.clients.get(rest)
+  for (const [key, {expire}] of cache) {
+    if ((expire > Date.now()) && (cache.size < _pulled.max))
+      break
+    cache.delete(key)
+  }
+  const key = `${repository}/pulls/${number}`
+  if (!cache.has(key))
+    cache.set(key, {expire: Date.now() + _pulled.ttl, result: pullrequest({rest, repository, number})})
+  return cache.get(key).result
+}
+
+/**Fetch a pull request (never throws, returns null when it cannot be read) */
+async function pullrequest({rest, repository, number}) {
+  const [owner, repo] = repository.split("/")
+  const pull_number = Number(number)
+  //Malformed event
+  if ((!owner) || (!repo) || (!Number.isInteger(pull_number)) || (pull_number < 1))
+    return null
+  try {
+    const {data} = await rest.pulls.get({owner, repo, pull_number})
+    if (!data)
+      return null
+    return {...data, merged: Boolean(data.merged || data.merged_at)}
+  }
+  catch (error) {
+    console.debug(`metrics/pulled > ${repository} > could not fetch pull request ${pull_number} (${error})`)
+  }
+  return null
+}
+
 /**Run command (use this to execute commands and process whole output at once, may not be suitable for large outputs) */
 export async function run(command, options, {prefixed = true, log = true, debug = true} = {}) {
   const prefix = {win32: "wsl"}[process.platform] ?? ""
