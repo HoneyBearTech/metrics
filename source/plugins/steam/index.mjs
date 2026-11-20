@@ -7,11 +7,12 @@ export default async function({login, q, imports, data, account}, {token, enable
       return null
 
     //Load inputs
-    let {user, sections, "games.ignored": _games_ignored, "games.limit": _games_limit, "recent.games.limit": _recent_games_limit, "achievements.limit": _achievements_limit, "playtime.threshold": _playtime_threshold} = imports.metadata.plugins.steam.inputs({data, account, q})
+    let {user, sections, "games.ignored": _games_ignored, "games.limit": _games_limit, "recent.games.limit": _recent_games_limit, "achievements.limit": _achievements_limit, "playtime.threshold": _playtime_threshold, "recent.days": _recent_days, freegames} = imports.metadata.plugins.steam.inputs({data, account, q})
 
     const urls = {
       games: {
-        owned: `https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${token}&steamid=${user}&format=json&include_appinfo=1`,
+        owned: `https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${token}&steamid=${user}&format=json&include_appinfo=1${freegames ? "&include_played_free_games=1" : ""}`,
+        recent: `https://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v0001/?key=${token}&steamid=${user}&format=json`,
         schema: `https://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v0002/?key=${token}&format=json`,
         details: "https://store.steampowered.com/api/appdetails?",
       },
@@ -25,22 +26,42 @@ export default async function({login, q, imports, data, account}, {token, enable
 
     //Fetch owned games
     console.debug(`metrics/compute/${login}/plugins > steam > fetching owned games`)
-    let {data: {response: {game_count: count, games}}} = await imports.axios.get(urls.games.owned)
+    let {data: {response: {game_count: count = 0, games = []} = {}}} = await imports.axios.get(urls.games.owned)
     result.games.count = count
-    result.games.playtime = games.reduce((total, {playtime_forever: playtime}) => (total += playtime), 0) / 60
+    result.games.playtime = games.reduce((total, {playtime_forever: playtime = 0}) => (total += playtime), 0) / 60
+
+    //Fetch recently played games (this endpoint also lists free-to-play games, but does not provide last played date)
+    let recent = []
+    if (sections.includes("recently-played")) {
+      try {
+        console.debug(`metrics/compute/${login}/plugins > steam > fetching recently played games`)
+        const {data: {response: {games: list = []} = {}}} = await imports.axios.get(urls.games.recent)
+        recent = list
+      }
+      catch (error) {
+        console.debug(`metrics/compute/${login}/plugins > steam > failed to fetch recently played games > ${error}`)
+      }
+    }
+    //Merge last played date of owned games into recently played ones, then complete with the other owned games
+    const owned = new Map(games.map(game => [game.appid, game]))
+    const recentlyPlayed = [...recent.map(game => ({...owned.get(game.appid), ...game, rtime_last_played: owned.get(game.appid)?.rtime_last_played, recent: true})), ...games.filter(({appid}) => !recent.some(game => game.appid === appid))]
+    const cutoff = _recent_days > 0 ? Math.floor(Date.now() / 1000) - _recent_days * 86400 : 0
 
     //Fetch game achievements and order games by section
     for (const section of ["most-played", "recently-played"]) {
       if (!sections.includes(section))
         continue
       result.games[section] = await Promise.all(
-        games
-          .map(({appid: id, name, img_icon_url: icon, playtime_forever: playtime, rtime_last_played: played}) => ({id, name, icon: `http://media.steampowered.com/steamcommunity/public/images/apps/${id}/${icon}.jpg`, playtime: playtime / 60, played}))
-          .filter(({playtime}) => (playtime >= _playtime_threshold))
+        (section === "recently-played" ? recentlyPlayed : games)
+          .map(({appid: id, name, img_icon_url: icon, playtime_forever: playtime = 0, playtime_2weeks: playtime2w = 0, rtime_last_played: played = null, recent: listed = false}) => ({id, name, icon: `http://media.steampowered.com/steamcommunity/public/images/apps/${id}/${icon}.jpg`, playtime: playtime / 60, played: played || null, playtime2w, listed}))
+          //Recently played games are not subject to playtime threshold (newly started games would be hidden otherwise)
+          .filter(({playtime}) => (section === "recently-played" ? true : playtime >= _playtime_threshold))
+          //Last played date is unknown (null) for games only listed by the recently played endpoint, in which case they are within steam's two weeks range
+          .filter(({played, listed}) => (section === "recently-played" ? (played ? played >= cutoff : (listed && ((!cutoff) || (_recent_days >= 14)))) : true))
           .filter(({id}) => (!_games_ignored.includes(`${id}`)))
-          .sort((a, b) => ({"most-played": (b.playtime - a.playtime), "recently-played": (b.played - a.played)}[section]))
+          .sort((a, b) => ({"most-played": (b.playtime - a.playtime), "recently-played": (b.listed - a.listed) || ((b.played ?? 0) - (a.played ?? 0)) || (b.playtime2w - a.playtime2w)}[section]))
           .slice(0, ({"most-played": _games_limit, "recently-played": _recent_games_limit}[section]) || Infinity)
-          .map(async game => {
+          .map(async ({playtime2w: _playtime2w, listed: _listed, ...game}) => {
             const schema = {}
             try {
               console.debug(`metrics/compute/${login}/plugins > steam > fetching schema for "${game.name}" (${game.id})`)

@@ -146,6 +146,33 @@ All product and company names are trademarks™ or registered® trademarks of th
 <br>
 <b>default:</b> 2<br></td>
   </tr>
+  <tr>
+    <td nowrap="nowrap"><h4><code>plugin_steam_recent_days</code></h4></td>
+    <td rowspan="2"><p>Time range for recently played games (in days)</p>
+<p>Games last played before this range will not be displayed in the <code>recently-played</code> section.
+Steam&#39;s own recently played list is limited to the last 2 weeks, so a larger range uses the last played date of owned games instead.
+Use <code>0</code> to disable the time limit.</p>
+<img width="900" height="1" alt=""></td>
+  </tr>
+  <tr>
+    <td nowrap="nowrap">✨ On <code>master</code>/<code>main</code><br>
+<b>type:</b> <code>number</code>
+<i>(0 ≤
+𝑥)</i>
+<br>
+<b>default:</b> 14<br></td>
+  </tr>
+  <tr>
+    <td nowrap="nowrap"><h4><code>plugin_steam_freegames</code></h4></td>
+    <td rowspan="2"><p>Include played free-to-play games in owned games</p>
+<img width="900" height="1" alt=""></td>
+  </tr>
+  <tr>
+    <td nowrap="nowrap">✨ On <code>master</code>/<code>main</code><br>
+<b>type:</b> <code>boolean</code>
+<br>
+<b>default:</b> yes<br></td>
+  </tr>
 </table>
 <!--/options-->
 

@@ -807,6 +807,10 @@ inputs:
     description: Skipped repositories
     default: <default-value>
 
+  plugin_notable_organizations_skipped:
+    description: Skipped organizations
+    default: <default-value>
+
   plugin_notable_from:
     description: Repository owner account type filter
     default: <default-value>
@@ -1278,6 +1282,14 @@ inputs:
 
   plugin_steam_playtime_threshold:
     description: Display threshold (Game playtime in hours)
+    default: <default-value>
+
+  plugin_steam_recent_days:
+    description: Time range for recently played games (in days)
+    default: <default-value>
+
+  plugin_steam_freegames:
+    description: Include played free-to-play games in owned games
     default: <default-value>
 
   # ====================================================================================
