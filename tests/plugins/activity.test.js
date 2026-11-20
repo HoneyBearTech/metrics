@@ -31,6 +31,31 @@ describe("Activity plugin with trimmed pull request events", () => {
     expect(calls).toEqual(["octo-org/octo-repo/1"])
   })
 
+  test("Only labels the closing matching the merge time as merged", () => {
+    const {events, calls} = esm("activity.mjs", "reopened")
+    expect(events.map(({action, number}) => `${action} ${number}`)).toEqual(["merged 7", "closed 7", "closed 8", "opened 7"])
+    expect(calls.sort()).toEqual(["octo-org/octo-repo/7", "octo-org/octo-repo/8"])
+  })
+
+  test("Caps pull request lookups and keeps other events", () => {
+    const {events, calls} = esm("activity.mjs", "capped")
+    //limit is 2, so at most max(2 * 3, 10) = 10 distinct pull requests are looked up, a pull request already looked up does not count twice
+    expect(calls).toHaveLength(10)
+    expect(new Set(calls).size).toBe(10)
+    expect(calls).not.toContain("octo-org/octo-repo/4")
+    expect(events.map(({type}) => type)).toEqual(["public"])
+  })
+
+  test("Pull request helper does not cache transient failures", () => {
+    const results = esm("activity.mjs", "transient")
+    //Server errors, rate limits and network errors are retried by the next call
+    for (const status of ["500", "429", "4031", "4032", "1"])
+      expect([status, results[status]]).toEqual([status, {first: null, second: "Recovered", calls: 2}])
+    //Not found, gone, forbidden (without rate limit) and unprocessable are cached
+    for (const status of ["403", "404", "410", "422"])
+      expect([status, results[status]]).toEqual([status, {first: null, second: null, calls: 1}])
+  })
+
   test("Pull request helper never throws and caches results", () => {
     const {found, again, missing, malformed, nan, norest, calls} = esm("activity.mjs", "helper")
     expect(found).toMatchObject({number: 1, title: "Fix the parser", user: {login: "contributor"}, merged: true})

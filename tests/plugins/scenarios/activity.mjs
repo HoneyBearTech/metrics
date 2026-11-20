@@ -3,25 +3,31 @@ import * as utils from "../../../source/app/metrics/utils.mjs"
 import activity from "../../../source/plugins/activity/index.mjs"
 
 //Pull request events as listed by the events api (pull request details are not included anymore)
-function event({type, number, repo = "octo-org/octo-repo", payload = {}}) {
+function event({type, number, repo = "octo-org/octo-repo", payload = {}, created_at = new Date().toISOString()}) {
   return {
     id: `${Math.random()}`,
     type,
     actor: {login: "Octo-User"},
     repo: {name: repo},
     payload: {...payload, pull_request: {id: number * 100, number, url: `https://api.github.com/repos/${repo}/pulls/${number}`, head: {ref: "feature", sha: "HEAD_SHA"}, base: {ref: "main", sha: "BASE_SHA"}}},
-    created_at: new Date().toISOString(),
+    created_at,
     public: true,
   }
 }
+
+//Dates relative to now (events older than the days input are filtered out)
+const ago = minutes => new Date(Date.now() - minutes * 60 * 1000).toISOString()
+const dates = {merged: ago(60), reopened: ago(180)}
 
 //Pull requests details as returned by the pulls api
 const pulls = {
   "octo-org/octo-repo": {
     1: {number: 1, title: "Fix the parser", body: "Some **details**", user: {login: "contributor"}, merged: false, merged_at: "2026-01-01T00:00:00Z", additions: 10, deletions: 2, changed_files: 1},
     4: {number: 4, title: "Add a feature", body: null, user: {login: "Octo-User"}, merged: false, merged_at: null, additions: 100, deletions: 20, changed_files: 5},
-    5: {number: 5, title: "Update dependencies", body: "Bump packages", user: {login: "Octo-User"}, merged: true, merged_at: "2026-01-02T00:00:00Z", additions: 3, deletions: 3, changed_files: 2},
+    5: {number: 5, title: "Update dependencies", body: "Bump packages", user: {login: "Octo-User"}, merged: true, merged_at: dates.merged, additions: 3, deletions: 3, changed_files: 2},
     6: {number: 6, title: "Opened by a bot", body: "", user: {login: "some-bot"}, merged: false, merged_at: null, additions: 1, deletions: 1, changed_files: 1},
+    7: {number: 7, title: "Closed, reopened then merged", body: "", user: {login: "Octo-User"}, merged: true, merged_at: dates.reopened, additions: 1, deletions: 1, changed_files: 1},
+    8: {number: 8, title: "Closed without merging", body: "", user: {login: "Octo-User"}, merged: false, merged_at: null, additions: 1, deletions: 1, changed_files: 1},
   },
 }
 
@@ -64,7 +70,7 @@ async function run(events, {limit = 5, ignored = []} = {}) {
 /**Trimmed pull request, review and review comment events are completed with pulls api */
 export function trimmed() {
   return run([
-    event({type: "PullRequestEvent", number: 5, payload: {action: "closed", number: 5}}),
+    event({type: "PullRequestEvent", number: 5, payload: {action: "closed", number: 5}, created_at: dates.merged}),
     event({type: "PullRequestEvent", number: 4, payload: {action: "opened", number: 4}}),
     event({type: "PullRequestReviewEvent", number: 1, payload: {action: "created", review: {state: "approved", user: {login: "Octo-User"}}}}),
     event({type: "PullRequestReviewCommentEvent", number: 1, payload: {action: "created", comment: {user: {login: "Octo-User"}, body: "Looks *good*", performed_via_github_app: null}}}),
@@ -113,4 +119,59 @@ export async function helper() {
     norest: await utils.pulled({rest: null, repository: "octo-org/octo-repo", number: 1}),
   }
   return {...results, calls: rest.calls}
+}
+
+/**Only the closing that matches the merge time is labelled as merged (earlier closings without merge stay closed) */
+export function reopened() {
+  return run([
+    event({type: "PullRequestEvent", number: 7, payload: {action: "closed", number: 7}, created_at: ago(181)}),
+    event({type: "PullRequestEvent", number: 7, payload: {action: "reopened", number: 7}, created_at: ago(240)}),
+    event({type: "PullRequestEvent", number: 7, payload: {action: "closed", number: 7}, created_at: ago(300)}),
+    event({type: "PullRequestEvent", number: 8, payload: {action: "closed", number: 8}, created_at: ago(360)}),
+    event({type: "PullRequestEvent", number: 7, payload: {action: "opened", number: 7}, created_at: ago(420)}),
+  ])
+}
+
+/**Pull requests lookups are capped so many unreadable pull requests cannot cause many requests */
+export function capped() {
+  return run([
+    ...Array.from({length: 12}, (_, i) => event({type: "PullRequestEvent", number: 1000 + i, payload: {action: "opened", number: 1000 + i}})),
+    event({type: "PullRequestEvent", number: 4, payload: {action: "opened", number: 4}}),
+    event({type: "PullRequestReviewEvent", number: 1000, payload: {action: "created", review: {state: "approved", user: {login: "Octo-User"}}}}),
+    {id: "public", type: "PublicEvent", actor: {login: "Octo-User"}, repo: {name: "octo-org/octo-repo"}, payload: {}, created_at: new Date().toISOString(), public: true},
+  ], {limit: 2})
+}
+
+/**Pull request helper only caches failures that are not transient */
+export async function transient() {
+  const calls = []
+  const failures = {
+    500: [{status: 500, message: "Server Error"}],
+    429: [{status: 429, message: "Too Many Requests"}],
+    4031: [{status: 403, message: "API rate limit exceeded", response: {headers: {"x-ratelimit-remaining": "0"}}}],
+    4032: [{status: 403, message: "You have exceeded a secondary rate limit", response: {headers: {}}}],
+    1: [{message: "getaddrinfo EAI_AGAIN api.github.com"}],
+    403: [{status: 403, message: "Resource not accessible by integration", response: {headers: {"x-ratelimit-remaining": "4000"}}}],
+    404: [{status: 404, message: "Not Found"}],
+    410: [{status: 410, message: "Gone"}],
+    422: [{status: 422, message: "Unprocessable Entity"}],
+  }
+  const rest = {
+    pulls: {
+      async get({owner, repo, pull_number}) {
+        calls.push(`${owner}/${repo}/${pull_number}`)
+        const failure = failures[pull_number]?.shift()
+        if (failure)
+          throw Object.assign(new Error(failure.message), failure)
+        return {data: {number: pull_number, title: "Recovered", user: {login: "contributor"}, merged: false, merged_at: null}}
+      },
+    },
+  }
+  const results = {}
+  for (const number of Object.keys(failures)) {
+    const first = await utils.pulled({rest, repository: "octo-org/octo-repo", number})
+    const second = await utils.pulled({rest, repository: "octo-org/octo-repo", number})
+    results[number] = {first: first?.title ?? null, second: second?.title ?? null, calls: calls.filter(call => call === `octo-org/octo-repo/${number}`).length}
+  }
+  return results
 }

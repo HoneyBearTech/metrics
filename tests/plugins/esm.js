@@ -18,9 +18,17 @@ const result = await (await import(scenario))[name]()
 process.stdout.write(\`\\n\${JSON.stringify(result)}\`)
 `
 
+//Scenarios are stopped when they take too long or print too much
+const timeout = 60 * 1000
+const maxBuffer = 16 * 1024 * 1024
+
 module.exports = function esm(file, name) {
   const scenario = url.pathToFileURL(path.join(__dirname, "scenarios", file)).href
-  const {status, stdout, stderr} = processes.spawnSync(process.execPath, ["--input-type=module", "--eval", loader, scenario, name], {cwd: path.join(__dirname, "../.."), encoding: "utf8"})
+  const {status, stdout, stderr, error} = processes.spawnSync(process.execPath, ["--input-type=module", "--eval", loader, scenario, name], {cwd: path.join(__dirname, "../.."), encoding: "utf8", timeout, maxBuffer})
+  if (error?.code === "ETIMEDOUT")
+    throw new Error(`${file} > ${name} timed out after ${timeout / 1000}s:\n${stderr ?? ""}`)
+  if (error)
+    throw new Error(`${file} > ${name} could not be run (${error.message}):\n${stderr ?? ""}`)
   if (status !== 0)
     throw new Error(`${file} > ${name} failed:\n${stderr}`)
   return JSON.parse(stdout.trim().split("\n").pop())
