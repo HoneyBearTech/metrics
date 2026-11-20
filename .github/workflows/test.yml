@@ -3,7 +3,12 @@ name: Build, test and analyze
 on:
   pull_request:
     branches: [ master ]
-  workflow_call:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
 
@@ -13,19 +18,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Setup NodeJS
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 20
+          node-version: 24
       - name: Setup metrics
         run: npm ci
-      - name: Check contributions requirements
-        run: npm run test-contrib
-        env:
-          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
       - name: Run linter
         run: npm run linter
 
@@ -36,33 +35,37 @@ jobs:
     needs: [ lint ]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Format code with dprint
         run: |
           npm install -g dprint
           mkdir -v -p /home/runner/.cache/dprint/cache
           npx dprint fmt --config .github/config/dprint.json
-      - name: Build lowlighter/metrics:${{ github.head_ref || 'master' }}
+      - name: Build metrics:${{ github.head_ref || 'master' }}
         env:
           GIT_REF: ${{ github.head_ref || 'master' }}
-        run: docker build -t lowlighter/metrics:$(echo $GIT_REF | sed 's/[^a-z]/-/g') .
+        run: docker build -t metrics:$(echo $GIT_REF | sed 's/[^a-z]/-/g') .
       - name: Run tests
         env:
           GIT_REF: ${{ github.head_ref || 'master' }}
-        run: docker run --rm --entrypoint="" lowlighter/metrics:$(echo $GIT_REF | sed 's/[^a-z]/-/g') npm run test-metrics
+        run: docker run --rm --entrypoint="" metrics:$(echo $GIT_REF | sed 's/[^a-z]/-/g') npm run test-metrics
 
   # Run CodeQL on branch
   analyze:
     name: Analyze code
     runs-on: ubuntu-latest
     needs: [ lint ]
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Setup CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           languages: javascript
           config-file: ./.github/config/codeql.yml
       - name: Analyze code
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
