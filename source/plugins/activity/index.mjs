@@ -37,8 +37,15 @@ export default async function({login, data, rest, q, account, imports}, {enabled
     }
     console.debug(`metrics/compute/${login}/plugins > activity > ${events.length} events loaded`)
 
-    //Pull request details (null when it cannot be read or when its author is ignored)
+    //Pull request details (null when it cannot be read, when its author is ignored or when too many pull requests were looked up)
+    const lookups = {max: Math.max(limit * 3, 10), keys: new Set()}
     const pullrequest = async ({repo, number}) => {
+      const key = `${repo}#${number}`
+      if ((!lookups.keys.has(key)) && (lookups.keys.size >= lookups.max)) {
+        console.debug(`metrics/compute/${login}/plugins > activity > skipped pull request ${key} (lookup limit of ${lookups.max} reached)`)
+        return null
+      }
+      lookups.keys.add(key)
       const pr = await imports.pulled({rest, repository: repo, number})
       if ((!pr?.user?.login) || (!imports.filters.text(pr.user.login, ignored)))
         return null
@@ -128,8 +135,10 @@ export default async function({login, data, rest, q, account, imports}, {enabled
                   const pr = await pullrequest({repo, number})
                   if (!pr)
                     return null
-                  const {user: {login: user}, title, body: content, additions: added, deletions: deleted, changed_files: changed, merged} = pr
-                  return {type: "pr", actor, timestamp, repo, action: (action === "closed") && (merged) ? "merged" : action, user, title, number, content: await imports.markdown(content, {mode: markdown, codelines}), lines: {added, deleted}, files: {changed}}
+                  const {user: {login: user}, title, body: content, additions: added, deletions: deleted, changed_files: changed, merged_at} = pr
+                  //Pull request current merge state also applies to its earlier closings (closed, reopened then merged), so only the closing that matches the merge time is labelled as merged
+                  const merged = (action === "closed") && (Boolean(merged_at)) && (Math.abs(new Date(merged_at) - timestamp) <= 5 * 60 * 1000)
+                  return {type: "pr", actor, timestamp, repo, action: merged ? "merged" : action, user, title, number, content: await imports.markdown(content, {mode: markdown, codelines}), lines: {added, deleted}, files: {changed}}
                 },
               }
             }
