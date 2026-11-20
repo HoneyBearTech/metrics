@@ -263,21 +263,55 @@ export default async function({faker}, target, that, [{username: login, page, pe
           login,
         },
         repo: {
-          name: `${faker.lorem.word()}/${faker.lorem.word()}`,
+          name: `${login}/${faker.lorem.word()}`,
         },
+        //Push events payloads do not list commits anymore (fetched with rest.repos.compareCommitsWithBasehead)
         payload: {
-          size: 1,
+          repository_id: faker.number.int(100000000),
+          push_id: faker.number.int(100000000),
           ref: "refs/heads/master",
-          commits: [
-            {
-              sha: "MOCKED_SHA",
-              message: faker.lorem.sentence(),
-              url: "https://api.github.com/repos/lowlighter/metrics/commits/MOCKED_SHA",
-              author: {
-                email: faker.internet.email(),
-              },
-            },
-          ],
+          head: "MOCKED_SHA",
+          before: "MOCKED_SHA_BEFORE",
+        },
+        created_at: faker.date.recent({days: 7}),
+        public: true,
+      },
+      {
+        id: "10000000015",
+        type: "PushEvent",
+        actor: {
+          login,
+        },
+        repo: {
+          name: `${login}/${faker.lorem.word()}`,
+        },
+        //Push of a single commit (files are listed by rest.repos.compareCommitsWithBasehead)
+        payload: {
+          repository_id: faker.number.int(100000000),
+          push_id: faker.number.int(100000000),
+          ref: "refs/heads/master",
+          head: "MOCKED_SHA",
+          before: "MOCKED_SHA_SINGLE",
+        },
+        created_at: faker.date.recent({days: 7}),
+        public: true,
+      },
+      {
+        id: "10000000016",
+        type: "PushEvent",
+        actor: {
+          login,
+        },
+        repo: {
+          name: `${login}/${faker.lorem.word()}`,
+        },
+        //Push of a new branch (cannot be compared, head commit is fetched with rest.repos.getCommit)
+        payload: {
+          repository_id: faker.number.int(100000000),
+          push_id: faker.number.int(100000000),
+          ref: "refs/heads/feature",
+          head: "MOCKED_SHA",
+          before: "0000000000000000000000000000000000000000",
         },
         created_at: faker.date.recent({days: 7}),
         public: true,
