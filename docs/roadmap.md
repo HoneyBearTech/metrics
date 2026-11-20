@@ -4,6 +4,8 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 
 ## Done
 
+- The fork's workflows: current actions pinned to exact commits, upstream-only jobs removed, one CI workflow passing on master (PR #10)
+
 - Docker image builds again on Node 24 (PR #3)
 - Safe dependency updates within current major versions (PR #4, landed on master through PR #7)
 - Plugins repaired after GitHub API changes: activity, habits, recently used languages, code, achievements, projects (PR #5)
@@ -14,11 +16,11 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 
 ## In progress
 
-- The fork's workflows: current actions pinned to exact commits, upstream-only jobs removed, one CI workflow for the fork (PR #10)
+- Spelling check passing: flagged words added to its dictionary (PR #11)
 
 ## Next
 
-- **After merging #10:** the labeler and spelling checks show their fixed versions on the next pull request (they run the base branch's workflow). Merge Renovate's setup PR (#9) so action and dependency versions stay current; until then the repo has no update-tool config.
+- **Spelling dictionary upkeep:** new words added later make the spelling check fail until they're added to `.github/actions/spelling/expect.txt`. About 30 old entries are no longer used and could be removed.
 - **Leftover upstream scripts:** `.github/scripts/release.mjs`, `markdown_example.mjs`, `presets_examples.mjs` (behind `npm run presets`) and `preview.mjs` still refer to the upstream project and are no longer used by any workflow. Delete or rewrite them in a later cleanup.
 - **16personalities plugin:** it scrapes the live website, which has changed, so it likely no longer works for users; its test is skipped. Fix or retire it.
 - **Formatter drift:** one file (`source/plugins/languages/analyzer/analyzer.mjs`) isn't formatted; CI formats but doesn't check.

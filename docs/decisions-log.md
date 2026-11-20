@@ -89,3 +89,13 @@ The first real run on the owner's profile showed two problems the stand-in tests
 - **Expected red until merge:** the labeler and spelling checks on this PR run the base branch's old workflows.
 
 **Process notes:** the second security review and the plan check were skipped (their review service's quota was used up). Two staff sessions dropped mid-job; their work was kept and a replacement finished it.
+
+## 2026-11-20 - spelling-dict
+
+**Words added, not text changed.** Once the updated spelling check really scanned the repository, it flagged 41 words from the earlier fixes, notes and tests. All were real words, names or code terms, so they were added to the dictionary; no text was reworded. British spellings already used in the notes were kept.
+
+**How the checker matches entries.** One lower-case entry covers capitalised forms, except when only a capitalised form appears in the repository; then the entry must match that form. Plural forms the checker reports are listed instead of their singular forms. One old all-caps entry was replaced by its lower-case form, which covers all forms. These rules came from the pull request's own spelling runs, which took two short fix rounds to get right.
+
+**Not done:** removing about 30 older entries the checker reports as no longer used (they don't make it fail). Moved to the roadmap.
+
+**Process notes:** the research step and the plan check were skipped (a small job; the plan check's review service is at its monthly quota). The security review found nothing to fix.
