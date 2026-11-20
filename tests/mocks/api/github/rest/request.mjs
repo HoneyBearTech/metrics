@@ -35,7 +35,7 @@ export default async function({faker}, target, that, args) {
             email: faker.internet.email(),
             date: `${faker.date.recent({days: 7})}`,
           },
-          url: "https://api.github.com/repos/lowlighter/metrics/commits/MOCKED_SHA",
+          url: "https://api.github.com/repos/lowlighter/metrics/git/commits/MOCKED_SHA",
         },
         author: {
           login: faker.internet.userName(),
