@@ -49,13 +49,21 @@ export default async function({faker}, target, that, [{username: login, page, pe
             },
             body: faker.lorem.paragraph(),
           },
+          //Pull request details are not included anymore (fetched with rest.pulls.get)
           pull_request: {
-            title: faker.lorem.sentence(),
+            id: faker.number.int(100000000),
             number: 1,
-            user: {
-              login: faker.internet.userName(),
+            url: `https://api.github.com/repos/${login}/${faker.lorem.word()}/pulls/1`,
+            head: {
+              ref: faker.lorem.slug(),
+              sha: "MOCKED_SHA",
+              repo: {id: faker.number.int(100000000), name: faker.lorem.word(), url: `https://api.github.com/repos/${login}/${faker.lorem.word()}`},
             },
-            body: "",
+            base: {
+              ref: "main",
+              sha: "MOCKED_SHA",
+              repo: {id: faker.number.int(100000000), name: faker.lorem.word(), url: `https://api.github.com/repos/${login}/${faker.lorem.word()}`},
+            },
           },
         },
         created_at: faker.date.recent({days: 7}),
@@ -176,13 +184,20 @@ export default async function({faker}, target, that, [{username: login, page, pe
             },
             state: "approved",
           },
+          //Pull request details are not included anymore (fetched with rest.pulls.get)
           pull_request: {
-            state: "open",
+            id: faker.number.int(100000000),
             number: 4,
-            locked: false,
-            title: faker.lorem.sentence(),
-            user: {
-              login: faker.internet.userName(),
+            url: `https://api.github.com/repos/${login}/${faker.lorem.word()}/pulls/4`,
+            head: {
+              ref: faker.lorem.slug(),
+              sha: "MOCKED_SHA",
+              repo: {id: faker.number.int(100000000), name: faker.lorem.word(), url: `https://api.github.com/repos/${login}/${faker.lorem.word()}`},
+            },
+            base: {
+              ref: "main",
+              sha: "MOCKED_SHA",
+              repo: {id: faker.number.int(100000000), name: faker.lorem.word(), url: `https://api.github.com/repos/${login}/${faker.lorem.word()}`},
             },
           },
         },
@@ -328,15 +343,21 @@ export default async function({faker}, target, that, [{username: login, page, pe
         payload: {
           action: faker.helpers.arrayElement(["opened", "closed"]),
           number: 5,
+          //Pull request details are not included anymore (fetched with rest.pulls.get)
           pull_request: {
-            user: {
-              login,
+            id: faker.number.int(100000000),
+            number: 5,
+            url: `https://api.github.com/repos/${login}/${faker.lorem.word()}/pulls/5`,
+            head: {
+              ref: faker.lorem.slug(),
+              sha: "MOCKED_SHA",
+              repo: {id: faker.number.int(100000000), name: faker.lorem.word(), url: `https://api.github.com/repos/${login}/${faker.lorem.word()}`},
             },
-            state: "open",
-            title: faker.lorem.sentence(),
-            additions: faker.number.int(1000),
-            deletions: faker.number.int(1000),
-            changed_files: faker.number.int(10),
+            base: {
+              ref: "main",
+              sha: "MOCKED_SHA",
+              repo: {id: faker.number.int(100000000), name: faker.lorem.word(), url: `https://api.github.com/repos/${login}/${faker.lorem.word()}`},
+            },
           },
         },
         created_at: faker.date.recent({days: 7}),
