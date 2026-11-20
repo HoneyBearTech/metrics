@@ -111,7 +111,8 @@ export default async function({login, imports, data, q, account}, {enabled = fal
             await new Promise(solve => setTimeout(solve, 10 * 1000))
             tracks = [
               ...await frame.evaluate(() => {
-                const clean = text => (text || "").replace(/\s+(?:Explicit(?:\s+Content)?)\s*$/i, "").trim()
+                //Only strip the label when it is separated as a badge (new line or several spaces), so titles such as "Something Explicit" are kept
+                const clean = text => (text || "").replace(/(?:\s*[\r\n]\s*|\s{2,})Explicit(?:\s+Content)?\s*$/i, "").trim()
                 const tracklist = document.querySelector("embed-root").shadowRoot.querySelector(".audio-tracklist")
                 return [...tracklist.querySelectorAll("embed-audio-tracklist-item")].map(item => ({
                   name: clean(item.querySelector(".audio-tracklist-item__metadata h3")?.innerText ?? ""),
@@ -128,7 +129,8 @@ export default async function({login, imports, data, q, account}, {enabled = fal
             await frame.waitForSelector("ol")
             tracks = [
               ...await frame.evaluate(() => {
-                const clean = text => (text || "").replace(/\s+(?:Explicit(?:\s+Content)?)\s*$/i, "").trim()
+                //Only strip the label when it is separated as a badge (new line or several spaces), so titles such as "Something Explicit" are kept
+                const clean = text => (text || "").replace(/(?:\s*[\r\n]\s*|\s{2,})Explicit(?:\s+Content)?\s*$/i, "").trim()
                 return [...document.querySelectorAll("ol li")].map(tr => ({
                   name: clean(tr.querySelector("h3")?.innerText ?? ""),
                   artist: clean(tr.querySelector("h4")?.innerText ?? ""),
