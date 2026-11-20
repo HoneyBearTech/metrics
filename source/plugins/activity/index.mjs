@@ -38,7 +38,7 @@ export default async function({login, data, rest, q, account, imports}, {enabled
     console.debug(`metrics/compute/${login}/plugins > activity > ${events.length} events loaded`)
 
     //Extract activity events
-    const activity = (await Promise.all(
+    const candidates = (await Promise.all(
       events
         .filter(({actor}) => account === "organization" ? true : actor.login?.toLocaleLowerCase() === login.toLocaleLowerCase())
         .filter(({created_at}) => Number.isFinite(days) ? new Date(created_at) > new Date(Date.now() - days * 24 * 60 * 60 * 1000) : true)
@@ -134,15 +134,21 @@ export default async function({login, data, rest, q, account, imports}, {enabled
                 return null
               return {type: "comment", on: "pr", actor, timestamp, repo, content: await imports.markdown(content, {mode: markdown, codelines}), user, mobile, number, title}
             }
-            //Pushed commits
+            //Pushed commits (payload does not list them anymore, so they are only fetched for displayed events)
             case "PushEvent": {
-              let {size, commits, ref} = payload
-              commits = commits.filter(({author: {email}}) => imports.filters.text(email, ignored))
-              if (!commits.length)
-                return null
-              if (commits.slice(-1).pop()?.message.startsWith("Merge branch "))
-                commits = commits.slice(-1)
-              return {type: "push", actor, timestamp, repo, size, branch: ref.match(/refs.heads.(?<branch>.*)/)?.groups?.branch ?? null, commits: commits.reverse().map(({sha, message}) => ({sha: sha.substring(0, 7), message}))}
+              const {before, head, ref} = payload
+              return {
+                type: "push",
+                async pushed() {
+                  let {total: size, commits} = await imports.pushed({rest, repository: repo, before, head})
+                  commits = commits.filter(({sha, author, commit}) => (sha) && (imports.filters.text(commit?.author?.email, ignored)) && ((!author?.login) || (imports.filters.text(author.login, ignored))))
+                  if (!commits.length)
+                    return null
+                  if (commits.slice(-1).pop()?.commit?.message?.startsWith("Merge branch "))
+                    commits = commits.slice(-1)
+                  return {type: "push", actor, timestamp, repo, size, branch: ref?.match(/refs.heads.(?<branch>.*)/)?.groups?.branch ?? null, commits: commits.reverse().map(({sha, commit}) => ({sha: sha.substring(0, 7), message: commit?.message ?? ""}))}
+                },
+              }
             }
             //Released
             case "ReleaseEvent": {
@@ -167,7 +173,13 @@ export default async function({login, data, rest, q, account, imports}, {enabled
     ))
       .filter(event => event)
       .filter(event => filter.includes("all") || filter.includes(event.type))
-      .slice(0, limit)
+
+    //Fetch pushed commits only for events that may be displayed
+    const activity = []
+    while ((candidates.length) && (activity.length < limit)) {
+      const batch = candidates.splice(0, limit - activity.length)
+      activity.push(...(await Promise.all(batch.map(event => event.pushed?.() ?? event))).filter(event => event))
+    }
 
     //Results
     return {timestamps, events: activity}
