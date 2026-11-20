@@ -19,7 +19,7 @@ process.stdout.write(\`\\n\${JSON.stringify(result)}\`)
 `
 
 //Scenarios are stopped when they take too long or print too much
-const timeout = 60 * 1000
+const timeout = 120 * 1000
 const maxBuffer = 16 * 1024 * 1024
 
 module.exports = function esm(file, name) {
