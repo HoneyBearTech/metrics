@@ -285,28 +285,48 @@ export async function pulled({rest, repository = "", number = 0}) {
     cache.delete(key)
   }
   const key = `${repository}/pulls/${number}`
-  if (!cache.has(key))
-    cache.set(key, {expire: Date.now() + _pulled.ttl, result: pullrequest({rest, repository, number})})
+  if (!cache.has(key)) {
+    //Failures that may be transient (server errors, rate limits, network errors) are not kept so a later call can retry
+    const entry = {expire: Date.now() + _pulled.ttl}
+    entry.result = pullrequest({rest, repository, number}).then(({data, transient}) => {
+      if ((transient) && (cache.get(key) === entry))
+        cache.delete(key)
+      return data
+    })
+    cache.set(key, entry)
+  }
   return cache.get(key).result
 }
 
-/**Fetch a pull request (never throws, returns null when it cannot be read) */
+/**Fetch a pull request (never throws, data is null when it cannot be read and transient is set when the failure may not be permanent) */
 async function pullrequest({rest, repository, number}) {
   const [owner, repo] = repository.split("/")
   const pull_number = Number(number)
   //Malformed event
   if ((!owner) || (!repo) || (!Number.isInteger(pull_number)) || (pull_number < 1))
-    return null
+    return {data: null, transient: false}
   try {
     const {data} = await rest.pulls.get({owner, repo, pull_number})
     if (!data)
-      return null
-    return {...data, merged: Boolean(data.merged || data.merged_at)}
+      return {data: null, transient: false}
+    return {data: {...data, merged: Boolean(data.merged || data.merged_at)}, transient: false}
   }
   catch (error) {
     console.debug(`metrics/pulled > ${repository} > could not fetch pull request ${pull_number} (${error})`)
+    return {data: null, transient: !unreadable(error)}
   }
-  return null
+}
+
+/**Check whether an api error means the resource cannot be read (not found, gone, forbidden without rate limit, unprocessable) rather than a transient failure */
+function unreadable(error) {
+  const status = Number(error?.status ?? error?.response?.status)
+  const headers = error?.response?.headers ?? {}
+  const ratelimited = (`${headers["x-ratelimit-remaining"]}` === "0") || (headers["retry-after"] !== undefined) || (/rate limit/i.test(`${error?.message ?? ""} ${error?.response?.data?.message ?? ""}`))
+  if ([404, 410, 422].includes(status))
+    return true
+  if (status === 403)
+    return !ratelimited
+  return false
 }
 
 /**Run command (use this to execute commands and process whole output at once, may not be suitable for large outputs) */
