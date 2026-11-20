@@ -699,11 +699,32 @@ export default function({faker, url, options, login = faker.internet.userName()}
                 "playtime_windows_forever": 2661,
                 "playtime_mac_forever": 0,
                 "playtime_linux_forever": 0,
-                "rtime_last_played": 1625611102,
+                "rtime_last_played": Math.floor(Date.now() / 1000) - 2 * 86400,
                 "content_descriptorids": [
                   2,
                   5,
                 ],
+              },
+            ],
+          },
+        },
+      })
+    }
+    //Recently played games
+    if (/^.*IPlayerService.GetRecentlyPlayedGames.v0001.*$/.test(url)) {
+      console.debug(`metrics/compute/mocks > mocking steam api result > ${url}`)
+      return ({
+        status: 200,
+        data: {
+          "response": {
+            "total_count": 1,
+            "games": [
+              {
+                "appid": 1113560,
+                "name": "NieR Replicant ver.1.22474487139...",
+                "playtime_2weeks": 120,
+                "playtime_forever": 2661,
+                "img_icon_url": "8ca16d03995179d1ba3a2263e03db170100c6382",
               },
             ],
           },

@@ -91,3 +91,20 @@ inputs:
     min: 0
     default: 2
 
+  plugin_steam_recent_days:
+    description: |
+      Time range for recently played games (in days)
+
+      Games last played before this range will not be displayed in the `recently-played` section.
+      Steam's own recently played list is limited to the last 2 weeks, so a larger range uses the last played date of owned games instead.
+      Use `0` to disable the time limit.
+    type: number
+    min: 0
+    default: 14
+
+  plugin_steam_freegames:
+    description: |
+      Include played free-to-play games in owned games
+    type: boolean
+    default: yes
+
