@@ -107,3 +107,15 @@ Renovate's setup file reached master after PR #11's branch was made, so its sche
 ## 2026-11-20 - spelling-openssf
 
 PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flagged the word, but spelling isn't a required check, so it was merged and master's check failed. Added to the dictionary; `renovate.json` is unchanged. Making spelling a required check would prevent a repeat; that's a repo setting left to Sean. The security review and the audit found nothing to fix.
+
+## 2026-11-20 - renovate-review
+
+**Close the faker and Vue majors rather than fix them.** Both would take real migration work (faker: a test-suite loader change and four renamed functions; Vue: rewriting four web pages and a helper), and neither security bug can be reached: faker's needs a function metrics never calls and is test-only; Vue's needs untrusted templates. Rejected: merging as-is (faker fails its tests; Vue passes only because the tests never open the web pages) and fixing them now (cost far above the benefit).
+
+**sanitize-html: take 2.18.2, not the 2.18.0 Renovate offered.** 2.18.0 introduced a crash on deeply nested tags in its default settings, confirmed by running it; 2.18.2 fixes it.
+
+**Merge one at a time.** Fourteen of the PRs change the same lockfile; merging them together risks a lockfile that was never installed or tested.
+
+**Reviewer disagreements settled by checking directly.** simple-git 4 removes the default export (read from the published package), so #25 needs its imports changed, against the security review's "little compatibility risk". The faker advisory covers the installed 8.0.2 (GitHub's advisory database says versions up to 10.4.0), against one researcher's reading; the close decision stands because the vulnerable function is never called. On faker, the audit's "fix and merge" was rejected for the cost reason above.
+
+**Process notes:** a review job, so no plan approval; the second security review and the plain-English check were skipped (their review service is at its monthly quota).
