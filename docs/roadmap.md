@@ -14,9 +14,11 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 
 - Recent activity on trimmed pull-request events, and recently used languages for usernames with capitals (PR #8), confirmed by a real run.
 
+- Spelling check passing: flagged words added to its dictionary (PR #11, `renovatebot` from Renovate's setup in PR #27, and `openssf` from its label config in PR #30)
+
 ## In progress
 
-- Spelling check passing: flagged words added to its dictionary (PR #11, `renovatebot` from Renovate's setup in PR #27, and `openssf` from its label config in PR #30)
+- **Renovate's first 15 update PRs** (review: `docs/reports/2026-11-20-renovate-review.md`): 11 to merge one at a time (7 now, 4 once their build and test pass), 2 needing a fix first, 2 to close.
 
 ## Next
 
@@ -25,9 +27,12 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 - **16personalities plugin:** it scrapes the live website, which has changed, so it likely no longer works for users; its test is skipped. Fix or retire it.
 - **Formatter drift:** one file (`source/plugins/languages/analyzer/analyzer.mjs`) isn't formatted; CI formats but doesn't check.
 - **After merging #6:** check that a real Apple Music or Spotify playlist no longer shows the "Explicit" label in titles. The label is only removed when it's clearly separate from the title (see the decisions log).
-- **`simple-git` security warning:** a critical command-injection warning remains on 3.x. Clearing it needs the 4.x major upgrade and a check of the languages "indepth" analyzer that uses it.
+- **Fixes for two Renovate PRs:** sanitize-html to 2.18.2 instead of 2.18.0 (#20), and the six `simple-git` imports version 4 needs (#25), then a check that analysing private repositories still works.
+- **Renovate settings:** skip the faker and Vue major versions (#22 and #26 are being closed), and add a waiting period for new releases (for example 3 days, as the profile repo uses).
+- **Vulnerabilities no Renovate PR covers:** about 40 of the lockfile audit's 52 findings, mostly inside puppeteer (needs 25), tar, crypto-js and express. Each needs its own look.
+- **Vue 3 for the web pages** (optional): a real migration of the four pages and the Prism helper, if the web server matters.
 - **Unpinned Docker inputs:** the base image and the Deno install script aren't pinned (both are inherited from upstream). Pin the base image by digest and Deno to a release.
-- **Upgrades skipped on purpose for now:** puppeteer 25 (needs a full Chrome path), file-type 21, jsdom 28, eslint 9.
+- **Upgrades skipped on purpose for now:** puppeteer 25 (needs a full Chrome path), jsdom 28, eslint 9. (file-type 21 is now in Renovate's #23.)
 - **Repository mode in `activity`:** collaborators' pushes are still hidden (an older upstream gap, not caused by the API change).
 - **Stale generated file under `.github/`:** the compatibility table. The examples workflow is gone (PR #10).
 - **Shared username filter:** `filters.text` lowercases the text but not the patterns, so callers that pass a mixed-case pattern never match. Fixed where it broke (recently used languages); a general fix would touch many plugins.

@@ -13,3 +13,4 @@
 | 2026-11-20 | spelling-dict | 35 dictionary entries added and 3 replaced so the spelling check passes; master's main CI passed in full for the first time | #11 |
 | 2026-11-20 | spelling-renovate | `renovatebot` (from Renovate's setup file) added to the spelling dictionary | #27 |
 | 2026-11-20 | spelling-openssf | `openssf` (a Renovate label) added to the spelling dictionary | #30 |
+| 2026-11-20 | renovate-review | Review of Renovate's first 15 update PRs: 11 safe to merge, 2 need a fix (sanitize-html 2.18.2, simple-git imports), 2 to close (faker, Vue); report in `docs/reports/2026-11-20-renovate-review.md` | report PR |
