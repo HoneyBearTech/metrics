@@ -215,6 +215,60 @@ export async function language({filename, patch}) {
   return result
 }
 
+/**Pushed commits cache (per rest client so results are never shared between tokens, short lived and bounded as web instances keep their clients) */
+const _pushed = {clients: new WeakMap(), ttl: 10 * 60 * 1000, max: 200}
+
+/**Commits of a push event (push events payloads do not list them anymore, so they are fetched from compare api) */
+export async function pushed({rest, repository = "", before = "", head = "", limit = 20}) {
+  if (!rest)
+    return {total: 0, commits: []}
+  if (!_pushed.clients.has(rest))
+    _pushed.clients.set(rest, new Map())
+  const cache = _pushed.clients.get(rest)
+  for (const [key, {expire}] of cache) {
+    if ((expire > Date.now()) && (cache.size < _pushed.max))
+      break
+    cache.delete(key)
+  }
+  const key = `${repository}@${before}...${head}`
+  if (!cache.has(key))
+    cache.set(key, {expire: Date.now() + _pushed.ttl, result: pushcommits({rest, repository, before, head})})
+  //Commits are listed from oldest to newest, only the most recent ones are kept
+  const {total, commits} = await cache.get(key).result
+  return {total, commits: commits.slice(-limit)}
+}
+
+/**Fetch commits of a push event (never throws) */
+async function pushcommits({rest, repository, before, head}) {
+  const missing = sha => (!sha) || (/^0+$/.test(sha))
+  const [owner, repo] = repository.split("/")
+  //Deleted ref or malformed event
+  if ((!owner) || (!repo) || (missing(head)))
+    return {total: 0, commits: []}
+  //Compare previous and new head of pushed ref
+  if (!missing(before)) {
+    try {
+      const {data: {total_commits: total, commits, files}} = await rest.repos.compareCommitsWithBasehead({owner, repo, basehead: `${before}...${head}`})
+      //A single commit comparison lists the same files as this commit, which saves a request
+      if ((total === 1) && (commits.length === 1) && (Array.isArray(files)))
+        commits[0] = {...commits[0], files}
+      return {total: total ?? commits.length, commits}
+    }
+    catch (error) {
+      console.debug(`metrics/pushed > ${repository} > could not compare ${before}...${head} (${error})`)
+    }
+  }
+  //New ref or failed comparison (e.g. force push or deleted repository), fallback on head commit
+  try {
+    const {data: commit} = await rest.repos.getCommit({owner, repo, ref: head})
+    return {total: 1, commits: [commit]}
+  }
+  catch (error) {
+    console.debug(`metrics/pushed > ${repository} > could not fetch commit ${head} (${error})`)
+  }
+  return {total: 0, commits: []}
+}
+
 /**Run command (use this to execute commands and process whole output at once, may not be suitable for large outputs) */
 export async function run(command, options, {prefixed = true, log = true, debug = true} = {}) {
   const prefix = {win32: "wsl"}[process.platform] ?? ""
