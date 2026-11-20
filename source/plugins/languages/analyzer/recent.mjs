@@ -1,6 +1,6 @@
 //Imports
 import linguist from "linguist-js"
-import { filters, pushed } from "../../../app/metrics/utils.mjs"
+import { pushed } from "../../../app/metrics/utils.mjs"
 import { Analyzer } from "./analyzer.mjs"
 
 /**Recent analyzer */
@@ -48,7 +48,7 @@ export class RecentAnalyzer extends Analyzer {
         commits.push(
           ...(await (this.context.mode === "repository" ? this.rest.activity.listRepoEvents(this.context) : this.rest.activity.listEventsForAuthenticatedUser({username: this.login, per_page: 100, page}))).data
             .filter(({type, payload}) => (type === "PushEvent") && ((this.context.mode !== "repository") || ((this.context.mode === "repository") && (payload?.ref?.includes?.(`refs/heads/${this.context.branch}`)))))
-            .filter(({actor}) => (this.account === "organization") || (this.context.mode === "repository") ? true : !filters.text(actor.login, [this.login], {debug: false}))
+            .filter(({actor}) => (this.account === "organization") || (this.context.mode === "repository") ? true : actor?.login?.toLocaleLowerCase() === this.login.toLocaleLowerCase())
             .filter(({repo: {name: repo}}) => !this.ignore(repo))
             .filter(({created_at}) => ((!this.days) || (new Date(created_at) > new Date(Date.now() - this.days * 24 * 60 * 60 * 1000)))),
         )
@@ -59,7 +59,6 @@ export class RecentAnalyzer extends Analyzer {
     }
     this.debug(`fetched ${commits.length} commits`)
     this.results.latest = Math.round((new Date().getTime() - new Date(commits.slice(-1).shift()?.created_at).getTime()) / (1000 * 60 * 60 * 24))
-    this.results.commits = commits.length
 
     //Retrieve edited files and filter edited lines (those starting with +/-) from patches (push events payloads do not list commits anymore)
     this.debug("fetching patches")
