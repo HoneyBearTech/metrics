@@ -348,7 +348,6 @@ trixie
 trollface
 TSLA
 ttl
-twemoji
 twemojis
 uapi
 uconf
@@ -360,7 +359,6 @@ underlinenav
 Unescape
 unprocessable
 upcase
-upvote
 upvotes
 urgenthighalert
 urgentlowalert
