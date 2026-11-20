@@ -38,18 +38,42 @@ export default async function({login, data, rest, q, account, imports}, {enabled
     console.debug(`metrics/compute/${login}/plugins > activity > ${events.length} events loaded`)
 
     //Pull request details (null when it cannot be read, when its author is ignored or when too many pull requests were looked up)
-    const lookups = {max: Math.max(limit * 3, 10), keys: new Set()}
+    //Each pull request is requested at most once per run (even when a failure was not cached by pulled()), and lookups are capped on distinct pull requests
+    const lookups = {max: Math.max(limit * 3, 10), requests: new Map()}
     const pullrequest = async ({repo, number}) => {
       const key = `${repo}#${number}`
-      if ((!lookups.keys.has(key)) && (lookups.keys.size >= lookups.max)) {
-        console.debug(`metrics/compute/${login}/plugins > activity > skipped pull request ${key} (lookup limit of ${lookups.max} reached)`)
-        return null
+      if (!lookups.requests.has(key)) {
+        if (lookups.requests.size >= lookups.max) {
+          console.debug(`metrics/compute/${login}/plugins > activity > skipped pull request ${key} (lookup limit of ${lookups.max} reached)`)
+          return null
+        }
+        lookups.requests.set(key, imports.pulled({rest, repository: repo, number}))
       }
-      lookups.keys.add(key)
-      const pr = await imports.pulled({rest, repository: repo, number})
+      const pr = await lookups.requests.get(key)
       if ((!pr?.user?.login) || (!imports.filters.text(pr.user.login, ignored)))
         return null
       return pr
+    }
+
+    //Closings of each pull request among loaded events (a pull request can be closed, reopened then merged, so only its closing nearest to the merge time is labelled as merged)
+    const closings = new Map()
+    for (const event of events) {
+      const {type, payload, repo, created_at} = event
+      if ((type !== "PullRequestEvent") || (payload?.action !== "closed"))
+        continue
+      const key = `${repo?.name}#${payload.pull_request?.number ?? payload.number}`
+      if (!closings.has(key))
+        closings.set(key, [])
+      closings.get(key).push({event, time: new Date(created_at).getTime()})
+    }
+    const merging = ({repo, number, event, merged_at}) => {
+      const merged = new Date(merged_at).getTime()
+      if (!Number.isFinite(merged))
+        return false
+      const [nearest] = (closings.get(`${repo}#${number}`) ?? [])
+        .filter(({time}) => Math.abs(time - merged) <= 5 * 60 * 1000)
+        .sort((a, b) => (Math.abs(a.time - merged) - Math.abs(b.time - merged)) || (b.time - a.time))
+      return nearest?.event === event
     }
 
     //Extract activity events
@@ -58,7 +82,8 @@ export default async function({login, data, rest, q, account, imports}, {enabled
         .filter(({actor}) => account === "organization" ? true : actor.login?.toLocaleLowerCase() === login.toLocaleLowerCase())
         .filter(({created_at}) => Number.isFinite(days) ? new Date(created_at) > new Date(Date.now() - days * 24 * 60 * 60 * 1000) : true)
         .filter(event => visibility === "public" ? event.public : true)
-        .map(async ({type, payload, actor: {login: actor}, repo: {name: repo}, created_at}) => {
+        .map(async event => {
+          const {type, payload, actor: {login: actor}, repo: {name: repo}, created_at} = event
           //See https://docs.github.com/en/free-pro-team@latest/developers/webhooks-and-events/github-event-types
           const timestamp = new Date(created_at)
           if (!imports.filters.repo(repo, skipped))
@@ -136,8 +161,8 @@ export default async function({login, data, rest, q, account, imports}, {enabled
                   if (!pr)
                     return null
                   const {user: {login: user}, title, body: content, additions: added, deletions: deleted, changed_files: changed, merged_at} = pr
-                  //Pull request current merge state also applies to its earlier closings (closed, reopened then merged), so only the closing that matches the merge time is labelled as merged
-                  const merged = (action === "closed") && (Boolean(merged_at)) && (Math.abs(new Date(merged_at) - timestamp) <= 5 * 60 * 1000)
+                  //Pull request current merge state also applies to its earlier closings (closed, reopened then merged), so only the closing nearest to the merge time is labelled as merged
+                  const merged = (action === "closed") && (Boolean(merged_at)) && (merging({repo, number, event, merged_at}))
                   return {type: "pr", actor, timestamp, repo, action: merged ? "merged" : action, user, title, number, content: await imports.markdown(content, {mode: markdown, codelines}), lines: {added, deleted}, files: {changed}}
                 },
               }
