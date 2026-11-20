@@ -6,6 +6,17 @@
     base: ""
     plugin_notable: yes
 
+- name: Contributions (excluding organizations)
+  uses: lowlighter/metrics@latest
+  with:
+    filename: metrics.plugin.notable.svg
+    token: ${{ secrets.METRICS_TOKEN }}
+    base: ""
+    plugin_notable: yes
+    plugin_notable_organizations_skipped: |
+      my-org
+      other-org
+
 - name: Indepth analysis
   uses: lowlighter/metrics@latest
   with:
