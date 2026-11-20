@@ -44,11 +44,11 @@ jobs:
       - name: Build metrics:${{ github.head_ref || 'master' }}
         env:
           GIT_REF: ${{ github.head_ref || 'master' }}
-        run: docker build -t metrics:$(echo $GIT_REF | sed 's/[^a-z]/-/g') .
+        run: docker build -t "metrics:${GIT_REF//[^a-z]/-}" .
       - name: Run tests
         env:
           GIT_REF: ${{ github.head_ref || 'master' }}
-        run: docker run --rm --entrypoint="" metrics:$(echo $GIT_REF | sed 's/[^a-z]/-/g') npm run test-metrics
+        run: docker run --rm --entrypoint="" "metrics:${GIT_REF//[^a-z]/-}" npm run test-metrics
 
   # Run CodeQL on branch
   analyze:
