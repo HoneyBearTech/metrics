@@ -99,3 +99,7 @@ The first real run on the owner's profile showed two problems the stand-in tests
 **Not done:** removing about 30 older entries the checker reports as no longer used (they don't make it fail). Moved to the roadmap.
 
 **Process notes:** the research step and the plan check were skipped (a small job; the plan check's review service is at its monthly quota). The security review found nothing to fix.
+
+## 2026-11-20 - spelling-renovate
+
+Renovate's setup file reached master after PR #11's branch was made, so its schema link added one new word (`renovatebot`) that PR #11's check never saw. Added to the dictionary; the file itself is unchanged. The security review and the audit found nothing to fix.
