@@ -170,7 +170,6 @@ jpy
 jshemas
 kacst
 keyring
-keyrings
 keyup
 Kotlin
 largeable
@@ -179,7 +178,7 @@ lastname
 leaderboard
 lecoq
 legoandmars
-letterboxd
+Letterboxd
 libgconf
 libssl
 libx
@@ -300,7 +299,7 @@ seo
 Serializer
 sgit
 sgv
-shikimori
+Shikimori
 shipit
 shm
 SIGKILL
@@ -350,6 +349,7 @@ trollface
 TSLA
 ttl
 twemoji
+twemojis
 uapi
 uconf
 uid
@@ -361,6 +361,7 @@ Unescape
 unprocessable
 upcase
 upvote
+upvotes
 urgenthighalert
 urgentlowalert
 uri
