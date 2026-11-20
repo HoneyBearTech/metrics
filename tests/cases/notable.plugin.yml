@@ -5,6 +5,16 @@
     plugin_notable: 'yes'
     use_mocked_data: 'yes'
     verify: 'yes'
+- name: 🎩 Notable contributions - Contributions (excluding organizations)
+  uses: lowlighter/metrics@latest
+  with:
+    token: MOCKED_TOKEN
+    plugin_notable: 'yes'
+    plugin_notable_organizations_skipped: |
+      my-org
+      other-org
+    use_mocked_data: 'yes'
+    verify: 'yes'
 - name: 🎩 Notable contributions - Indepth analysis
   uses: lowlighter/metrics@latest
   with:
