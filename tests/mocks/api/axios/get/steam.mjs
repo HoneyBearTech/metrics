@@ -717,7 +717,7 @@ export default function({faker, url, options, login = faker.internet.userName()}
         status: 200,
         data: {
           "response": {
-            "total_count": 1,
+            "total_count": 2,
             "games": [
               {
                 "appid": 1113560,
@@ -725,6 +725,14 @@ export default function({faker, url, options, login = faker.internet.userName()}
                 "playtime_2weeks": 120,
                 "playtime_forever": 2661,
                 "img_icon_url": "8ca16d03995179d1ba3a2263e03db170100c6382",
+              },
+              //Free-to-play game which is not part of owned games (no last played date available)
+              {
+                "appid": 570,
+                "name": "Dota 2",
+                "playtime_2weeks": 30,
+                "playtime_forever": 30,
+                "img_icon_url": "0bbb630d63262dd66d2fdde8f638a29b4e0b4b3c",
               },
             ],
           },

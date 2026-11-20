@@ -53,13 +53,13 @@ export default async function({login, q, imports, data, account}, {token, enable
         continue
       result.games[section] = await Promise.all(
         (section === "recently-played" ? recentlyPlayed : games)
-          .map(({appid: id, name, img_icon_url: icon, playtime_forever: playtime = 0, playtime_2weeks: playtime2w = 0, rtime_last_played: played = 0, recent: listed = false}) => ({id, name, icon: `http://media.steampowered.com/steamcommunity/public/images/apps/${id}/${icon}.jpg`, playtime: playtime / 60, played, playtime2w, listed}))
+          .map(({appid: id, name, img_icon_url: icon, playtime_forever: playtime = 0, playtime_2weeks: playtime2w = 0, rtime_last_played: played = null, recent: listed = false}) => ({id, name, icon: `http://media.steampowered.com/steamcommunity/public/images/apps/${id}/${icon}.jpg`, playtime: playtime / 60, played: played || null, playtime2w, listed}))
           //Recently played games are not subject to playtime threshold (newly started games would be hidden otherwise)
           .filter(({playtime}) => (section === "recently-played" ? true : playtime >= _playtime_threshold))
-          //Last played date may be unknown for games listed by the recently played endpoint, in which case they are within steam's two weeks range
+          //Last played date is unknown (null) for games only listed by the recently played endpoint, in which case they are within steam's two weeks range
           .filter(({played, listed}) => (section === "recently-played" ? (played ? played >= cutoff : (listed && ((!cutoff) || (_recent_days >= 14)))) : true))
           .filter(({id}) => (!_games_ignored.includes(`${id}`)))
-          .sort((a, b) => ({"most-played": (b.playtime - a.playtime), "recently-played": (b.played - a.played) || (b.playtime2w - a.playtime2w)}[section]))
+          .sort((a, b) => ({"most-played": (b.playtime - a.playtime), "recently-played": (b.listed - a.listed) || ((b.played ?? 0) - (a.played ?? 0)) || (b.playtime2w - a.playtime2w)}[section]))
           .slice(0, ({"most-played": _games_limit, "recently-played": _recent_games_limit}[section]) || Infinity)
           .map(async ({playtime2w: _playtime2w, listed: _listed, ...game}) => {
             const schema = {}
