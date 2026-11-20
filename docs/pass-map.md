@@ -10,3 +10,4 @@
 | 2026-11-20 | upstream-fixes | #4 merged into its base branch by mistake; same commit re-landed on master | #7 |
 | 2026-11-20 | real-run-fixes | Recent activity: pull-request details fetched only for shown events (cached, capped, one lookup per PR per run). Recently used languages: case-insensitive username match, correct commit count | #8 |
 | 2026-11-20 | fork-workflows | Upstream-only workflows removed; one CI workflow (lint, Docker build and stand-in tests, code scanning) passing on the fork for the first time; labeler and spelling fixed; every action pinned to an exact commit | #10 |
+| 2026-11-20 | spelling-dict | 35 dictionary entries added and 3 replaced so the spelling check passes; master's main CI passed in full for the first time | #11 |
