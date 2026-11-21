@@ -34,6 +34,7 @@ This section explain how *metrics* is structured.
   * `template.mjs` contains template source code
 * `tests/` contains tests
   * `metrics/` contains metrics testers (`shared.js` is the helper, each `part-N.test.js` runs a share of the cases, `community.test.js` runs the community template cases alone)
+  * `plugins/` contains focused plugin tests (`activity`, `languages`, `lines`), run in the same `test-metrics` run as the `part-N` files
   * `source/app/mocks/` contains mocked data files
   * `api/` contains mocked api data
     * `axios/` contains external REST APIs mocked data
