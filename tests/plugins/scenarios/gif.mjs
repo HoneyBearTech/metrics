@@ -8,8 +8,10 @@ async function frames(width, height) {
 }
 
 //Create a gif from a stand-in page that returns the given frames, and describe the result
-async function create({size, options = {}, fail = false}) {
+async function create({size, options = {}, fail = false, same = false}) {
   const images = await frames(...size)
+  if (same)
+    images.fill(images[0])
   let i = 0
   const page = {screenshot: async () => {
     if (fail)
@@ -28,4 +30,5 @@ export const normal = () => create({size: [40, 30]})
 export const once = () => create({size: [40, 30], options: {repeat: false}})
 export const slow = () => create({size: [40, 30], options: {delay: 300, quality: 30}})
 export const scaled = () => create({size: [80, 60]})
+export const identical = () => create({size: [40, 30], same: true})
 export const failing = async () => ({result: (await create({size: [40, 30], fail: true})).result})

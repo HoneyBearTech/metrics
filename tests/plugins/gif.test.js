@@ -35,6 +35,13 @@ describe("Animated gif", () => {
     expect(pageHeight).toBe(60)
   })
 
+  test("keeps identical frames instead of merging them", () => {
+    const {result, pages, delay} = esm("gif.mjs", "identical")
+    expect(result).toBe(prefix)
+    expect(pages).toBe(3)
+    expect(delay).toEqual([150, 150, 150])
+  })
+
   test("returns the placeholder image when a screenshot fails", () => {
     const {result} = esm("gif.mjs", "failing")
     expect(result.startsWith("data:image/png;base64,")).toBe(true)

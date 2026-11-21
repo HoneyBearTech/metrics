@@ -924,9 +924,9 @@ export async function gif({page, width, height, frames, x = 0, y = 0, repeat = t
         console.debug(`metrics/puppeteergif > processed ${i}/${frames} frames`)
     }
     console.debug(`metrics/puppeteergif > processed ${frames}/${frames} frames`)
-    //Join frames into an animated gif (delay is given for each frame because a single value only applies to the first one; quality is 1 for best to 30 for fastest, effort is 1 for fastest to 10 for best)
+    //Join frames into an animated gif (delay is given for each frame because a single value only applies to the first one; quality is 1 for best to 30 for fastest, effort is 1 for fastest to 10 for best; identical frames are kept, otherwise they are merged and their delays added up)
     const effort = Math.max(1, Math.min(10, Math.round(10 - (quality - 1) * 9 / 29)))
-    const result = await sharp(Buffer.concat(images), {raw: {width: size.width, height: size.height * frames, channels: 4, pageHeight: size.height}}).gif({loop: repeat ? 0 : 1, delay: Array(frames).fill(delay), effort}).toBuffer()
+    const result = await sharp(Buffer.concat(images), {raw: {width: size.width, height: size.height * frames, channels: 4, pageHeight: size.height}}).gif({loop: repeat ? 0 : 1, delay: Array(frames).fill(delay), effort, keepDuplicateFrames: true}).toBuffer()
     return `data:image/gif;base64,${result.toString("base64")}`
   }
   catch (error) {
