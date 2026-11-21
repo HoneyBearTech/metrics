@@ -133,6 +133,7 @@ gnuplot
 Gollum
 google
 googlechrome
+GOVERNANCE
 gpg
 grep
 guttermarker
@@ -308,6 +309,7 @@ SAPISIDHASH
 scorecalc
 screenshots
 SDKs
+SECURITY
 Segoe
 selfhosted
 seo
