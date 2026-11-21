@@ -264,6 +264,7 @@ openssf
 optimizable
 organisations
 orked
+ossf
 pageerror
 pagespeed
 pagespeedonline
@@ -314,7 +315,10 @@ ruleset
 runsh
 SAPISID
 SAPISIDHASH
+sarif
+SARIF
 scorecalc
+scorecard
 screenshots
 SDKs
 Segoe
@@ -344,6 +348,7 @@ stderr
 stdin
 stdio
 stdout
+Steerhouse
 steveukx
 streamable
 stripemojis

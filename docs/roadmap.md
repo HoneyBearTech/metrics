@@ -4,6 +4,7 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 
 ## Done
 
+- OpenSSF Scorecard workflow (`.github/workflows/scorecard.yml`): runs weekly, on pushes to `master`, when branch rules change and on demand; read-only token by default, every action pinned to a commit; results go to the code scanning page and to the public Scorecard badge in the README (PR #73)
 - Quieter CI log: the PageSpeed plugin reads the website address with Node's `URL` class instead of the outdated `url.parse()` (no more deprecation warnings during the tests; an unreadable address now shows "Website URL is not valid"), with 3 focused tests; the Docker build tells the package installer nobody is there to answer, so its "unable to initialize" lines are gone (PR #70)
 
 - Project documents and OpenSSF groundwork: a security policy with private reporting, contributing guide, code of conduct contact, governance, support and changelog files, project documentation pages in `docs/`, bug and feature forms, and the README badges for Best Practices project 16966 (PR #49)
@@ -63,10 +64,11 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 Toward OpenSSF Baseline Levels 1 and 2 and the Best Practices Passing and Silver badges (project 16966). One GitHub issue (label `openssf`) tracks each open item.
 
 - **Settings only Sean can change:** turn on the `main-protection` ruleset for `master` (pull requests and the CI checks required, no force-push or deletion); Actions workflow permissions read-only; secret scanning with push protection; Dependabot alerts on and Dependabot security updates off; the repository description (still upstream's); two-factor sign-in. Private vulnerability reporting is already on.
+- **New CI checks** in their own job: dependency review, secret scanning, a sign-off check. Sean applies the workflow files; check that Renovate pull requests still pass all checks before merging more.
 - **Code scanning and Dependabot findings:** worked through in the order of `docs/reports/2026-11-21-security-findings-plan.md` (ten jobs: the web server's sign-in redirect first, then the lock file refresh and overrides, small code fixes, deleting upstream scripts, Sean's dismissals, Docker pinning, settings, a workflow tidy-up and the reviewed major upgrades).
-- **The Best Practices form** for project 16966: answers drafted for Baseline 1 and 2, Passing and Silver (summary in the same report); Sean reviews and saves them on the site, and answers the few only he can (two-factor sign-in, secret scanning, workflow token, his own security knowledge).
-- **New CI checks** in their own job: Scorecard, dependency review, secret scanning, a sign-off check. Sean applies the workflow files; check that Renovate pull requests still pass all checks before merging more.
+- **The Best Practices form** for project 16966: answers drafted for Baseline 1 and 2, Passing and Silver (summary in the same report); Baseline 1 and 2 and Silver are saved on the site (2026-11-21); Passing still needs saving; Sean answers the few only he can (two-factor sign-in, secret scanning, workflow token, his own security knowledge).
 - **`renovate.json` from the house standard:** pinning action updates to commits and grouping the code scanning action. Pinning makes Renovate edit workflow files, which the merge rule leaves for Sean.
+- **After the first Scorecard run:** run it once by hand from the Actions tab, then sort its code scanning alerts in with the others. Its Branch-Protection check can't see every setting without an admin token; none is planned. Renovate will propose `ossf/scorecard-action` v2.6.0 (too new for the 3-day rule when the workflow was added).
 - **Action cleanup:** remove the `.env` file also when a run fails, and rebuild the fork's image when the commit changes (it is tagged by package version, so a persistent runner can reuse an old image).
 - **Web server:** the debug log prints its settings, tokens included; mask them. The cache-reset password is made with `Math.random()`, which is not safe for secrets (job 1 of the findings plan). The insights routes don't check `restricted` or `maxusers`.
 - **Sanitising review:** check every rendering path for outside text (planned in `docs/assurance-case.md`).

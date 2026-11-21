@@ -244,6 +244,16 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 
 **Process notes:** a small job: no research step (the CEO read the code), the Engineer, QA, the Security Officer and the Auditor. The plan check, the second security review (the Dockerfile counts as build setup) and the plain-English check were skipped: their review service is at its monthly quota. The Auditor's two findings (the missing `FRONTEND` entry and the scenario's import order for the formatter in `.github/config/dprint.json`) were fixed in one round.
 
+## 2026-11-21 - scorecard-workflow
+
+- **Based on the house standard's Scorecard workflow**, changed for this repository: `master` instead of `main`, two more triggers (`branch_protection_rule`, as in Scorecard's own example, and `workflow_dispatch` for a first run by hand), a 15-minute time limit and step names like `test.yml`'s. The code scanning upload uses the same pinned version as `test.yml` (v4.39.3), not the house file's older v4.39.0, so Renovate updates them together.
+- **`ossf/scorecard-action` v2.5.0, not v2.6.0:** v2.6.0 was published on 2026-11-19, less than the 3 days the repo's guidelines ask for new versions. Every pinned commit was checked against its release tag (the two newer tags are annotated, so they were followed to their commits).
+- **Results are published** (`publish_results: true`) so the README badge works. The repository is public, so the score is public anyway. The workflow comment says how to turn it off.
+- **No admin token for Branch-Protection:** without one, Scorecard sees only part of the branch settings. Adding a long-lived admin token to the repository would be a bigger risk than an incomplete score.
+- **Not a pull request check:** Scorecard runs on `master`, so the checks listed in the repo's guidelines and the Renovate merge rule stay the same.
+- **Review findings:** the verification and the audit both found that `ossf` (in the action's name) was missing from the spelling list; added. Rejected: moving to v2.6.0 (too new, see above); dropping the house standard's name from the plan to save a spelling word (it names a public repository, nothing private).
+- **Process:** the plan check, second security review and plain-English check were skipped (their review service is at its monthly limit).
+
 ## 2026-11-21 - security-findings-plan
 
 - **A plan, not fixes:** each fix is its own pull request with its own approval, so a failing one doesn't hold up the rest. Order: real bugs first, then the dependency fixes that need no major upgrade, then clean-up, then dismissals, then the bigger changes.
