@@ -131,3 +131,28 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 **Rejected findings:** the upstream `tests/ci.test.js` check that only the original author changes `.github/scripts/` and `tests/` fails locally for any fork change to those files; no workflow runs it, so it stays as is. Lockfile changes beyond the two packages are the sub-dependencies the new versions need, not stray churn.
 
 **Process notes:** the research step reused the Renovate review. The plan check, second security review and plain-English check were skipped (their review service is at its monthly quota). QA, the security review and the audit found nothing to fix, and the PR's CI (lint, code scanning, Docker build and tests) passed.
+
+## 2026-11-21 - renovate-skip-majors
+
+**Close #22 and #26, and block those majors in the settings.** Closing a PR only makes Renovate skip that one major (10.x, 3.x); faker 11 or Vue 4 would come back. A rule with `enabled: false` for major updates stops them for good. Renovate's own code shows its security PRs respect that rule, while minor and patch updates still come. Rejected: `allowedVersions` bounds (must be edited by hand at every major) and turning off all security PRs.
+
+**vue-prism-component added to the block.** Its version 2 is built for Vue 3, so it would break the web pages the same way. The audit found it on the Dependency Dashboard.
+
+**A 3-day wait for ordinary updates, as in the profile repo.** Renovate's documentation says security updates skip it. `timestamp-optional` matches the profile repo; every source here reports release dates, so it changes nothing today.
+
+**Accepted risk:** a security fix that exists only in a new faker or Vue major won't be proposed. faker is used only by the tests, and the Vue bug needs untrusted templates.
+
+**Process notes:** the config validator couldn't be run here (its download was refused by this machine's permissions); Renovate checks the config itself on its next run. The plan check and the second security review were skipped (their review service is at its monthly quota).
+
+## 2026-11-21 - merge-rule-renovate
+
+**A tight rule rather than a broad one.** The team may merge a Renovate PR only when it is Renovate's own work (author, branch and verified commits), changes only `package.json` and `package-lock.json`, has every check green on its latest commit (both spelling runs and code scanning included; a check that didn't run counts as failed), moves to versions at least 3 days old, and is a patch or minor update, or a major that a merged review names with its exact version. One at a time, because the PRs share the lockfile. Everything else stays for Sean.
+
+**Stricter than the approved plan, on Sean's instruction.** The first version followed the plan's wording. The security review and the audit found loopholes: commits pushed onto Renovate's branch by someone else, CI-run files outside `.github/workflows/` (the `Dockerfile`, `action.yml`, `.github/actions/`), pending statuses, reviews not tied to a version, no release-age check, and 0.x updates read as minor. Sean asked for them to be fixed, so the rule was tightened in two rounds.
+
+**The 3-day age check also covers security updates.** Renovate's security PRs skip its own wait, and a malicious release is most likely caught in its first days. The rule says Sean can merge an urgent security fix sooner.
+
+**Rejected findings:** that merging under this rule needs Sean's approval on each PR (he asked for the rule; the machine's rule for team-job PRs doesn't cover Renovate's PRs); that the CodeQL check doesn't exist (it shows on every PR); that lock-file-only sub-packages should also be age-checked (not workable by hand; accepted as a known gap); that `0.0.x` bumps should count as major (no such dependency here).
+
+**Process notes:** the plan check and the second security review were skipped (their review service is at its monthly quota); the first audit start stopped at a sign-in prompt and was rerun on the other engine.
+
