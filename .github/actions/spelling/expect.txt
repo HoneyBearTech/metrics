@@ -283,6 +283,7 @@ playcount
 playlists
 plugin
 poopmap
+posix
 postcss
 practicaldev
 prettylights
@@ -403,6 +404,7 @@ usermod
 usernames
 ushed
 usr
+uuid
 utf
 utm
 vercel
