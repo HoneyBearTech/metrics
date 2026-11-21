@@ -6,6 +6,9 @@ ENV PUPPETEER_SKIP_DOWNLOAD=true
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_BROWSER_PATH=google-chrome-stable
 
+# Build arguments (only used while building, not kept in the image)
+ARG DEBIAN_FRONTEND=noninteractive
+
 # Copy repository
 COPY . /metrics
 WORKDIR /metrics

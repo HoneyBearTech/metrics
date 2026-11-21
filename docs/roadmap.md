@@ -4,6 +4,8 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 
 ## Done
 
+- Quieter CI log: the PageSpeed plugin reads the website address with Node's `URL` class instead of the outdated `url.parse()` (no more deprecation warnings during the tests; an unreadable address now shows "Website URL is not valid"), with 3 focused tests; the Docker build tells the package installer nobody is there to answer, so its "unable to initialize" lines are gone (PR #70)
+
 - Project documents and OpenSSF groundwork: a security policy with private reporting, contributing guide, code of conduct contact, governance, support and changelog files, project documentation pages in `docs/`, bug and feature forms, and the README badges for Best Practices project 16966 (PR #49)
 
 - Upstream-only test files removed: `tests/ci.test.js` (upstream's checks on outside contributions, which failed on every fork change) and `tests/presets.test.js` (checked upstream's presets), with their two `package.json` commands, so `npm test` works on fork branches (PR #69)
@@ -36,6 +38,8 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 - **Test suite fixes** (review: `docs/reports/2026-11-21-tests-review.md`). Small ones first: the inverted SVG check, placeholder tests that switch on their plugin, and mocks that never match. Later: unmocked requests should fail instead of reaching the internet, real checks on output, a fixed faker seed.
 - **Community template cases never run:** both cases in `tests/cases/community.template.yml` are skipped for every template (its compatibility table), on master too, so installing a community template is untested. When they're turned on, they need network access to clone from GitHub.
 - **Test timings for the split:** `tests/metrics/weights.json` holds each case's measured time, used to share the cases evenly between the four test files. A new case gets a default of 10 seconds. Refresh the file from a CI log if one test file becomes much slower than the others.
+- **PageSpeed address handling:** an address starting with capital `HTTPS://` still gets a second `https://` added (the prefix check is case-sensitive), and the address is put into the request to Google without encoding. Both predate PR #70.
+- **npm warnings in the build log:** deprecated packages, the security audit count and install scripts awaiting approval. Dependency upkeep, through Renovate and its reviews.
 - **Notable counting bug:** issues and pull requests in the same repository count as one (`source/plugins/notable/index.mjs:50` and `:65`). No test covers those modes.
 - **Spelling dictionary upkeep:** new words added later make the spelling check fail until they're added to `.github/actions/spelling/expect.txt`. Spelling isn't a required check, so a PR with a red spelling check can still be merged; making it required (a repo setting Sean controls) would catch this before merging. About 30 old entries are no longer used and could be removed.
 - **Leftover upstream scripts:** `.github/scripts/release.mjs`, `markdown_example.mjs`, `presets_examples.mjs` (behind `npm run presets`) and `preview.mjs` still refer to the upstream project and are no longer used by any workflow. Delete or rewrite them in a later cleanup.

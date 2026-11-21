@@ -233,3 +233,13 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 **Delete both upstream test files.** `tests/ci.test.js` enforced upstream's rules for outside contributors: only the original author could change files such as `ARCHITECTURE.md`, `tests/cases/` or `.github/scripts/`, and generated files must not be edited by hand. In this fork the team changes those files on purpose, so every branch failed it and `npm test` was unusable. `tests/presets.test.js` downloaded and checked the upstream project's presets, not this fork's code. This reverses the renovate-fixes decision to leave `tests/ci.test.js` as it was. Rejected: rewriting the checks for the fork (the repo's guidelines and the reviews already cover who changes what).
 
 **Kept:** the `.presets` line in `.gitignore`, because `.github/scripts/presets_examples.mjs` still uses that folder; that script is part of the separate cleanup of leftover upstream scripts.
+
+## 2026-11-21 - quiet-ci-warnings
+
+**`URL` instead of `url.parse()` in the PageSpeed plugin.** Node marks `url.parse()` as outdated and unsafe, and the test web server printed its warning once per test file. It was the fork's only use. The plugin still adds `https://` when it's missing, still shows only the protocol and host on the card, and still sends Google exactly the address the user gave. Differences, checked on many addresses: a default port (`:443` on `https://`) no longer shows on the card, and addresses the old reader turned into a broken label (spaces in the host, a bare `https://`, a port over 65535) now give "Website URL is not valid". Libraries the project uses still contain the old call, but Node doesn't warn for code inside `node_modules`, and the CI log shows no warning.
+
+**A build argument, not an environment setting, in the Dockerfile.** `ARG DEBIAN_FRONTEND=noninteractive` applies only while the image is built, so the finished image and the action run as before (checked: the setting is empty inside the image). Rejected: `ENV`, which would stay in the image for every user.
+
+**Spelling:** the setting's name is split into two words, and each all-caps half needs its own entry, so `DEBIAN` and `FRONTEND` were added with `debconf` and `noninteractive`.
+
+**Process notes:** a small job: no research step (the CEO read the code), the Engineer, QA, the Security Officer and the Auditor. The plan check, the second security review (the Dockerfile counts as build setup) and the plain-English check were skipped: their review service is at its monthly quota. The Auditor's two findings (the missing `FRONTEND` entry and the scenario's import order for the formatter in `.github/config/dprint.json`) were fixed in one round.

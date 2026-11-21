@@ -24,3 +24,4 @@
 | 2026-11-21 | tests-speed | CI test step from 32 to about 8 minutes: four test files side by side, a 1-second lines delay in tests, community template cases run alone afterwards; same 728 tests and results | #48 |
 | 2026-11-21 | focused-tests-ci | The fork's 15 focused tests (`tests/plugins/`) run in CI, in the same run as the metrics test files; CI totals 344 passed, 399 skipped | #68 |
 | 2026-11-21 | drop-upstream-tests | Upstream-only `tests/ci.test.js` and `tests/presets.test.js` removed, with the `test-contrib` and `test-presets` commands; notes for #68 | #69 |
+| 2026-11-21 | quiet-ci-warnings | PageSpeed plugin reads addresses with Node's `URL` class instead of `url.parse()`, with 3 focused tests; build-only installer setting in the Dockerfile; CI log has no deprecation warnings or installer lines; CI totals 347 passed, 399 skipped | #70 |

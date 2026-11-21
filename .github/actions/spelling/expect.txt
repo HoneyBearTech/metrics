@@ -52,6 +52,8 @@ datapoints
 dayjs
 dded
 dearmor
+debconf
+DEBIAN
 dependabot
 deployer
 deps
@@ -109,6 +111,7 @@ FORTYFIVEDOWN
 FORTYFIVEUP
 freefont
 freegames
+FRONTEND
 fss
 FTg
 fullyear
@@ -241,6 +244,7 @@ NOASSERTION
 nocase
 nodeca
 nodejs
+noninteractive
 norest
 noto
 notoken

@@ -16,7 +16,13 @@ export default async function({login, imports, data, q, account}, {enabled = fal
       throw {error: {message: "Website URL is not set"}}
     if (!/^https?:[/][/]/.test(url))
       url = `https://${url}`
-    const {protocol, host} = imports.url.parse(url)
+    let host, protocol
+    try {
+      ;({protocol, host} = new URL(url))
+    }
+    catch {
+      throw {error: {message: "Website URL is not valid"}}
+    }
     const result = {url: `${protocol}//${host}`, detailed, scores: [], metrics: {}}
 
     //Load scores from API
