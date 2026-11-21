@@ -1,6 +1,9 @@
 # 📊 Metrics [<img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=280144&theme=dark" alt="" align="right" width="190" height="41">](https://www.producthunt.com/posts/github-metrics?utm_source=badge-featured&utm_medium=badge&utm_source=badge-github-metrics)
 
-[![Continuous integration](https://github.com/lowlighter/metrics/actions/workflows/ci.yml/badge.svg)](https://github.com/lowlighter/metrics/actions/workflows/ci.yml)
+[![CI](https://github.com/HoneyBearTech/metrics/actions/workflows/test.yml/badge.svg)](https://github.com/HoneyBearTech/metrics/actions/workflows/test.yml)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/16966/badge)](https://www.bestpractices.dev/projects/16966)
+[![OpenSSF Baseline](https://www.bestpractices.dev/projects/16966/baseline)](https://www.bestpractices.dev/projects/16966)
+<!-- Add once the Scorecard workflow exists: [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/HoneyBearTech/metrics/badge)](https://scorecard.dev/viewer/?uri=github.com/HoneyBearTech/metrics) -->
 
 Generate metrics that can be embedded everywhere, including your GitHub profile readme! Supports users, organizations, and even repositories!
 
@@ -441,6 +444,14 @@ Generate metrics that can be embedded everywhere, including your GitHub profile 
     </td>
   </tr>
 </table>
+
+
+## 📚 Project documentation
+
+This is HoneyBearTech's fork of the unmaintained upstream project. These pages cover the fork itself:
+
+- [Documentation index](docs/README.md): [quick start](docs/quick-start.md), [installing](docs/installing.md), [upgrading](docs/upgrading.md), [verifying releases](docs/verifying-releases.md) (planned), [user guide](docs/user-guide/README.md), [interfaces](docs/interfaces.md), [architecture](docs/architecture.md), [security](docs/security.md), [assurance case](docs/assurance-case.md), [dependencies](docs/dependencies.md) and [accessibility](docs/accessibility.md)
+- [Contributing](CONTRIBUTING.md), [code of conduct](CODE_OF_CONDUCT.md), [governance](GOVERNANCE.md), [support](SUPPORT.md), [security policy](SECURITY.md) and [changelog](CHANGELOG.md)
 
 
 # 📚 Documentation
