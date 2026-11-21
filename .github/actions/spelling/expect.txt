@@ -16,6 +16,7 @@ automator
 automerge
 backreference
 basehead
+bestpractices
 bitcoin
 Bizau
 blankslate
@@ -25,6 +26,7 @@ btn
 cacheable
 cakeday
 captcha
+changelog
 charsets
 chmod
 chown
@@ -294,6 +296,7 @@ renovatebot
 rlreset
 roadmap
 rssi
+ruleset
 runsh
 SAPISID
 SAPISIDHASH
