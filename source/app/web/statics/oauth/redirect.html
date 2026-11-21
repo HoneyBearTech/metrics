@@ -22,7 +22,7 @@
           return "/.oauth"
         try {
           const target = new URL(to, location.origin)
-          if ((["http:", "https:"].includes(target.protocol)) && (target.origin === location.origin))
+          if ((["http:", "https:"].includes(target.protocol)) && (target.origin === location.origin) && (target.href.startsWith(`${location.origin}/`)))
             return target.href
         }
         catch {}
