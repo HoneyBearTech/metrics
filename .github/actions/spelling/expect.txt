@@ -53,6 +53,7 @@ cwd
 dajneem
 datapoints
 dayjs
+dco
 dded
 dearmor
 debconf
@@ -93,6 +94,7 @@ erged
 esm
 ETIMEDOUT
 eugeneware
+euo
 eur
 eviewed
 expr
@@ -275,6 +277,7 @@ pdated
 pem
 pened
 PGP
+pipefail
 playcount
 playlists
 plugin
