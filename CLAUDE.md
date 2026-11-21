@@ -4,7 +4,7 @@ This is HoneyBearTech's fork of the GitHub profile metrics generator (upstream: 
 
 ## Checks
 
-Every pull request runs these checks: **Lint code**, **Build and test** (the Docker image build plus the full test suite), **Analyze code** and **CodeQL** (code scanning) and **Check Spelling**. `master` has no required checks set, so this file names them.
+Every pull request runs these checks: **Lint code**, **Build and test** (the Docker image build plus the full test suite), **Analyze code** and **CodeQL** (code scanning), **Check Spelling** and **DCO sign-off** (every commit except merge commits and Renovate's or Dependabot's carries a `Signed-off-by` line). `master` has no required checks set, so this file names them.
 
 ## Merging
 
