@@ -47,6 +47,16 @@ Community leaders will take appropriate and fair corrective action in
 response to any behavior that they deem inappropriate, threatening, offensive,
 or harmful.
 
+## Reporting
+
+Instances of abusive, harassing, or otherwise unacceptable behavior may be
+reported privately to the maintainer (GitHub
+[@HoneyBearTech](https://github.com/HoneyBearTech)) through the repository's
+private reporting form linked in [SECURITY.md](SECURITY.md). Mark the report as
+a conduct report. All reports will be reviewed and investigated promptly and
+fairly, and the maintainer will respect the privacy and security of the
+reporter of any incident.
+
 ## Enforcement Guidelines
 
 Community leaders will follow these Community Impact Guidelines in determining

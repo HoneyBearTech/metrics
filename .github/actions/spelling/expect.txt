@@ -1,6 +1,7 @@
 ABCDEFGHIJKLMNOPQRSTUVWXY
 actionlint
 activeline
+allowlist
 allowtransparency
 alse
 amd
@@ -16,6 +17,7 @@ automator
 automerge
 backreference
 basehead
+bestpractices
 bitcoin
 Bizau
 blankslate
@@ -25,6 +27,8 @@ btn
 cacheable
 cakeday
 captcha
+changelog
+CHANGELOG
 charsets
 chmod
 chown
@@ -53,6 +57,7 @@ deployer
 deps
 dessant
 destructuring
+developercertificate
 Dexcom
 dflag
 diffs
@@ -171,6 +176,7 @@ jellyfin
 jpy
 jshemas
 kacst
+keepachangelog
 keyring
 keyup
 Kotlin
@@ -258,6 +264,7 @@ panosoft
 params
 patchnote
 pdated
+pem
 pened
 PGP
 playcount
@@ -285,6 +292,7 @@ rbren
 rcopy
 readdir
 readme
+README
 readonly
 reated
 rebases
@@ -294,6 +302,7 @@ renovatebot
 rlreset
 roadmap
 rssi
+ruleset
 runsh
 SAPISID
 SAPISIDHASH

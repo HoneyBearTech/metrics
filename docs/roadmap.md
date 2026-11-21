@@ -4,6 +4,8 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 
 ## Done
 
+- Project documents and OpenSSF groundwork: a security policy with private reporting, contributing guide, code of conduct contact, governance, support and changelog files, project documentation pages in `docs/`, bug and feature forms, and the README badges for Best Practices project 16966 (PR #49)
+
 - CI faster and safer: lint installs without install scripts (18 seconds instead of 10.5 minutes), code scanning runs alongside lint, the formatter step that changed files before testing is gone, every job has a time limit (PR #43)
 
 - The fork's workflows: current actions pinned to exact commits, upstream-only jobs removed, one CI workflow passing on master (PR #10)
@@ -20,12 +22,14 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 
 ## In progress
 
-- **Merging the safe Renovate PRs one at a time** under the merge rule in the repo's guidelines (PR #40): #21, #23, #18, #17, #16, #19, #31, #32, then #24 and #29. #28 (a workflow update) stays for Sean.
+- **Merging the safe Renovate PRs one at a time** under the merge rule in the repo's guidelines (PR #40): #21 merged; then #23, #18, #17, #16, #19, #31, #32, then #24 and #29. #28 (a workflow update) stays for Sean.
 
 - **Renovate's first 15 update PRs** (review: `docs/reports/2026-11-20-renovate-review.md`): 11 to merge one at a time (7 now, 4 once their build and test pass), 2 needing a fix first (fixed in PR #36), 2 to close.
 
 ## Next
 
+- **Test suite fixes** (review: `docs/reports/2026-11-21-tests-review.md`). Small ones first: run the focused tests in `tests/plugins/` in CI (through the `test-metrics` script), a 1-second lines delay in tests (about 7 minutes faster), the inverted SVG check, placeholder tests that switch on their plugin, mocks that never match, and removing the upstream-only `tests/ci.test.js` and `tests/presets.test.js`. Later: unmocked requests should fail instead of reaching the internet, real checks on output, a fixed faker seed.
+- **Notable counting bug:** issues and pull requests in the same repository count as one (`source/plugins/notable/index.mjs:50` and `:65`). No test covers those modes.
 - **Spelling dictionary upkeep:** new words added later make the spelling check fail until they're added to `.github/actions/spelling/expect.txt`. Spelling isn't a required check, so a PR with a red spelling check can still be merged; making it required (a repo setting Sean controls) would catch this before merging. About 30 old entries are no longer used and could be removed.
 - **Leftover upstream scripts:** `.github/scripts/release.mjs`, `markdown_example.mjs`, `presets_examples.mjs` (behind `npm run presets`) and `preview.mjs` still refer to the upstream project and are no longer used by any workflow. Delete or rewrite them in a later cleanup.
 - **16personalities plugin:** it scrapes the live website, which has changed, so it likely no longer works for users; its test is skipped. Fix or retire it.
@@ -42,6 +46,19 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 - **Stale generated file under `.github/`:** the compatibility table. The examples workflow is gone (PR #10).
 - **Shared username filter:** `filters.text` lowercases the text but not the patterns, so callers that pass a mixed-case pattern never match. Fixed where it broke (recently used languages); a general fix would touch many plugins.
 - **Activity event types not seen live:** commit comments and wiki edits couldn't be checked against GitHub's current event format.
+
+## Security and project health
+
+Toward OpenSSF Baseline Levels 1 and 2 and the Best Practices Passing and Silver badges (project 16966). One GitHub issue (label `openssf`) tracks each open item.
+
+- **Settings only Sean can change:** turn on the `main-protection` ruleset for `master` (pull requests and the CI checks required, no force-push or deletion); Actions workflow permissions read-only; secret scanning with push protection; Dependabot alerts on and Dependabot security updates off; the repository description (still upstream's); two-factor sign-in. Private vulnerability reporting is already on.
+- **The Best Practices form** for project 16966: answer it from the new documents (`SECURITY.md`, `CONTRIBUTING.md`, `GOVERNANCE.md`, `docs/`).
+- **New CI checks** in their own job: Scorecard, dependency review, secret scanning, a sign-off check. Sean applies the workflow files; check that Renovate pull requests still pass all checks before merging more.
+- **`renovate.json` from the house standard:** pinning action updates to commits and grouping the code scanning action. Pinning makes Renovate edit workflow files, which the merge rule leaves for Sean.
+- **Action cleanup:** remove the `.env` file also when a run fails, and rebuild the fork's image when the commit changes (it is tagged by package version, so a persistent runner can reuse an old image).
+- **Web server:** the debug log prints its settings, tokens included; mask them. The insights routes don't check `restricted` or `maxusers`.
+- **Sanitising review:** check every rendering path for outside text (planned in `docs/assurance-case.md`).
+- **Known gaps the form will show:** no formatter check in CI, unpinned Docker base image and Deno install, no test coverage measurement, the older audit findings (see Next), signed releases (none yet).
 
 ## Not planned
 
