@@ -52,6 +52,8 @@ datapoints
 dayjs
 dded
 dearmor
+debconf
+DEBIAN
 dependabot
 deployer
 deps
@@ -241,6 +243,7 @@ NOASSERTION
 nocase
 nodeca
 nodejs
+noninteractive
 norest
 noto
 notoken
