@@ -325,3 +325,10 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **Left as it is:** the template name in the same address, which comes from the server's own list of templates.
 - **Review findings:** none. The verification pass and the audit's security pass covered the security review for this one-line job.
 - **Process:** no research step. The plan check, second security review and plain-English review were skipped (their review service is at its monthly limit).
+
+## 2026-11-21 - minimatch-refresh
+
+- **Lock file only,** each copy to the newest version its parent already allows and at least 3 days old; nothing in `package.json` changed. There are seven copies, not six as the plan says: six alerts covered them, and the linter's own copy was already on 3.1.5.
+- **Accepted a known difference in the fixed versions:** the audit found that 3.1.5 and 5.1.9 throw an error for a pattern with several `**` in a row (`a/**/**/**`) and no longer match a dot file after `**` unless the `dot` option is set. Checked by hand, both confirmed. None of the updated copies gets such patterns: they serve the linter's and test tools' own settings, the install-time clean-up that uses `glob`, the `jake` build tool that `ejs` ships, and `purgecss`, which the project calls with text rather than file patterns. The project's own pattern matching (skipped repositories, contributor file patterns) uses the top-level `minimatch` 11.0.9, which this job didn't change. Waiting for a later release instead would leave six high alerts open for a problem the project doesn't hit.
+- **Review findings:** the plan's copy count and its "same behavior" sentence were wrong (audit) - corrected here rather than in the approved plan.
+- **Process:** the audit doubled as the security review for this lock-file-only job. No research step. The plan check and plain-English review were skipped (their review service is at its monthly limit).
