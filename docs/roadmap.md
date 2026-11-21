@@ -29,9 +29,9 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 - **After merging #6:** check that a real Apple Music or Spotify playlist no longer shows the "Explicit" label in titles. The label is only removed when it's clearly separate from the title (see the decisions log).
 - **Private-repository check after PR #36:** the next real metrics run should still show languages from private repositories (simple-git 4 accepts the token clone address in local checks, but no real private clone was tried).
 - **Minimum Node version:** sanitize-html 2.18.2 needs Node 22.12 or newer. CI and the Docker image use Node 24; `package.json` doesn't state an `engines` minimum.
-- **Renovate settings:** skip the faker and Vue major versions (#22 and #26 are being closed), and add a waiting period for new releases (for example 3 days, as the profile repo uses).
+- **After PR #39:** check on Renovate's next run that faker, Vue and vue-prism-component majors don't come back as PRs, and that a security PR still arrives without the 3-day wait.
 - **Vulnerabilities no Renovate PR covers:** about 40 of the lockfile audit's 52 findings, mostly inside puppeteer (needs 25), tar, crypto-js and express. Each needs its own look.
-- **Vue 3 for the web pages** (optional): a real migration of the four pages and the Prism helper, if the web server matters.
+- **Vue 3 for the web pages** (optional): a real migration of the four pages and the Prism helper, if the web server matters. Remove the major-update block in `renovate.json` when done (same for faker after a test migration).
 - **Unpinned Docker inputs:** the base image and the Deno install script aren't pinned (both are inherited from upstream). Pin the base image by digest and Deno to a release.
 - **Upgrades skipped on purpose for now:** puppeteer 25 (needs a full Chrome path), jsdom 28, eslint 9. (file-type 21 is now in Renovate's #23.)
 - **Repository mode in `activity`:** collaborators' pushes are still hidden (an older upstream gap, not caused by the API change).

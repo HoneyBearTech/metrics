@@ -131,3 +131,16 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 **Rejected findings:** the upstream `tests/ci.test.js` check that only the original author changes `.github/scripts/` and `tests/` fails locally for any fork change to those files; no workflow runs it, so it stays as is. Lockfile changes beyond the two packages are the sub-dependencies the new versions need, not stray churn.
 
 **Process notes:** the research step reused the Renovate review. The plan check, second security review and plain-English check were skipped (their review service is at its monthly quota). QA, the security review and the audit found nothing to fix, and the PR's CI (lint, code scanning, Docker build and tests) passed.
+
+## 2026-11-21 - renovate-skip-majors
+
+**Close #22 and #26, and block those majors in the settings.** Closing a PR only makes Renovate skip that one major (10.x, 3.x); faker 11 or Vue 4 would come back. A rule with `enabled: false` for major updates stops them for good. Renovate's own code shows its security PRs respect that rule, while minor and patch updates still come. Rejected: `allowedVersions` bounds (must be edited by hand at every major) and turning off all security PRs.
+
+**vue-prism-component added to the block.** Its version 2 is built for Vue 3, so it would break the web pages the same way. The audit found it on the Dependency Dashboard.
+
+**A 3-day wait for ordinary updates, as in the profile repo.** Renovate's documentation says security updates skip it. `timestamp-optional` matches the profile repo; every source here reports release dates, so it changes nothing today.
+
+**Accepted risk:** a security fix that exists only in a new faker or Vue major won't be proposed. faker is used only by the tests, and the Vue bug needs untrusted templates.
+
+**Process notes:** the config validator couldn't be run here (its download was refused by this machine's permissions); Renovate checks the config itself on its next run. The plan check and the second security review were skipped (their review service is at its monthly quota).
+
