@@ -6,6 +6,9 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 
 - Project documents and OpenSSF groundwork: a security policy with private reporting, contributing guide, code of conduct contact, governance, support and changelog files, project documentation pages in `docs/`, bug and feature forms, and the README badges for Best Practices project 16966 (PR #49)
 
+- Upstream-only test files removed: `tests/ci.test.js` (upstream's checks on outside contributions, which failed on every fork change) and `tests/presets.test.js` (checked upstream's presets), with their two `package.json` commands, so `npm test` works on fork branches (PR #69)
+- The fork's focused tests (`tests/plugins/`: recent activity, recently used languages, lines) run in CI, in the same run as the other tests: 15 more tests, about 15 seconds (PR #68)
+
 - Faster test step: 32 minutes down to about 8. The tests run in four files side by side (one per core of the CI machine), the lines plugin waits 1 second in tests instead of 30, and the community template cases run on their own afterwards. Same 728 tests, same results (PR #48)
 
 - CI faster and safer: lint installs without install scripts (18 seconds instead of 10.5 minutes), code scanning runs alongside lint, the formatter step that changed files before testing is gone, every job has a time limit (PR #43)
@@ -30,7 +33,7 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 
 ## Next
 
-- **Test suite fixes** (review: `docs/reports/2026-11-21-tests-review.md`). Small ones first: run the focused tests in `tests/plugins/` in CI (through the `test-metrics` script), the inverted SVG check, placeholder tests that switch on their plugin, mocks that never match, and removing the upstream-only `tests/ci.test.js` and `tests/presets.test.js`. Later: unmocked requests should fail instead of reaching the internet, real checks on output, a fixed faker seed.
+- **Test suite fixes** (review: `docs/reports/2026-11-21-tests-review.md`). Small ones first: the inverted SVG check, placeholder tests that switch on their plugin, and mocks that never match. Later: unmocked requests should fail instead of reaching the internet, real checks on output, a fixed faker seed.
 - **Community template cases never run:** both cases in `tests/cases/community.template.yml` are skipped for every template (its compatibility table), on master too, so installing a community template is untested. When they're turned on, they need network access to clone from GitHub.
 - **Test timings for the split:** `tests/metrics/weights.json` holds each case's measured time, used to share the cases evenly between the four test files. A new case gets a default of 10 seconds. Refresh the file from a CI log if one test file becomes much slower than the others.
 - **Notable counting bug:** issues and pull requests in the same repository count as one (`source/plugins/notable/index.mjs:50` and `:65`). No test covers those modes.
