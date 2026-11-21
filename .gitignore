@@ -110,10 +110,6 @@ settings.json
 source/templates/.community
 source/templates/@*
 
-# Preview
-
-# Presets
-
 # V4
 .deno-make.json
 .coverage
