@@ -8,7 +8,6 @@ import { minify as csso } from "csso"
 import * as d3 from "d3"
 import emoji from "emoji-name-map"
 import { fileTypeFromBuffer } from "file-type"
-import fss from "fs"
 import fs from "fs/promises"
 import { JSDOM } from "jsdom"
 import linguist from "linguist-js"
@@ -17,7 +16,6 @@ import { minimatch } from "minimatch"
 import opengraph from "open-graph-scraper"
 import os from "os"
 import paths from "path"
-import PNG from "png-js"
 import prism from "prismjs"
 import prism_lang from "prismjs/components/index.js"
 import _puppeteer from "puppeteer"
@@ -909,33 +907,27 @@ export async function record({page, width, height, frames, scale = 1, quality = 
 
 /**Create gif from puppeteer browser*/
 export async function gif({page, width, height, frames, x = 0, y = 0, repeat = true, delay = 150, quality = 10}) {
-  //Create temporary stream
-  const path = paths.join(os.tmpdir(), `${Math.round(Math.random() * 1000000000)}.gif`)
-  console.debug(`metrics/puppeteergif > set write stream to "${path}"`)
-  if (fss.existsSync(path))
-    await fs.unlink(path)
-  //Create encoder
   try {
-    const GIFEncoder = (await import("gifencoder")).default
-    const encoder = new GIFEncoder(width, height)
-    encoder.createWriteStream().pipe(fss.createWriteStream(path))
-    encoder.start()
-    encoder.setRepeat(repeat ? 0 : -1)
-    encoder.setDelay(delay)
-    encoder.setQuality(quality)
-    //Register frames
+    //Register frames as raw pixels (screenshots can be larger than requested size with a device scale factor)
+    const images = []
+    let size = null
     for (let i = 0; i < frames; i++) {
-      const buffer = new PNG(await page.screenshot({clip: {width, height, x, y}}))
-      encoder.addFrame(await new Promise(solve => buffer.decode(pixels => solve(pixels))))
+      const image = sharp(await page.screenshot({clip: {width, height, x, y}})).ensureAlpha()
+      const {data, info} = await image.raw().toBuffer({resolveWithObject: true})
+      if (!size)
+        size = {width: info.width, height: info.height}
+      if ((info.width === size.width) && (info.height === size.height))
+        images.push(data)
+      else
+        images.push(await sharp(data, {raw: {width: info.width, height: info.height, channels: 4}}).resize({width: size.width, height: size.height, fit: "fill"}).raw().toBuffer())
       if (frames % 10 === 0)
         console.debug(`metrics/puppeteergif > processed ${i}/${frames} frames`)
     }
     console.debug(`metrics/puppeteergif > processed ${frames}/${frames} frames`)
-    //Close encoder and convert to base64
-    encoder.finish()
-    const result = await fs.readFile(path, "base64")
-    await fs.unlink(path)
-    return `data:image/gif;base64,${result}`
+    //Join frames into an animated gif (delay is given for each frame because a single value only applies to the first one; quality is 1 for best to 30 for fastest, effort is 1 for fastest to 10 for best)
+    const effort = Math.max(1, Math.min(10, Math.round(10 - (quality - 1) * 9 / 29)))
+    const result = await sharp(Buffer.concat(images), {raw: {width: size.width, height: size.height * frames, channels: 4, pageHeight: size.height}}).gif({loop: repeat ? 0 : 1, delay: Array(frames).fill(delay), effort}).toBuffer()
+    return `data:image/gif;base64,${result.toString("base64")}`
   }
   catch (error) {
     console.debug(`metrics/puppeteergif > could not create gif: ${error}`)
