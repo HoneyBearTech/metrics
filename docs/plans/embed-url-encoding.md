@@ -4,7 +4,7 @@
 
 ## What we found
 
-- Job 4 encoded the user name in the embed page's two cache-reset requests. The same "generate" button then loads the rendered image from the page's own address for that user, which is built in the `url` getter of `source/app/web/statics/embed/app.js` with the name unencoded (`/${this.user}`). Code scanning moved alert 9 to that request.
+- Job 4 encoded the user name in the embed page's two cache-reset requests. The same "generate" button then loads the rendered image from the page's own address for that user, which is built in the `url` getter of `source/app/web/statics/embed/app.js` without encoding the name (`/${this.user}`). Code scanning moved alert 9 to that request.
 - The risk is low: the request stays on the same site and the server only accepts normal GitHub user names. A real GitHub user name (letters, digits and `-`) is unchanged by encoding.
 - The same address is also shown to the user as the link to copy, so it stays correct for real names.
 
