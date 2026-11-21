@@ -33,7 +33,7 @@ This section explain how *metrics* is structured.
   * `fonts.css` contains additional fonts used to render metrics
   * `template.mjs` contains template source code
 * `tests/` contains tests
-  * `metrics.test.js` contains metrics testers
+  * `metrics/` contains metrics testers (`shared.js` is the helper, each `part-N.test.js` runs a share of the cases, `community.test.js` runs the community template cases alone)
   * `source/app/mocks/` contains mocked data files
   * `api/` contains mocked api data
     * `axios/` contains external REST APIs mocked data

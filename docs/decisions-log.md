@@ -203,3 +203,19 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 **Rejected findings:** that the private reporting form doesn't work yet (private vulnerability reporting is already on); that `GOVERNANCE.md` requiring two-factor sign-in for new collaborators is an unverified claim (it is a rule for others, not a claim about the maintainer); that the badges might overclaim (they show the project's real "in progress" level); that the plan names Sean (every plan here does).
 
 **Process notes:** the plan check, the second security review and the plain-English check were skipped (their review service is at its monthly quota). The OpenSSF issues are opened after Sean approves the finished work.
+
+## 2026-11-21 - tests-speed
+
+**Split the test file, don't drop tests.** The test step ran 728 test combinations one after another for 32 minutes on a machine with four cores. The cases now run in four files at once (`tests/metrics/part-1` to `part-4`), with a shared helper in `tests/metrics/shared.js`. Cases are shared out by the time each one took in an earlier CI run (`weights.json`), so the four files finish within a minute of each other. Each file starts its own test web server on its own port; the port setting is read only in test (sandbox) mode, so real web servers are unchanged. Result on CI: about 7.5 minutes for the tests, 10 for the whole job, with the same 329 passed and 399 skipped.
+
+**1-second lines delay in tests.** The lines plugin's two cases waited 30 real seconds each time they ran. The test settings now use 1 second; users' examples and the docs keep 30.
+
+**Community template cases run alone, after the others.** They install and delete folders in `source/templates`, which every other test reads, so running them next to the other files could make an unrelated test fail. They have their own file that runs once the four parts are done, and it removes all three folders they can leave behind. The case list also ignores installed community templates, so a leftover from an interrupted run can't break a later one. Both cases are skipped today (their compatibility table), so this guards the day they're turned on.
+
+**Four workers, not one per core.** There are four part files, so more workers only use memory on a larger machine.
+
+**Measured on CI, not locally.** The full suite can't run reliably on the team's own machine: it caps the processes a container may start, and Chrome leaves finished processes behind that Docker doesn't clean up without an init process. GitHub's machines have no such cap, so this PR's own CI runs are the evidence.
+
+**Rejected:** fewer test combinations (every case is still needed); Docker or npm caching (the image build takes about 2 minutes); changing the workflow (CI already runs `npm run test-metrics`).
+
+**Process notes:** the work was interrupted once and resumed from the pushed branch. The plan check didn't run before the plan was approved. No second security review: the change touches only tests and a test-mode port setting. The plain-English check was skipped (its review service is at its monthly quota).
