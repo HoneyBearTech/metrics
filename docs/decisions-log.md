@@ -282,3 +282,11 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **The workflow file was added by the owner** through GitHub's web editor, because this machine's settings don't let the team edit workflow files. The first paste lost its indentation; the corrected file and the first commit's sign-off were combined into one commit on this branch, and the owner's separate pull request (#81) was closed.
 - **Review findings:** lower-case `dco` was missing from the spelling list (verification and audit; the upper-case entry was replaced, since the lower-case one covers both); the three descriptions now name the check and all three exemptions (audit, security review).
 - **Process:** no research step (house workflow in use elsewhere). The plan check and second security review were skipped (their review service is at its monthly limit).
+
+## 2026-11-21 - remove-upstream-scripts
+
+- **Deleted rather than rewritten:** `release.mjs`, `markdown_example.mjs`, `presets_examples.mjs` and `preview.mjs` only worked against the upstream project (its maintainer, its `presets` branch, its example pages and its preview site). This fork has no use for them, and `presets_examples.mjs` held code scanning alert 17.
+- **Kept:** `build.mjs` (the Docker image runs `npm run build`) and `quickstart/` (the plugin and template guides tell people to run `npm run quickstart`).
+- **The `.presets` ignore line is gone too,** which closes the "Kept" note in the drop-upstream-tests entry above: the only script that used that folder is deleted.
+- **Review findings:** none to fix. The verification pass doubled as the security pass for this deletion-only job.
+- **Process:** no research step (the roadmap and the findings plan had already checked what uses these files). The plan check, second security review and plain-English review were skipped (their review service is at its monthly limit).

@@ -4,6 +4,7 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 
 ## Done
 
+- Unused upstream scripts removed (job 5 of the findings plan): `.github/scripts/release.mjs`, `markdown_example.mjs`, `presets_examples.mjs` (code scanning alert 17) and `preview.mjs`, with the `presets` and `preview` commands and their ignore entries; `build.mjs` and `quickstart/` stay (PR #87)
 - Sign-off check: a new **DCO sign-off** check fails a pull request when one of its commits has no `Signed-off-by` line (merge commits and Renovate's or Dependabot's commits are left out); named in the repo's guidelines, `CONTRIBUTING.md` and `docs/security.md` (PR #78)
 - Web server sign-in made safe (job 1 of the findings plan): the page after GitHub sign-in only follows a return address on the same site (no more `javascript:` or other-site redirects, code scanning alerts 4 and 6); the server keeps the real return address (it read the wrong parameter) and only a same-site one; the sign-in page no longer sends `from=null`; the cache-reset password comes from secure random bytes; 30 focused tests (PR #77)
 - OpenSSF Scorecard workflow (`.github/workflows/scorecard.yml`): runs weekly, on pushes to `master`, when branch rules change and on demand; read-only token by default, every action pinned to a commit; results go to the code scanning page and to the public Scorecard badge in the README (PR #73)
@@ -45,7 +46,6 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 - **npm warnings in the build log:** deprecated packages, the security audit count and install scripts awaiting approval. Dependency upkeep, through Renovate and its reviews.
 - **Notable counting bug:** issues and pull requests in the same repository count as one (`source/plugins/notable/index.mjs:50` and `:65`). No test covers those modes.
 - **Spelling dictionary upkeep:** new words added later make the spelling check fail until they're added to `.github/actions/spelling/expect.txt`. Spelling isn't a required check, so a PR with a red spelling check can still be merged; making it required (a repo setting Sean controls) would catch this before merging. About 30 old entries are no longer used and could be removed.
-- **Leftover upstream scripts:** `.github/scripts/release.mjs`, `markdown_example.mjs`, `presets_examples.mjs` (behind `npm run presets`) and `preview.mjs` still refer to the upstream project and are no longer used by any workflow. Delete or rewrite them in a later cleanup.
 - **16personalities plugin:** it scrapes the live website, which has changed, so it likely no longer works for users; its test is skipped. Fix or retire it.
 - **Formatter check:** six files aren't formatted (`analyzer.mjs`, `action/index.mjs`, `metrics/utils.mjs` and three `.github/scripts/` files). CI no longer reformats before testing (PR #43); format them, then add a `dprint check` step to lint, after deciding on Renovate's dprint update (#35).
 - **After merging #6:** check that a real Apple Music or Spotify playlist no longer shows the "Explicit" label in titles. The label is only removed when it's clearly separate from the title (see the decisions log).

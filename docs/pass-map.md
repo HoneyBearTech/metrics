@@ -29,3 +29,4 @@
 | 2026-11-21 | security-findings-plan | Plan for the 18 code scanning alerts (2 real, in the web server's sign-in redirect) and the 56 Dependabot alerts (none in the fork's own code), in ten jobs; Best Practices answers drafted for all four checklists | #76 |
 | 2026-11-21 | oauth-redirect-fix | Sign-in redirect follows only same-site addresses; server keeps the real, same-site return address; no `from=null`; secure random cache-reset password; 30 focused tests | #77 |
 | 2026-11-21 | dco-check | **DCO sign-off** check on every pull request (house standard workflow; merge, Renovate and Dependabot commits left out); named in the guidelines, contributing guide and security page | #78 |
+| 2026-11-21 | remove-upstream-scripts | Four upstream-only scripts in `.github/scripts/` removed (code scanning alert 17), with the `presets` and `preview` commands, their `.gitignore` lines and one spelling word; CI 377 passed | #87 |
