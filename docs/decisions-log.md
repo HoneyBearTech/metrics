@@ -174,3 +174,21 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 
 **Process notes:** the plan check and the second security review were skipped (their review service is at its monthly quota).
 
+
+## 2026-11-21 - openssf-bootstrap
+
+**Documents first, CI checks later.** This job adds only documents, templates and `.gitignore` lines. New CI checks (Scorecard, dependency review, secret scanning, sign-off) are a separate job: each one becomes a gate on every Renovate pull request under the merge rule, and workflow files are applied by Sean. This reverses the ci-workflow-update decision that a dependency-review job had little benefit: the Best Practices Silver criteria ask for it. Rejected: one big PR with docs and CI together (a failing new check would stall the Renovate merges).
+
+**Amend the upstream files, don't replace them.** `SECURITY.md` had to change its reporting section (it sent reports to a public issue upstream). `CONTRIBUTING.md` kept its text with the upstream links fixed and sections added. `CODE_OF_CONDUCT.md` gained only a private contact. `LICENSE` and `ARCHITECTURE.md` are unchanged; `docs/architecture.md` points to the latter.
+
+**README badges in the source partial.** The README is generated, so the badges and a "Project documentation" section went into `.github/readme/partials/templated/`, and the rebuilt `README.md` was checked to match. One CI badge for `test.yml` (code scanning runs inside it). The Scorecard badge waits, commented out, for the Scorecard workflow.
+
+**Not done here:** signed releases and release checksums (the fork publishes no releases; `docs/verifying-releases.md` says "Planned"); `CODEOWNERS` (never changed by the team; `GOVERNANCE.md` names the maintainer); no `.env.example` (metrics reads action inputs and `settings.json`, not a `.env` file); the house standard's `renovate.json` additions and weekly schedule (left for a decision, see the roadmap).
+
+**Docs say what the code does.** The audit checked the security pages against the code and found seven overstatements, all fixed: outside text is sanitised but not every rendering path has been reviewed; `restricted` and `maxusers` cover only the image route, not insights; the rate limiter is off by default; the action's `.env` file is removed only after a successful run; the web server's debug log prints its settings; the fork's image is reused while the package version stays the same; not every outgoing request is HTTPS. The code fixes are roadmap items.
+
+**Spelling:** the check needs its own entry for an all-caps word even when the lower-case word is listed (it failed on `CHANGELOG` with `changelog` listed). An all-caps form of an ordinary dictionary word (`SECURITY`) needs no entry. Web addresses are checked too (`keepachangelog`, `developercertificate`). `CHANGELOG`, `README`, `pem`, `allowlist`, `bestpractices`, `ruleset` and those two were added.
+
+**Rejected findings:** that the private reporting form doesn't work yet (private vulnerability reporting is already on); that `GOVERNANCE.md` requiring two-factor sign-in for new collaborators is an unverified claim (it is a rule for others, not a claim about the maintainer); that the badges might overclaim (they show the project's real "in progress" level); that the plan names Sean (every plan here does).
+
+**Process notes:** the plan check, the second security review and the plain-English check were skipped (their review service is at its monthly quota). The OpenSSF issues are opened after Sean approves the finished work.
