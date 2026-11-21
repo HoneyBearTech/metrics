@@ -64,12 +64,13 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 Toward OpenSSF Baseline Levels 1 and 2 and the Best Practices Passing and Silver badges (project 16966). One GitHub issue (label `openssf`) tracks each open item.
 
 - **Settings only Sean can change:** turn on the `main-protection` ruleset for `master` (pull requests and the CI checks required, no force-push or deletion); Actions workflow permissions read-only; secret scanning with push protection; Dependabot alerts on and Dependabot security updates off; the repository description (still upstream's); two-factor sign-in. Private vulnerability reporting is already on.
-- **The Best Practices form** for project 16966: answer it from the new documents (`SECURITY.md`, `CONTRIBUTING.md`, `GOVERNANCE.md`, `docs/`).
 - **New CI checks** in their own job: dependency review, secret scanning, a sign-off check. Sean applies the workflow files; check that Renovate pull requests still pass all checks before merging more.
+- **Code scanning and Dependabot findings:** worked through in the order of `docs/reports/2026-11-21-security-findings-plan.md` (ten jobs: the web server's sign-in redirect first, then the lock file refresh and overrides, small code fixes, deleting upstream scripts, Sean's dismissals, Docker pinning, settings, a workflow tidy-up and the reviewed major upgrades).
+- **The Best Practices form** for project 16966: answers drafted for Baseline 1 and 2, Passing and Silver (summary in the same report); Baseline 1 and 2 and Silver are saved on the site (2026-11-21); Passing still needs saving; Sean answers the few only he can (two-factor sign-in, secret scanning, workflow token, his own security knowledge).
 - **`renovate.json` from the house standard:** pinning action updates to commits and grouping the code scanning action. Pinning makes Renovate edit workflow files, which the merge rule leaves for Sean.
 - **After the first Scorecard run:** run it once by hand from the Actions tab, then sort its code scanning alerts in with the others. Its Branch-Protection check can't see every setting without an admin token; none is planned. Renovate will propose `ossf/scorecard-action` v2.6.0 (too new for the 3-day rule when the workflow was added).
 - **Action cleanup:** remove the `.env` file also when a run fails, and rebuild the fork's image when the commit changes (it is tagged by package version, so a persistent runner can reuse an old image).
-- **Web server:** the debug log prints its settings, tokens included; mask them. The insights routes don't check `restricted` or `maxusers`.
+- **Web server:** the debug log prints its settings, tokens included; mask them. The cache-reset password is made with `Math.random()`, which is not safe for secrets (job 1 of the findings plan). The insights routes don't check `restricted` or `maxusers`.
 - **Sanitising review:** check every rendering path for outside text (planned in `docs/assurance-case.md`).
 - **Known gaps the form will show:** no formatter check in CI, unpinned Docker base image and Deno install, no test coverage measurement, the older audit findings (see Next), signed releases (none yet).
 

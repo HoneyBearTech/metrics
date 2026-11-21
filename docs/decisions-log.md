@@ -253,3 +253,13 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **Not a pull request check:** Scorecard runs on `master`, so the checks listed in the repo's guidelines and the Renovate merge rule stay the same.
 - **Review findings:** the verification and the audit both found that `ossf` (in the action's name) was missing from the spelling list; added. Rejected: moving to v2.6.0 (too new, see above); dropping the house standard's name from the plan to save a spelling word (it names a public repository, nothing private).
 - **Process:** the plan check, second security review and plain-English check were skipped (their review service is at its monthly limit).
+
+## 2026-11-21 - security-findings-plan
+
+- **A plan, not fixes:** each fix is its own pull request with its own approval, so a failing one doesn't hold up the rest. Order: real bugs first, then the dependency fixes that need no major upgrade, then clean-up, then dismissals, then the bigger changes.
+- **Dependabot list read directly:** the team's access was widened to read Dependabot alerts on 2026-11-21. Its 56 alerts match the packages npm's audit reports.
+- **Overrides for packages inside puppeteer, not puppeteer 25:** puppeteer 25 needs a full Chrome path and stays skipped on purpose. Overrides fix four of its packages within the current version. No `glob` override: the test tools still use the old version's interface.
+- **`canvas` stays at 2.11:** the automatic audit fix wanted to move it back to 2.7, a downgrade.
+- **Dismiss rather than change** where the alert can't happen in this project (redirects that stay on the same site, values already checked before logging, the workflow author's own inputs, `extract-zip` that only runs when puppeteer downloads a browser, which the image never does). Only Sean can dismiss alerts.
+- **The Best Practices links are not in the repository:** they are long, change whenever the answers do, and would break the spelling check. The report keeps the summary; the saved answers on bestpractices.dev become the record.
+- **Process:** no plan approval step (research job). The second opinion and plain-English checks were skipped (their review service is at its monthly limit).

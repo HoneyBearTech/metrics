@@ -1,6 +1,7 @@
 ABCDEFGHIJKLMNOPQRSTUVWXY
 actionlint
 activeline
+addr
 allowlist
 allowtransparency
 alse
@@ -15,6 +16,7 @@ audioscrobbler
 Autoloaded
 automator
 automerge
+babel
 backreference
 basehead
 bestpractices
@@ -23,6 +25,7 @@ Bizau
 blankslate
 blog
 brackethighlighter
+browserslist
 btn
 cacheable
 cakeday
@@ -276,6 +279,7 @@ playcount
 playlists
 plugin
 poopmap
+postcss
 practicaldev
 prettylights
 previewable
