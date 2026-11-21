@@ -32,6 +32,7 @@ cacheable
 cakeday
 captcha
 changelog
+CHANGELOG
 charsets
 chmod
 chown
@@ -310,6 +311,7 @@ rbren
 rcopy
 readdir
 readme
+README
 readonly
 reated
 rebases
@@ -324,6 +326,7 @@ runsh
 SAPISID
 SAPISIDHASH
 sarif
+SARIF
 scorecalc
 scorecard
 screenshots
