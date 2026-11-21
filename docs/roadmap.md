@@ -4,6 +4,7 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 
 ## Done
 
+- `minimatch` refresh: seven old copies of the file-pattern matcher (3.1.2 and 5.1.6, under the linter, test tools, `glob`, `jake` and `purgecss`) updated to 3.1.5 and 5.1.9 within their allowed versions, closing Dependabot alerts 32 to 37; only `package-lock.json` changed (PR #90)
 - Embed page image address: the user name is encoded in the address the "generate" button loads the image from, the last request code scanning alert 9 pointed at after job 4; 2 more focused tests (PR #89)
 - Dependency overrides (job 3 of the findings plan): `package.json` makes npm use fixed versions of `tar` (7.5.23), `tar-fs` (3.1.3, for puppeteer only), `ws` (8.23.0) and `basic-ftp` (6.2.6), which puppeteer and the image library held at vulnerable versions; `tar-fs` 2.x and `ip` updated within their allowed versions; npm's audit findings 34 to 25, none critical; each override's reason and removal condition in `docs/dependencies.md` (PR #85)
 - Unused upstream scripts removed (job 5 of the findings plan): `.github/scripts/release.mjs`, `markdown_example.mjs`, `presets_examples.mjs` (code scanning alert 17) and `preview.mjs`, with the `presets` and `preview` commands and their ignore entries; `build.mjs` and `quickstart/` stay (PR #87)
