@@ -328,7 +328,8 @@
         this.generated.pending = true
         //Compute metrics
         try {
-          await axios.get(`/.uncache?&token=${(await axios.get(`/.uncache?user=${this.user}`)).data.token}`)
+          const {data: {token}} = await axios.get(`/.uncache?${new URLSearchParams({user: this.user})}`)
+          await axios.get(`/.uncache?${new URLSearchParams({token})}`)
           this.generated.content = (await axios.get(this.url)).data
           this.generated.error = null
         }

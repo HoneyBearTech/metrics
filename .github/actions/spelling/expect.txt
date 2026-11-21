@@ -234,6 +234,7 @@ middlewares
 minimumreleaseage
 mixedcase
 mkdir
+mkdtemp
 mockresize
 mozilla
 MSFT
@@ -283,6 +284,7 @@ playcount
 playlists
 plugin
 poopmap
+posix
 postcss
 practicaldev
 prettylights
@@ -405,6 +407,7 @@ ushed
 usr
 utf
 utm
+uuid
 vercel
 vnd
 vuejs

@@ -291,3 +291,12 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **`decode-uri-component` left as it is:** its parent only allows 0.2.x and the fix is 0.5.1, so it needs an override (added to the roadmap). The plan's estimate of 14 alerts closed included its 2, so expect about 12.
 - **Review findings:** none to fix. Noted: `crypto-js` is no longer maintained (roadmap); the newest versions in the lock file are only just past 3 days, so the dates must be checked again if the lock file is ever rebuilt before merging.
 - **Process:** no research step (researched for the findings plan). The plan check, second security review and plain-English review were skipped (their review service is at its monthly limit).
+
+## 2026-11-21 - small-code-fixes
+
+- **Encode on the page, not only check on the server:** the server already rejects odd user names on these routes, but encoding the name where the request address is built is what stops it from changing the address, and it is what code scanning looks for. `URLSearchParams` for the cache-reset query, `encodeURIComponent` for the insights path.
+- **A fresh private folder per run** (`fs.mkdtemp`, readable only by the current user) instead of a predictable file name in the shared temporary folder, removed in a `finally` so errors don't leave it behind.
+- **Added after review:** if the folder can't be made (for example a full disk), the plugin logs it and carries on without importing keys; before, the run never finished (audit, must-fix). Key ids must be hexadecimal before they go into the file name and the `gpg` command (security review, hardening; GitHub's key ids always are).
+- **Left for later:** the analyzer's cloned-repository folders, which also use a predictable name (on the roadmap).
+- **Review findings:** `uuid` in the wrong place in the spelling list (audit) - fixed.
+- **Process:** no research step (researched for the findings plan). The plan check, second security review and plain-English review were skipped (their review service is at its monthly limit).
