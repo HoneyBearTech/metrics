@@ -122,6 +122,7 @@ FRONTEND
 fss
 FTg
 fullyear
+gcp
 gemoji
 geocodes
 geopath
@@ -440,6 +441,7 @@ xcb
 Xcode
 xkcd
 xmlformat
+xzf
 ycombinator
 ymd
 yoda

@@ -131,7 +131,7 @@ The linter is ESLint: run `npm run linter` and fix everything it reports before 
 
 ## 🔑 Secret scan
 
-The **Secret scan** check runs [gitleaks](https://github.com/gitleaks/gitleaks) over the full history on every pull request and every push to `master`, using the settings in [`.gitleaks.toml`](.gitleaks.toml). If it flags a real secret, revoke the secret first, then remove it. If it flags a stand-in value (a test token or mock data), add a narrow exception with a reason to `.gitleaks.toml`.
+The **Secret scan** check runs [gitleaks](https://github.com/gitleaks/gitleaks) over the full history on every pull request and every push to `master`, using the settings in [`.gitleaks.toml`](.gitleaks.toml). If it flags a real secret, revoke the secret first, then remove it. Removing it in a later commit is not enough, because the scan reads the whole history and keeps failing on the old commit: after revoking, ask a maintainer to review an exception for that exact historical finding, or to agree a coordinated history rewrite. If it flags a stand-in value (a test token or mock data), add a narrow exception with a reason to `.gitleaks.toml`.
 
 ## 🐛 Reporting a bug
 
