@@ -4,6 +4,8 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 
 ## Done
 
+- Project documents and OpenSSF groundwork: a security policy with private reporting, contributing guide, code of conduct contact, governance, support and changelog files, project documentation pages in `docs/`, bug and feature forms, and the README badges for Best Practices project 16966 (PR #49)
+
 - CI faster and safer: lint installs without install scripts (18 seconds instead of 10.5 minutes), code scanning runs alongside lint, the formatter step that changed files before testing is gone, every job has a time limit (PR #43)
 
 - The fork's workflows: current actions pinned to exact commits, upstream-only jobs removed, one CI workflow passing on master (PR #10)
@@ -44,6 +46,19 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 - **Stale generated file under `.github/`:** the compatibility table. The examples workflow is gone (PR #10).
 - **Shared username filter:** `filters.text` lowercases the text but not the patterns, so callers that pass a mixed-case pattern never match. Fixed where it broke (recently used languages); a general fix would touch many plugins.
 - **Activity event types not seen live:** commit comments and wiki edits couldn't be checked against GitHub's current event format.
+
+## Security and project health
+
+Toward OpenSSF Baseline Levels 1 and 2 and the Best Practices Passing and Silver badges (project 16966). One GitHub issue (label `openssf`) tracks each open item.
+
+- **Settings only Sean can change:** turn on the `main-protection` ruleset for `master` (pull requests and the CI checks required, no force-push or deletion); Actions workflow permissions read-only; secret scanning with push protection; Dependabot alerts on and Dependabot security updates off; the repository description (still upstream's); two-factor sign-in. Private vulnerability reporting is already on.
+- **The Best Practices form** for project 16966: answer it from the new documents (`SECURITY.md`, `CONTRIBUTING.md`, `GOVERNANCE.md`, `docs/`).
+- **New CI checks** in their own job: Scorecard, dependency review, secret scanning, a sign-off check. Sean applies the workflow files; check that Renovate pull requests still pass all checks before merging more.
+- **`renovate.json` from the house standard:** pinning action updates to commits and grouping the code scanning action. Pinning makes Renovate edit workflow files, which the merge rule leaves for Sean.
+- **Action cleanup:** remove the `.env` file also when a run fails, and rebuild the fork's image when the commit changes (it is tagged by package version, so a persistent runner can reuse an old image).
+- **Web server:** the debug log prints its settings, tokens included; mask them. The insights routes don't check `restricted` or `maxusers`.
+- **Sanitising review:** check every rendering path for outside text (planned in `docs/assurance-case.md`).
+- **Known gaps the form will show:** no formatter check in CI, unpinned Docker base image and Deno install, no test coverage measurement, the older audit findings (see Next), signed releases (none yet).
 
 ## Not planned
 

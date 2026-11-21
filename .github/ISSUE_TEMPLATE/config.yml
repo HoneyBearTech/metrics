@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: 🔒 Report a security vulnerability
+    url: https://github.com/HoneyBearTech/metrics/security/policy
+    about: Read the security policy, then report privately. Never use a public issue.
   - name: 🙏 Request help with setup or report a possible issue
     url: https://github.com/HoneyBearTech/metrics/discussions/new?category=q-a
     about: Post here when having trouble with setup or configuration
