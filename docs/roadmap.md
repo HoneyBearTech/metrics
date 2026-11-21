@@ -4,6 +4,7 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 
 ## Done
 
+- `@actions/github` 9 (job 10 of the findings plan, first of its major upgrades): the Action's entry point loads it as a module namespace (version 9 has no default export, so Renovate's #79 alone stopped every Action run at start-up); `@actions/github` 9.1.1, and `@octokit/rest` 20.1.2 and `@octokit/graphql` 7.1.1 within their ranges, so no old `@octokit/request`, `request-error` or `plugin-paginate-rest` is left (Dependabot alerts 13 to 15); npm audit 25 to 18 (PR #91)
 - `minimatch` refresh: seven old copies of the file-pattern matcher (3.1.2 and 5.1.6, under the linter, test tools, `glob`, `jake` and `purgecss`) updated to 3.1.5 and 5.1.9 within their allowed versions, closing Dependabot alerts 32 to 37; only `package-lock.json` changed (PR #90)
 - Embed page image address: the user name is encoded in the address the "generate" button loads the image from, the last request code scanning alert 9 pointed at after job 4; 2 more focused tests (PR #89)
 - Dependency overrides (job 3 of the findings plan): `package.json` makes npm use fixed versions of `tar` (7.5.23), `tar-fs` (3.1.3, for puppeteer only), `ws` (8.23.0) and `basic-ftp` (6.2.6), which puppeteer and the image library held at vulnerable versions; `tar-fs` 2.x and `ip` updated within their allowed versions; npm's audit findings 34 to 25, none critical; each override's reason and removal condition in `docs/dependencies.md` (PR #85)
