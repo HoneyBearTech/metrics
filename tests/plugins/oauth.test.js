@@ -1,0 +1,109 @@
+//Tests for the web server's sign-in redirect (runs the real page script and the real check function)
+const fs = require("fs")
+const path = require("path")
+const vm = require("vm")
+const esm = require("./esm")
+
+describe("Sign-in redirect page", () => {
+  const html = fs.readFileSync(path.join(__dirname, "../../source/app/web/statics/oauth/redirect.html"), "utf8")
+  const start = html.indexOf("<script>") + "<script>".length
+  const end = html.indexOf("</script>", start)
+  if ((start < "<script>".length) || (end < 0))
+    throw new Error("The inline script was not found in redirect.html")
+  const script = html.slice(start, end)
+
+  //Run the page script with a fake browser and return where it sends the browser
+  function run(to, session = "session123") {
+    const params = new URLSearchParams()
+    if (to !== undefined)
+      params.set("to", to)
+    if (session)
+      params.set("session", session)
+    const saved = {}
+    const window = {location: {href: null}}
+    const location = {origin: "http://localhost:3000", search: `?${params}`}
+    const localStorage = {setItem: (key, value) => saved[key] = value}
+    vm.runInNewContext(script, {URL, URLSearchParams, location, localStorage, window})
+    return {href: window.location.href, saved}
+  }
+
+  test.each([
+    ["javascript:alert(1)"],
+    ["JavaScript:alert(1)"],
+    [" javascript:alert(1)"],
+    ["//other.site"],
+    ["/\\other.site"],
+    ["https://other.site/x"],
+    ["http://localhost:3001/"],
+    [""],
+    [undefined],
+  ])("Sends %j to the sign-in page", to => {
+    expect(run(to).href).toBe("/.oauth")
+  })
+
+  test.each([
+    ["/insights/someone", "http://localhost:3000/insights/someone"],
+    ["http://localhost:3000/insights/someone?x=1", "http://localhost:3000/insights/someone?x=1"],
+  ])("Sends %j to the same site", (to, expected) => {
+    expect(run(to).href).toBe(expected)
+  })
+
+  test("Still saves the session", () => {
+    expect(run("javascript:alert(1)", "session123").saved).toEqual({"session.metrics": "session123"})
+    expect(run("/insights/someone", "session456").saved).toEqual({"session.metrics": "session456"})
+  })
+})
+
+describe("Sign-in page", () => {
+  const script = fs.readFileSync(path.join(__dirname, "../../source/app/web/statics/oauth/script.js"), "utf8")
+
+  //Run the real page script with a fake Vue and build the query it sends to the server
+  function params(search) {
+    let options = null
+    function Vue(value) {
+      options = value
+    }
+    vm.runInNewContext(script, {Vue, location: {search}, URLSearchParams})
+    return options.computed.params.call({scopes: ["repo", "read:user"]}).toString()
+  }
+
+  test("Sends the return address when the page has one", () => {
+    const query = new URLSearchParams(params("?from=https%3A%2F%2Fmetrics.example.com%2Finsights%2Fsomeone"))
+    expect(query.get("from")).toBe("https://metrics.example.com/insights/someone")
+    expect(query.get("scopes")).toBe("repo read:user")
+  })
+
+  test.each(["", "?other=1", "?from="])("Leaves the return address out for %j", search => {
+    const query = new URLSearchParams(params(search))
+    expect(query.has("from")).toBe(false)
+    expect(query.get("scopes")).toBe("repo read:user")
+  })
+})
+
+describe("Sign-in return address check", () => {
+  const {kept, dropped} = esm("oauth.mjs", "check")
+
+  test("Keeps same-site addresses and paths, whatever the sign-in address looks like", () => {
+    expect(kept).toEqual({
+      full: "https://metrics.example.com/insights/someone?x=1",
+      path: "https://metrics.example.com/insights/someone",
+      slash: "https://metrics.example.com/insights/someone",
+      "sub path": "https://metrics.example.com/insights/someone",
+      "full address": "https://metrics.example.com/insights/someone",
+    })
+  })
+
+  test.each(["other", "port", "insecure", "script", "upper", "relative", "backslash", "missing", "empty", "nonsense", "no base", "bad base"])("Drops %s", name => {
+    expect(dropped[name]).toBeNull()
+  })
+})
+
+describe("Cache reset password", () => {
+  test("Is made with secure random bytes", () => {
+    const {tokens} = esm("oauth.mjs", "uncache")
+    expect(tokens).toHaveLength(2)
+    for (const token of tokens)
+      expect(token).toMatch(/^[a-f0-9]{64}$/)
+    expect(tokens[0]).not.toBe(tokens[1])
+  })
+})
