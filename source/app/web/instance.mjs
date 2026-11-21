@@ -215,7 +215,7 @@ export default async function({sandbox = false} = {}) {
       return res.sendStatus(400)
     }
     {
-      const token = `${Math.random().toString(16).replace("0.", "")}${Math.random().toString(16).replace("0.", "")}`
+      const token = crypto.randomBytes(32).toString("hex")
       actions.flush.set(token, user)
       return res.json({token})
     }
