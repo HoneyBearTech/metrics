@@ -261,6 +261,7 @@ openssf
 optimizable
 organisations
 orked
+ossf
 pageerror
 pagespeed
 pagespeedonline
