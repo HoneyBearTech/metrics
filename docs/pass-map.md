@@ -16,3 +16,4 @@
 | 2026-11-20 | renovate-review | Review of Renovate's first 15 update PRs: 11 safe to merge, 2 need a fix (sanitize-html 2.18.2, simple-git imports), 2 to close (faker, Vue); report in `docs/reports/2026-11-20-renovate-review.md` | #33 |
 | 2026-11-21 | renovate-fixes | sanitize-html 2.18.2 (replaces Renovate's #20) and simple-git 4.1.0 with the seven imports switched to its named export (replaces #25) | #36 |
 | 2026-11-21 | renovate-skip-majors | #22 (faker 10) and #26 (Vue 3) closed; `renovate.json` skips major updates for faker, Vue and vue-prism-component, and adds a 3-day wait for ordinary updates | #39 |
+| 2026-11-21 | merge-rule-renovate | The repo's guidelines, with the rule for when the team may merge a Renovate PR (only Renovate's own verified commits, only `package.json` and `package-lock.json`, every check green, new version at least 3 days old, majors only if a review names them, one at a time) | #40 |

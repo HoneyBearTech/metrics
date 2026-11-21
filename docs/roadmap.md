@@ -18,6 +18,8 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 
 ## In progress
 
+- **Merging the safe Renovate PRs one at a time** under the merge rule in the repo's guidelines (PR #40): #21, #23, #18, #17, #16, #19, #31, #32, then #24 and #29. #28 (a workflow update) stays for Sean.
+
 - **Renovate's first 15 update PRs** (review: `docs/reports/2026-11-20-renovate-review.md`): 11 to merge one at a time (7 now, 4 once their build and test pass), 2 needing a fix first (fixed in PR #36), 2 to close.
 
 ## Next
