@@ -6,7 +6,11 @@ const esm = require("./esm")
 
 describe("Sign-in redirect page", () => {
   const html = fs.readFileSync(path.join(__dirname, "../../source/app/web/statics/oauth/redirect.html"), "utf8")
-  const script = html.match(/<script>([\s\S]*?)<\/script>/)[1]
+  const start = html.indexOf("<script>") + "<script>".length
+  const end = html.indexOf("</script>", start)
+  if ((start < "<script>".length) || (end < 0))
+    throw new Error("The inline script was not found in redirect.html")
+  const script = html.slice(start, end)
 
   //Run the page script with a fake browser and return where it sends the browser
   function run(to, session = "session123") {
