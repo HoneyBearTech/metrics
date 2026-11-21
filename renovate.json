@@ -1,9 +1,20 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Renovate proposes dependency updates. An ordinary update waits three days after its release (minimumReleaseAge); fixes for vulnerability alerts skip the wait by Renovate's default. timestamp-optional lets an update from a registry that reports no release date through. See https://docs.renovatebot.com/configuration-options/#minimumreleaseage",
   "extends": [
     "config:recommended"
   ],
+  "minimumReleaseAge": "3 days",
+  "minimumReleaseAgeBehaviour": "timestamp-optional",
   "vulnerabilityAlerts": {
     "labels": ["security", "openssf"]
-  }
+  },
+  "packageRules": [
+    {
+      "description": "faker 10 needs the tests moved to ES modules and Vue 3 would break the web pages, so no major updates for either, including security pull requests (see docs/reports/2026-11-20-renovate-review.md). Minor and patch updates still come. Remove this rule once those migrations are done.",
+      "matchPackageNames": ["@faker-js/faker", "vue"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
+  ]
 }
