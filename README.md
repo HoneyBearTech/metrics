@@ -3,7 +3,7 @@
 [![CI](https://github.com/HoneyBearTech/metrics/actions/workflows/test.yml/badge.svg)](https://github.com/HoneyBearTech/metrics/actions/workflows/test.yml)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/16966/badge)](https://www.bestpractices.dev/projects/16966)
 [![OpenSSF Baseline](https://www.bestpractices.dev/projects/16966/baseline)](https://www.bestpractices.dev/projects/16966)
-<!-- Add once the Scorecard workflow exists: [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/HoneyBearTech/metrics/badge)](https://scorecard.dev/viewer/?uri=github.com/HoneyBearTech/metrics) -->
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/HoneyBearTech/metrics/badge)](https://scorecard.dev/viewer/?uri=github.com/HoneyBearTech/metrics)
 
 Generate metrics that can be embedded everywhere, including your GitHub profile readme! Supports users, organizations, and even repositories!
 
