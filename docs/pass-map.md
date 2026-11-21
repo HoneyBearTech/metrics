@@ -25,3 +25,4 @@
 | 2026-11-21 | focused-tests-ci | The fork's 15 focused tests (`tests/plugins/`) run in CI, in the same run as the metrics test files; CI totals 344 passed, 399 skipped | #68 |
 | 2026-11-21 | drop-upstream-tests | Upstream-only `tests/ci.test.js` and `tests/presets.test.js` removed, with the `test-contrib` and `test-presets` commands; notes for #68 | #69 |
 | 2026-11-21 | quiet-ci-warnings | PageSpeed plugin reads addresses with Node's `URL` class instead of `url.parse()`, with 3 focused tests; build-only installer setting in the Dockerfile; CI log has no deprecation warnings or installer lines; CI totals 347 passed, 399 skipped | #70 |
+| 2026-11-21 | security-findings-plan | Plan for the 18 code scanning alerts (2 real, in the web server's sign-in redirect) and the 56 Dependabot alerts (none in the fork's own code), in ten jobs; Best Practices answers drafted for all four checklists | #74 |
