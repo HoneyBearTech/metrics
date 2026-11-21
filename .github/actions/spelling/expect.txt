@@ -32,7 +32,6 @@ cacheable
 cakeday
 captcha
 changelog
-CHANGELOG
 charsets
 chmod
 chown
@@ -137,6 +136,7 @@ gionkunz
 Gister
 githubs
 githubusercontent
+gitleaks
 gitted
 globals
 Gmap
@@ -271,6 +271,7 @@ openssf
 optimizable
 organisations
 orked
+osps
 ossf
 pageerror
 pagespeed
@@ -309,7 +310,6 @@ rbren
 rcopy
 readdir
 readme
-README
 readonly
 reated
 rebases
@@ -324,7 +324,6 @@ runsh
 SAPISID
 SAPISIDHASH
 sarif
-SARIF
 scorecalc
 scorecard
 screenshots
@@ -376,6 +375,7 @@ timeline
 tlwg
 tmpdir
 todo
+toml
 topartists
 toptracks
 tracklist
