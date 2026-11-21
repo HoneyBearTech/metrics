@@ -4,6 +4,7 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 
 ## Done
 
+- Web server sign-in made safe (job 1 of the findings plan): the page after GitHub sign-in only follows a return address on the same site (no more `javascript:` or other-site redirects, code scanning alerts 4 and 6); the server keeps the real return address (it read the wrong parameter) and only a same-site one; the sign-in page no longer sends `from=null`; the cache-reset password comes from secure random bytes; 30 focused tests (PR #77)
 - OpenSSF Scorecard workflow (`.github/workflows/scorecard.yml`): runs weekly, on pushes to `master`, when branch rules change and on demand; read-only token by default, every action pinned to a commit; results go to the code scanning page and to the public Scorecard badge in the README (PR #73)
 - Quieter CI log: the PageSpeed plugin reads the website address with Node's `URL` class instead of the outdated `url.parse()` (no more deprecation warnings during the tests; an unreadable address now shows "Website URL is not valid"), with 3 focused tests; the Docker build tells the package installer nobody is there to answer, so its "unable to initialize" lines are gone (PR #70)
 
@@ -70,7 +71,7 @@ Toward OpenSSF Baseline Levels 1 and 2 and the Best Practices Passing and Silver
 - **`renovate.json` from the house standard:** pinning action updates to commits and grouping the code scanning action. Pinning makes Renovate edit workflow files, which the merge rule leaves for Sean.
 - **After the first Scorecard run:** run it once by hand from the Actions tab, then sort its code scanning alerts in with the others. Its Branch-Protection check can't see every setting without an admin token; none is planned. Renovate will propose `ossf/scorecard-action` v2.6.0 (too new for the 3-day rule when the workflow was added).
 - **Action cleanup:** remove the `.env` file also when a run fails, and rebuild the fork's image when the commit changes (it is tagged by package version, so a persistent runner can reuse an old image).
-- **Web server:** the debug log prints its settings, tokens included; mask them. The cache-reset password is made with `Math.random()`, which is not safe for secrets (job 1 of the findings plan). The insights routes don't check `restricted` or `maxusers`.
+- **Web server:** the debug log prints its settings, tokens included; mask them. The insights routes don't check `restricted` or `maxusers`. The sign-in start (`/.oauth/authenticate`) has no rate limit, and its list of pending sign-ins only shrinks when a sign-in finishes, so many unfinished sign-ins grow memory. The session reaches the browser in the redirect address, so it stays in the browser's history (upstream design).
 - **Sanitising review:** check every rendering path for outside text (planned in `docs/assurance-case.md`).
 - **Known gaps the form will show:** no formatter check in CI, unpinned Docker base image and Deno install, no test coverage measurement, the older audit findings (see Next), signed releases (none yet).
 
