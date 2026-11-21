@@ -219,3 +219,17 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 **Rejected:** fewer test combinations (every case is still needed); Docker or npm caching (the image build takes about 2 minutes); changing the workflow (CI already runs `npm run test-metrics`).
 
 **Process notes:** the work was interrupted once and resumed from the pushed branch. The plan check didn't run before the plan was approved. No second security review: the change touches only tests and a test-mode port setting. The plain-English check was skipped (its review service is at its monthly quota).
+
+## 2026-11-21 - focused-tests-ci
+
+**The focused tests join the first test run.** `tests/plugins/` was added to the same command as the four metrics test files, so all results are reported together and a failure in one file doesn't hide the others. A separate step after the community file was rejected: it would only run if everything before it passed. Four workers stay: the three focused files take seconds and fill in when a worker is free. CI went from 329 to 344 passed tests, about 15 seconds longer.
+
+**Rejected finding:** that `tests/ci.test.js` fails for any branch that edits `ARCHITECTURE.md`. True, but it is upstream's check, CI doesn't run it, and it already failed the same way after #48; removing it was the next job.
+
+**Process notes:** a small job, so the team was the Engineer, the Security Officer and the Auditor, with no research step or plan check. Sean approved the finished change before the notes were added, so they went into the next job's PR to keep that approval valid.
+
+## 2026-11-21 - drop-upstream-tests
+
+**Delete both upstream test files.** `tests/ci.test.js` enforced upstream's rules for outside contributors: only the original author could change files such as `ARCHITECTURE.md`, `tests/cases/` or `.github/scripts/`, and generated files must not be edited by hand. In this fork the team changes those files on purpose, so every branch failed it and `npm test` was unusable. `tests/presets.test.js` downloaded and checked the upstream project's presets, not this fork's code. This reverses the renovate-fixes decision to leave `tests/ci.test.js` as it was. Rejected: rewriting the checks for the fork (the repo's guidelines and the reviews already cover who changes what).
+
+**Kept:** the `.presets` line in `.gitignore`, because `.github/scripts/presets_examples.mjs` still uses that folder; that script is part of the separate cleanup of leftover upstream scripts.

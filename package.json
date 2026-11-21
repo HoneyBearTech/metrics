@@ -6,8 +6,6 @@
   "scripts": {
     "start": "node source/app/web/index.mjs",
     "test": "jest --runInBand",
-    "test-contrib": "jest --runInBand ci.test.js --noStackTrace",
-    "test-presets": "jest --runInBand presets.test.js --noStackTrace",
     "test-metrics": "jest --maxWorkers=4 --verbose tests/metrics/part- tests/plugins/ && jest --runInBand --verbose tests/metrics/community.test.js",
     "build": "node .github/scripts/build.mjs",
     "presets": "node .github/scripts/presets_examples.mjs",
