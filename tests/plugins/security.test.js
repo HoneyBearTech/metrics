@@ -25,32 +25,52 @@ async function load(file, respond) {
   const localStorage = {getItem: () => null}
   const context = {PrismComponent: {}, Vue, axios, window, localStorage, location: {search: "", pathname: "/"}, URLSearchParams, console: {warn: () => null}, setTimeout, Promise, Object, JSON, Intl}
   await vm.runInNewContext(script, context)
-  return {options, requests}
+  return {options, requests, window}
 }
 
 describe("Embed page", () => {
   async function generate(user) {
-    const {options, requests} = await load("embed/app.js", url => {
+    const {options, requests, window} = await load("embed/app.js", url => {
       if (url === "/.plugins.metadata")
-        return {core: {web: {}}}
+        return {core: {web: {}}, base: {web: {}}}
       if (url.startsWith("/.uncache?user="))
         return {token: "t/k?1"}
       return {}
     })
     requests.length = 0
-    const self = {user, url: "/result", generated: {pending: false}}
+    window.location = {protocol: "https:", host: "example.test"}
+    const self = {user, generated: {pending: false}, plugins: {enabled: {}, options: {}}, config: {}, templates: {selected: "classic", list: ["classic"]}}
+    self.url = options.computed.url.call(self)
     await options.methods.generate.call(self)
-    return requests
+    return {requests, url: self.url}
   }
 
   test("Encodes the user name and the token in the cache reset requests", async () => {
-    const requests = await generate(name)
+    const {requests} = await generate(name)
     expect(requests.slice(0, 2)).toEqual([`/.uncache?user=${encoded}`, "/.uncache?token=t%2Fk%3F1"])
-    expect(requests[2]).toBe("/result")
+  })
+
+  test("Encodes the user name in the page address", async () => {
+    const {url} = await generate(name)
+    const address = new URL(url)
+    expect(url).toContain(`/${encoded}`)
+    expect(address.pathname).toBe(`/${encoded}`)
+    expect(address.search).toBe("")
+    expect(address.hash).toBe("")
+    expect(url).not.toContain("?c#d")
+  })
+
+  test("Requests the same address when generating", async () => {
+    const {requests, url} = await generate(name)
+    expect(requests[2]).toBe(url)
+    expect(requests[2]).toBe(`https://example.test/${encoded}`)
   })
 
   test("Leaves a normal user name unchanged", async () => {
-    expect((await generate("octocat")).slice(0, 2)).toEqual(["/.uncache?user=octocat", "/.uncache?token=t%2Fk%3F1"])
+    const {requests, url} = await generate("octocat")
+    expect(requests.slice(0, 2)).toEqual(["/.uncache?user=octocat", "/.uncache?token=t%2Fk%3F1"])
+    expect(url).toBe("https://example.test/octocat")
+    expect(requests[2]).toBe(url)
   })
 })
 

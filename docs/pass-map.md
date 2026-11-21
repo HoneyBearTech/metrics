@@ -33,3 +33,4 @@
 | 2026-11-21 | small-code-fixes | User names encoded in the embed and insights pages' requests; signing keys in a private temporary folder, hexadecimal key ids only; random UUID fallback id; 12 focused tests; code scanning alerts 9, 10, 11, 12 and 16 gone on the pull request; CI 389 passed | #86 |
 | 2026-11-21 | remove-upstream-scripts | Four upstream-only scripts in `.github/scripts/` removed (code scanning alert 17), with the `presets` and `preview` commands, their `.gitignore` lines and one spelling word; CI 377 passed | #87 |
 | 2026-11-21 | dependency-overrides | Overrides for `tar`, `tar-fs` (puppeteer only), `ws` and `basic-ftp`; `tar-fs` 2.x and `ip` in range; npm audit 34 to 25, none critical; overrides documented with removal conditions | #85 |
+| 2026-11-21 | embed-url-encoding | User name encoded in the embed page's image address (code scanning alert 9, left open after #86); 2 focused tests; no open alerts on the pull request; CI 391 passed | #89 |

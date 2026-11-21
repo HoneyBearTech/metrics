@@ -317,3 +317,11 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **Found along the way:** `canvas` doesn't install in the Docker image at all (no ready-made build for Node 24, no build libraries in the image), on `master` too, so the `tar` override isn't exercised there today. Added to the roadmap. `decode-uri-component` can't be fixed by an override (the fixed version is a different module format); its vulnerable code is never reached, so its alerts go to the dismissal list.
 - **Review findings:** the dependency page's audit count was out of date and didn't say the overrides are exact pins (audit, security review) - fixed.
 - **Process:** no research step (researched for the findings plan). The plan check, second security review and plain-English review were skipped (their review service is at its monthly limit).
+
+## 2026-11-21 - embed-url-encoding
+
+- **Why a follow-up:** job 4 encoded the user name in the embed page's two cache-reset requests, but the same button then loads the image from the page's `url` address, which still had the name as it was. Code scanning moved alert 9 to that request after #86 merged. The verification in job 4 read the pull request's alert list too early to see it.
+- **Fixed rather than dismissed** (Sean's choice): one line, and real GitHub user names come out the same, so the copied link doesn't change.
+- **Left as it is:** the template name in the same address, which comes from the server's own list of templates.
+- **Review findings:** none. The verification pass and the audit's security pass covered the security review for this one-line job.
+- **Process:** no research step. The plan check, second security review and plain-English review were skipped (their review service is at its monthly limit).

@@ -216,7 +216,7 @@
         const template = (this.templates.selected !== this.templates.list[0]) ? [`template=${this.templates.selected}`] : []
         //Generated url
         const params = [...template, ...base, ...plugins, ...options, ...config].join("&")
-        return `${window.location.protocol}//${window.location.host}/${this.user}${params.length ? `?${params}` : ""}`
+        return `${window.location.protocol}//${window.location.host}/${encodeURIComponent(this.user)}${params.length ? `?${params}` : ""}`
       },
       //Embedded generated code
       embed() {
