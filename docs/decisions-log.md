@@ -119,3 +119,15 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 **Reviewer disagreements settled by checking directly.** simple-git 4 removes the default export (read from the published package), so #25 needs its imports changed, against the security review's "little compatibility risk". The faker advisory covers the installed 8.0.2 (GitHub's advisory database says versions up to 10.4.0), against one researcher's reading; the close decision stands because the vulnerable function is never called. On faker, the audit's "fix and merge" was rejected for the cost reason above.
 
 **Process notes:** a review job, so no plan approval; the second security review and the plain-English check were skipped (their review service is at its monthly quota).
+
+## 2026-11-21 - renovate-fixes
+
+**Fix Renovate's #20 and #25 in one PR, one commit per package.** Both were held back by the same review, and both only change the dependency files and import lines. Renovate closes its own PRs once the updates are on master. Rejected: pushing fixes onto Renovate's branches, which Renovate owns and rewrites.
+
+**sanitize-html 2.18.2 with its new sub-dependencies.** 2.18.2 brings in htmlparser2 12, `launder` and `dayjs`, and needs Node 22.12 or newer; CI and the Docker image use Node 24. One output change: thousands of unclosed `<iframe>` tags now come out as escaped text instead of being dropped. Both are safe.
+
+**simple-git 4.1.0, keeping each file's local name** (`import {simpleGit as git}` or `as sgit`), so no call site changes. Version 4's new argument and environment guards were checked against every git call metrics makes, including clone addresses that carry a token: none is refused, and metrics sets no git environment variables. A real private-repository clone wasn't possible here, so the next real run should confirm private-repository languages still show (roadmap).
+
+**Rejected findings:** the upstream `tests/ci.test.js` check that only the original author changes `.github/scripts/` and `tests/` fails locally for any fork change to those files; no workflow runs it, so it stays as is. Lockfile changes beyond the two packages are the sub-dependencies the new versions need, not stray churn.
+
+**Process notes:** the research step reused the Renovate review. The plan check, second security review and plain-English check were skipped (their review service is at its monthly quota). QA, the security review and the audit found nothing to fix, and the PR's CI (lint, code scanning, Docker build and tests) passed.
