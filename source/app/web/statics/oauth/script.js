@@ -59,7 +59,11 @@
     //Computed properties
     computed: {
       params() {
-        return new URLSearchParams({from: new URLSearchParams(location.search).get("from"), scopes: this.scopes.join(" ")})
+        const params = new URLSearchParams({scopes: this.scopes.join(" ")})
+        const from = new URLSearchParams(location.search).get("from")
+        if (from)
+          params.set("from", from)
+        return params
       },
       preview() {
         return /-preview$/.test(this.version)
