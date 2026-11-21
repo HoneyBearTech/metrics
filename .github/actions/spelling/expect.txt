@@ -233,6 +233,7 @@ middlewares
 minimumreleaseage
 mixedcase
 mkdir
+mkdtemp
 mockresize
 mozilla
 MSFT
