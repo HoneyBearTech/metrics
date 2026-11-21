@@ -6,7 +6,7 @@
 
 - In the Docker image, `canvas` 2.11.2 fails to install (no ready-made build for Node 24, no libraries to build it). The GIF maker `gifencoder` lists `canvas` as a required dependency, so npm drops it too. `gif()` in `source/app/metrics/utils.mjs` then can't load it and quietly returns a 1-pixel placeholder, so the skyline plugin's animation is blank. No test checks the GIF itself, so CI can't see it.
 - `gifencoder` never actually uses `canvas` the way the project calls it: it gets raw pixels. Only the install fails.
-- The image library the project already uses, `sharp`, can write animated GIFs from raw frames (tested: 3 frames, looping, 150 ms per frame).
+- The image library the project already uses, `sharp`, can write animated GIF images from raw frames (tested: 3 frames, looping, 150 ms per frame).
 - The alternatives work but cost more: `canvas` 3 through an override (a 24 MB ready-made binary downloaded from GitHub at build time without a checksum in the lock file, and the page library `jsdom` would start using it), or building `canvas` 2 in the image (about 200 MB of build libraries).
 
 ## What we'll change
