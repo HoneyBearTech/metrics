@@ -9,7 +9,7 @@ describe("Sign-in redirect page", () => {
   const script = html.match(/<script>([\s\S]*?)<\/script>/)[1]
 
   //Run the page script with a fake browser and return where it sends the browser
-  function run(to, session = "abc123") {
+  function run(to, session = "session123") {
     const params = new URLSearchParams()
     if (to !== undefined)
       params.set("to", to)
@@ -45,8 +45,34 @@ describe("Sign-in redirect page", () => {
   })
 
   test("Still saves the session", () => {
-    expect(run("javascript:alert(1)", "abc123").saved).toEqual({"session.metrics": "abc123"})
-    expect(run("/insights/someone", "def456").saved).toEqual({"session.metrics": "def456"})
+    expect(run("javascript:alert(1)", "session123").saved).toEqual({"session.metrics": "session123"})
+    expect(run("/insights/someone", "session456").saved).toEqual({"session.metrics": "session456"})
+  })
+})
+
+describe("Sign-in page", () => {
+  const script = fs.readFileSync(path.join(__dirname, "../../source/app/web/statics/oauth/script.js"), "utf8")
+
+  //Run the real page script with a fake Vue and build the query it sends to the server
+  function params(search) {
+    let options = null
+    function Vue(value) {
+      options = value
+    }
+    vm.runInNewContext(script, {Vue, location: {search}, URLSearchParams})
+    return options.computed.params.call({scopes: ["repo", "read:user"]}).toString()
+  }
+
+  test("Sends the return address when the page has one", () => {
+    const query = new URLSearchParams(params("?from=https%3A%2F%2Fmetrics.example.com%2Finsights%2Fsomeone"))
+    expect(query.get("from")).toBe("https://metrics.example.com/insights/someone")
+    expect(query.get("scopes")).toBe("repo read:user")
+  })
+
+  test.each(["", "?other=1", "?from="])("Leaves the return address out for %j", search => {
+    const query = new URLSearchParams(params(search))
+    expect(query.has("from")).toBe(false)
+    expect(query.get("scopes")).toBe("repo read:user")
   })
 })
 
