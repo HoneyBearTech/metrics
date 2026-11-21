@@ -20,6 +20,7 @@ jobs:
   lint:
     name: Lint code
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -29,8 +30,9 @@ jobs:
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
+      # The linter needs no install scripts (the only one downloads a browser and took about 10 minutes)
       - name: Setup metrics
-        run: npm ci
+        run: npm ci --ignore-scripts
       - name: Run linter
         run: npm run linter
 
@@ -39,16 +41,12 @@ jobs:
     name: Build and test
     runs-on: ubuntu-latest
     needs: [ lint ]
+    timeout-minutes: 60
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Format code with dprint
-        run: |
-          npm install -g dprint@0.41.0
-          mkdir -v -p /home/runner/.cache/dprint/cache
-          npx dprint fmt --config .github/config/dprint.json
       # Build and test run in the same job, so a fixed local tag is enough
       - name: Build test image
         run: docker build -t metrics:ci .
@@ -59,7 +57,7 @@ jobs:
   analyze:
     name: Analyze code
     runs-on: ubuntu-latest
-    needs: [ lint ]
+    timeout-minutes: 30
     permissions:
       actions: read
       contents: read
