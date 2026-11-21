@@ -9,7 +9,7 @@ This fork has made no releases yet, so everything is under "Unreleased". It buil
 ### Added
 
 - Project documents: governance, support, this changelog, a security policy with private reporting, contributing and conduct guidance, the `docs/` pages, issue forms and a sign-off checkbox in the pull request template.
-- A renovate configuration (`renovate.json`) and the repository's guidelines, with the rule for when a Renovate pull request may be merged (PR #40).
+- A Renovate configuration (`renovate.json`) and the repository's guidelines, with the rule for when a Renovate pull request may be merged (PR #40).
 - `steam` and `notable` plugin options (PR #6).
 
 ### Changed

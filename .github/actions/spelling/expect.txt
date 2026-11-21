@@ -27,6 +27,7 @@ cacheable
 cakeday
 captcha
 changelog
+CHANGELOG
 charsets
 chmod
 chown
@@ -260,6 +261,7 @@ panosoft
 params
 patchnote
 pdated
+pem
 pened
 PGP
 playcount
@@ -287,6 +289,7 @@ rbren
 rcopy
 readdir
 readme
+README
 readonly
 reated
 rebases
