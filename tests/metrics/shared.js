@@ -43,7 +43,7 @@ async function get(url) {
 }
 
 //Web instance (each test file starts its own, on its own port)
-function webinstance(port) {
+function webInstance(port) {
   const web = {port}
   web.run = async vars => (await get(`http://localhost:${port}/lowlighter?${new url.URLSearchParams(Object.fromEntries(Object.entries(vars).map(([key, value]) => [key.replace(/^plugin_/, "").replace(/_/g, "."), value])))}`)).status === 200
   web.start = async () =>
@@ -60,7 +60,7 @@ function webinstance(port) {
 }
 
 //Web instance placeholder
-function placeholderinstance(port) {
+function placeholderInstance(port) {
   require("../../source/app/web/statics/embed/app.placeholder.js")
   const placeholder = globalThis.placeholder
   delete globalThis.placeholder
@@ -91,7 +91,7 @@ function placeholderinstance(port) {
 }
 
 //Load metadata (as jest doesn't support ESM modules, we use this dirty hack)
-function loadmetadata() {
+function loadMetadata() {
   return JSON.parse(`${
     processes.spawnSync("node", [
       "--input-type",
@@ -107,6 +107,9 @@ function index(metadata) {
   const tests = []
   for (const type of ["plugins", "templates"]) {
     for (const name in metadata[type]) {
+      //Installed community templates (@name) have no cases file and may be left over by an interrupted run
+      if (name.startsWith("@"))
+        continue
       const cases = yaml
         .load(fs.readFileSync(path.join(root, "tests/cases", `${name}.${type.replace(/s$/, "")}.yml`), "utf8"))
         ?.map(({name: test, with: inputs, modes = [], timeout}) => {
@@ -124,41 +127,39 @@ function index(metadata) {
 //Split tests between files
 //Cases are spread over the shards using the time each one took (in seconds, see weights.json), heaviest first, each on the lightest shard so far
 //The result only depends on the cases and on weights.json, so a file always gets the same cases
-//All community template cases go to shard 0, which is the only one to clean the folders they write to
+//Community template cases are not part of any shard (they run alone in their own file, see run()), so they get no shard (null)
 function split(tests, shards, weights = require("./weights.json")) {
   const fallback = 10
   const load = new Array(shards).fill(0)
   const assigned = new Map()
-  const rest = []
-  for (const test of tests) {
-    if (test[2].community)
-      assigned.set(test, 0)
-    else
-      rest.push(test)
-  }
+  const rest = tests.filter(test => !test[2].community)
   const weight = test => weights[test[0]] ?? fallback
   for (const test of rest.map((test, i) => ({test, i})).sort((a, b) => (weight(b.test) - weight(a.test)) || (a.i - b.i)).map(({test}) => test)) {
     const shard = load.indexOf(Math.min(...load))
     load[shard] += weight(test)
     assigned.set(test, shard)
   }
-  return tests.map(test => [test, assigned.get(test)])
+  return tests.map(test => [test, assigned.has(test) ? assigned.get(test) : null])
 }
 
-/**Register the tests of one file */
-function run({shard, shards, port}) {
-  const web = webinstance(port)
-  const placeholder = placeholderinstance(port)
-  const metadata = loadmetadata()
+/**Register the tests of one file
+ * Either a shard of the cases ({shard, shards}), or all the community template cases ({community: true}).
+ * The community cases install and delete folders in source/templates, which every other test reads, so their file must never run next to another one
+ */
+function run({shard, shards, port, community = false}) {
+  const web = webInstance(port)
+  const placeholder = placeholderInstance(port)
+  const metadata = loadMetadata()
   //Cases of this file, in the same order as in the cases files
-  const tests = split(index(metadata), shards).filter(([_, assigned]) => assigned === shard).map(([test]) => test)
-  const community = path.join(root, "source/templates/@classic")
+  const tests = split(index(metadata), shards ?? 1).filter(([{2: {community: isCommunity}}, assigned]) => community ? isCommunity : assigned === shard).map(([test]) => test)
+  const folders = ["@classic", "@terminal", ".community"].map(folder => path.join(root, "source/templates", folder))
+  const clean = async () => await Promise.all(folders.map(folder => fs.promises.rm(folder, {recursive: true, force: true})))
 
   //Setup
   beforeAll(async () => {
-    //Clean community template (only the file that runs the community template cases does it)
-    if (tests.some(([_, __, {community}]) => community))
-      await fs.promises.rm(community, {recursive: true, force: true})
+    //Clean community templates (only the file that runs the community template cases does it)
+    if (community)
+      await clean()
     //Start web instance
     await web.start()
   })
@@ -166,9 +167,9 @@ function run({shard, shards, port}) {
   afterAll(async () => {
     //Stop web instance
     await web.stop()
-    //Clean community template
-    if (tests.some(([_, __, {community}]) => community))
-      await fs.promises.rm(community, {recursive: true, force: true})
+    //Clean community templates
+    if (community)
+      await clean()
   })
 
   //Tests run
