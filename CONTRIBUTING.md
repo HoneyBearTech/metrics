@@ -103,7 +103,7 @@ Every commit must carry a `Signed-off-by` line, which certifies that you wrote t
 git commit -s -m "Fix the habits plugin when there are no events"
 ```
 
-To add it to commits you already made, use `git rebase --signoff master` and push again. The **DCO sign-off** check enforces this on every pull request and leaves out Renovate's commits and merge commits.
+To add it to commits you already made, use `git rebase --signoff master` and push again. The **DCO sign-off** check enforces this on every pull request and leaves out merge commits and commits made by Renovate or Dependabot. It reads at most the first 250 commits of a pull request (a GitHub limit), so split very large pull requests.
 
 ## 🛠️ Building and testing from source
 
