@@ -6,7 +6,7 @@ import { Analyzer } from "../../../source/plugins/languages/analyzer/analyzer.mj
 import { IndepthAnalyzer } from "../../../source/plugins/languages/analyzer/indepth.mjs"
 
 /**Run the signing keys import with a fake shell and two fake keys */
-async function gpg({fail}) {
+async function gpg({fail, keys = [{key_id: "1A2B3C4D", raw_key: "key-a", emails: []}, {key_id: "5E6F7A8B", raw_key: "key-b", emails: []}], tmpdir}) {
   delete process.env.GITHUB_ACTIONS
   const seen = []
   const shell = {
@@ -18,12 +18,18 @@ async function gpg({fail}) {
         throw new Error("shell failure")
     },
   }
-  const keys = [{key_id: "1A2B3C4D", raw_key: "key-a", emails: []}, {key_id: "5E6F7A8B", raw_key: "key-b", emails: []}]
   const rest = {users: {listGpgKeysForUser: async () => ({data: keys})}}
   const analyzer = new IndepthAnalyzer("octocat", {shell, rest})
-  analyzer.debug = () => null
+  const logs = []
+  analyzer.debug = message => logs.push(message)
+  const real = os.tmpdir()
+  const count = () => fs.readdirSync(real).filter(name => name.startsWith("metrics-gpg-")).length
+  const before = count()
+  if (tmpdir)
+    process.env.TMPDIR = tmpdir
   await analyzer.gpgarmor()
-  return {seen, remaining: seen.map(({dir}) => fs.existsSync(dir)), posix: process.platform !== "win32"}
+  process.env.TMPDIR = real
+  return {logs, left: count() - before, commands: seen.map(({command}) => command), seen, remaining: seen.map(({dir}) => fs.existsSync(dir)), posix: process.platform !== "win32"}
 }
 
 /**Keys import, with a working shell */
@@ -31,6 +37,17 @@ export const gpgOk = () => gpg({fail: false})
 
 /**Keys import, with a failing shell */
 export const gpgFail = () => gpg({fail: true})
+
+/**Keys import, when the private folder cannot be created */
+export const gpgNoFolder = () => gpg({fail: false, tmpdir: paths.join(os.tmpdir(), "metrics-missing-folder", "x")})
+
+/**Keys import, with unexpected key ids */
+export const gpgBadId = () => gpg({fail: false, keys: [
+  {key_id: "1A2B; rm -rf x", raw_key: "bad", emails: []},
+  {key_id: "../1A2B", raw_key: "bad", emails: []},
+  {key_id: "", raw_key: "bad", emails: []},
+  {key_id: "5e6f7a8b", raw_key: "key-b", emails: []},
+]})
 
 /**No keys: no folder is created */
 export async function gpgNone() {

@@ -111,6 +111,22 @@ describe("Signing keys", () => {
     check(esm("analyzer.mjs", "gpgFail"))
   })
 
+  test("Skips the import when the private folder cannot be created", () => {
+    const {commands, left, logs} = esm("analyzer.mjs", "gpgNoFolder")
+    expect(commands).toEqual([])
+    expect(left).toBe(0)
+    expect(logs.some(log => log.includes("an error occurred while creating a folder for gpg keys"))).toBe(true)
+  })
+
+  test("Skips keys whose id is not hexadecimal", () => {
+    const {commands, seen, logs} = esm("analyzer.mjs", "gpgBadId")
+    //Keys are fetched for the login and for web-flow, so the valid one is seen twice
+    expect(commands).toHaveLength(2)
+    expect(seen.every(({file, content}) => path.basename(file) === "5e6f7a8b.gpg" && content === "key-b")).toBe(true)
+    expect(commands.join("\n")).not.toMatch(/rm -rf|\.\.\//)
+    expect(logs.filter(log => log.includes("unexpected id"))).toHaveLength(6)
+  })
+
   test("Creates no folder when there are no keys", () => {
     const {before, after} = esm("analyzer.mjs", "gpgNone")
     expect(after).toBe(before)

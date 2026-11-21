@@ -64,11 +64,24 @@ export class IndepthAnalyzer extends Analyzer {
     }
 
     //Import gpg keys (saved in a private temporary folder)
-    if (!this.gpg.length)
+    const keys = this.gpg.filter(({id}) => {
+      if (/^[0-9A-Fa-f]+$/.test(`${id}`))
+        return true
+      this.debug("skipping gpg key with an unexpected id")
+      return false
+    })
+    if (!keys.length)
       return
-    const dir = await fs.mkdtemp(paths.join(os.tmpdir(), "metrics-gpg-"))
+    let dir
     try {
-      for (const {id, pub} of this.gpg) {
+      dir = await fs.mkdtemp(paths.join(os.tmpdir(), "metrics-gpg-"))
+    }
+    catch (error) {
+      this.debug(`an error occurred while creating a folder for gpg keys (${error}), skipping import...`)
+      return
+    }
+    try {
+      for (const {id, pub} of keys) {
         const path = paths.join(dir, `${id}.gpg`)
         try {
           this.debug(`saving gpg ${id} to ${path}`)
