@@ -32,10 +32,20 @@ action.run = async vars =>
     })
   })
 
+//Request that fails with a plain error (jest workers can't send axios errors back, as they hold sockets and so can't be serialized)
+async function get(url) {
+  try {
+    return await axios.get(url)
+  }
+  catch (error) {
+    throw new Error(`GET ${url.replace(/\?.*$/, "")} failed: ${error.message}${error.response ? `\n${`${error.response.data}`.substring(0, 2000)}` : ""}`)
+  }
+}
+
 //Web instance (each test file starts its own, on its own port)
 function webinstance(port) {
   const web = {port}
-  web.run = async vars => (await axios.get(`http://localhost:${port}/lowlighter?${new url.URLSearchParams(Object.fromEntries(Object.entries(vars).map(([key, value]) => [key.replace(/^plugin_/, "").replace(/_/g, "."), value])))}`)).status === 200
+  web.run = async vars => (await get(`http://localhost:${port}/lowlighter?${new url.URLSearchParams(Object.fromEntries(Object.entries(vars).map(([key, value]) => [key.replace(/^plugin_/, "").replace(/_/g, "."), value])))}`)).status === 200
   web.start = async () =>
     new Promise((solve, reject) => {
       let [stdout, stderr] = ["", ""]
@@ -59,7 +69,7 @@ function placeholderinstance(port) {
     ejs,
     axios: {
       async get(url) {
-        return axios.get(`http://localhost:${port}${url}`)
+        return get(`http://localhost:${port}${url}`)
       },
     },
   })
