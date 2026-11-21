@@ -63,28 +63,37 @@ export class IndepthAnalyzer extends Analyzer {
       this.debug(`an error occurred while fetching gpg keys (${error})`)
     }
 
-    //Import gpg keys
-    for (const {id, pub} of this.gpg) {
-      const path = paths.join(os.tmpdir(), `${this.uid}.${id}.gpg`)
-      try {
-        this.debug(`saving gpg ${id} to ${path}`)
-        await fs.writeFile(path, pub)
-        await this.shell.run(`gpg ${path}`)
-        if (process.env.GITHUB_ACTIONS) {
-          this.debug(`importing gpg ${id}`)
-          await this.shell.run(`gpg --import ${path}`)
+    //Import gpg keys (saved in a private temporary folder)
+    if (!this.gpg.length)
+      return
+    const dir = await fs.mkdtemp(paths.join(os.tmpdir(), "metrics-gpg-"))
+    try {
+      for (const {id, pub} of this.gpg) {
+        const path = paths.join(dir, `${id}.gpg`)
+        try {
+          this.debug(`saving gpg ${id} to ${path}`)
+          await fs.writeFile(path, pub)
+          await this.shell.run(`gpg ${path}`)
+          if (process.env.GITHUB_ACTIONS) {
+            this.debug(`importing gpg ${id}`)
+            await this.shell.run(`gpg --import ${path}`)
+          }
+          else {
+            this.debug("skipping import of gpg keys as we are not in GitHub Actions environment")
+          }
         }
-        else {
-          this.debug("skipping import of gpg keys as we are not in GitHub Actions environment")
+        catch (error) {
+          this.debug(`an error occurred while importing gpg ${id}, skipping...`)
+        }
+        finally {
+          this.debug(`cleaning ${path}`)
+          await fs.rm(path, {recursive: true, force: true}).catch(error => this.debug(`failed to clean ${path} (${error})`))
         }
       }
-      catch (error) {
-        this.debug(`an error occurred while importing gpg ${id}, skipping...`)
-      }
-      finally {
-        this.debug(`cleaning ${path}`)
-        await fs.rm(path, {recursive: true, force: true}).catch(error => this.debug(`failed to clean ${path} (${error})`))
-      }
+    }
+    finally {
+      this.debug(`cleaning ${dir}`)
+      await fs.rm(dir, {recursive: true, force: true}).catch(error => this.debug(`failed to clean ${dir} (${error})`))
     }
   }
 
