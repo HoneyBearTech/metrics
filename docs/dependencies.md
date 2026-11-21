@@ -26,6 +26,19 @@ Targets, from when a finding is known, not a contract:
 
 A fix that needs a major upgrade or a migration is planned on the [roadmap](roadmap.md) instead, with the reason. For a vulnerability in metrics itself, see [SECURITY.md](../SECURITY.md).
 
+## Overrides
+
+Some packages ask for an exact old version of a library, or an old major version, so a lock file refresh can't move them. The `overrides` section of `package.json` tells npm to use a fixed version instead. Each override is listed here so it can be removed once it is no longer needed.
+
+- **`tar` 7.5.23** (everywhere). The image library `canvas` uses an installer that asks for `tar` 6, which has known vulnerabilities. It only runs while `canvas` installs. Remove it when `canvas` is upgraded to a version whose installer already uses `tar` 7.5.21 or later.
+- **`tar-fs` 3.1.3, only under `@puppeteer/browsers`**. Puppeteer asks for exactly 3.0.4. The scope keeps the 2.x copy that `libxmljs2` uses (through an install helper) on 2.x; that copy needs no override because its own range already allows the fixed 2.1.4 and later. Remove it when puppeteer is upgraded to a version that asks for `tar-fs` 3.1.1 or later.
+- **`ws` 8.23.0**. Puppeteer asks for exactly 8.14.1. Remove it when puppeteer is upgraded to a version that asks for `ws` 8.21.0 or later (`jsdom` already allows it).
+- **`basic-ftp` 6.2.6**. Puppeteer's proxy support asks for 5.x. It is only used if a proxy setting is fetched over FTP, which this project never does. Remove it when puppeteer is upgraded to a version whose proxy support asks for `basic-ftp` 6.2.4 or later.
+
+`ip` and the 2.x `tar-fs` are fixed without overrides: the lock file moves them to the fixed versions their parents already allow.
+
+If an override breaks something, remove just that one and plan the matching alerts for dismissal or a later upgrade.
+
 ## Known gaps
 
 - The Docker base image (`node:24-trixie-slim`) and the Deno install script are not pinned to a digest or a release.
