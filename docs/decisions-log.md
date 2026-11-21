@@ -282,3 +282,12 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **The workflow file was added by the owner** through GitHub's web editor, because this machine's settings don't let the team edit workflow files. The first paste lost its indentation; the corrected file and the first commit's sign-off were combined into one commit on this branch, and the owner's separate pull request (#81) was closed.
 - **Review findings:** lower-case `dco` was missing from the spelling list (verification and audit; the upper-case entry was replaced, since the lower-case one covers both); the three descriptions now name the check and all three exemptions (audit, security review).
 - **Process:** no research step (house workflow in use elsewhere). The plan check and second security review were skipped (their review service is at its monthly limit).
+
+## 2026-11-21 - small-code-fixes
+
+- **Encode on the page, not only check on the server:** the server already rejects odd user names on these routes, but encoding the name where the request address is built is what stops it from changing the address, and it is what code scanning looks for. `URLSearchParams` for the cache-reset query, `encodeURIComponent` for the insights path.
+- **A fresh private folder per run** (`fs.mkdtemp`, readable only by the current user) instead of a predictable file name in the shared temporary folder, removed in a `finally` so errors don't leave it behind.
+- **Added after review:** if the folder can't be made (for example a full disk), the plugin logs it and carries on without importing keys; before, the run never finished (audit, must-fix). Key ids must be hexadecimal before they go into the file name and the `gpg` command (security review, hardening; GitHub's key ids always are).
+- **Left for later:** the analyzer's cloned-repository folders, which also use a predictable name (on the roadmap).
+- **Review findings:** `uuid` in the wrong place in the spelling list (audit) - fixed.
+- **Process:** no research step (researched for the findings plan). The plan check, second security review and plain-English review were skipped (their review service is at its monthly limit).
