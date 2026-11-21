@@ -53,7 +53,7 @@ cwd
 dajneem
 datapoints
 dayjs
-DCO
+dco
 dded
 dearmor
 debconf
