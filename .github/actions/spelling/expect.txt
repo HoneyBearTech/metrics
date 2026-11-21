@@ -274,7 +274,6 @@ pagespeed
 pagespeedonline
 panosoft
 params
-patchnote
 pdated
 pem
 pened
