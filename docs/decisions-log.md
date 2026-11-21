@@ -156,3 +156,9 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 
 **Process notes:** the plan check and the second security review were skipped (their review service is at its monthly quota); the first audit start stopped at a sign-in prompt and was rerun on the other engine.
 
+## 2026-11-21 - spelling-dayjs
+
+**Three words, not one.** The plan added `dayjs`, the one word master's spelling check flagged after #36. The audit found two more that would fail as soon as #39 and #40 merged (they had, by then): `minimumreleaseage` in the documentation link in `renovate.json`, and `automerge` in the merge-rule plan. All three went into the dictionary in this PR, since its goal is a passing spelling check. The security review found nothing to fix.
+
+**Why it matters now:** the merge rule needs both spelling runs green on a Renovate PR, and the check scans the whole repository, so one unknown word anywhere blocks every merge.
+
