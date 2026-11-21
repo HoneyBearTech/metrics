@@ -174,3 +174,14 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 
 **Process notes:** the plan check and the second security review were skipped (their review service is at its monthly quota).
 
+## 2026-11-21 - tests-review
+
+**A review, no changes.** Two researchers (runners and cases; mocks), the security review and an independent audit looked at everything in `tests/`. The report is `docs/reports/2026-11-21-tests-review.md`. The main claims were checked again against the code: the inverted SVG check, the 30-second lines delay, the mock name that needs a space, the unnamed notable query, the placeholder keys, the notable counting bug and the Last.fm faker call.
+
+**Keep `tests/mocks/` and `tests/secrets.json`.** The action and the web server load the mocks themselves when mocked data is on, and the case generator reads the placeholder secrets. Neither is test-only.
+
+**Recommended first:** run the focused tests in CI through the `test-metrics` script (no workflow change) and a 1-second lines delay in tests. Making unmocked requests fail is the most valuable change, but it will turn up missing mocks, so it comes after the small fixes.
+
+**Not recommended:** removing the upstream author's name from test data (inert); changing the 399 skipped test combinations (by design).
+
+**Process notes:** the second security review and the plain-English read were skipped (their review service is at its monthly quota).
