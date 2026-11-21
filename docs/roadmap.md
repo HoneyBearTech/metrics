@@ -14,7 +14,7 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 
 - Recent activity on trimmed pull-request events, and recently used languages for usernames with capitals (PR #8), confirmed by a real run.
 
-- Spelling check passing: flagged words added to its dictionary (PR #11, `renovatebot` from Renovate's setup in PR #27, and `openssf` from its label config in PR #30)
+- Spelling check passing: flagged words added to its dictionary (PR #11, `renovatebot` from Renovate's setup in PR #27, and `openssf` from its label config in PR #30; `dayjs`, `automerge` and `minimumreleaseage` from the Renovate jobs in PR #41)
 
 ## In progress
 
