@@ -13,6 +13,7 @@ import mocks from "../../../tests/mocks/index.mjs"
 import metrics from "../metrics/index.mjs"
 import presets from "../metrics/presets.mjs"
 import setup from "../metrics/setup.mjs"
+import { sameSite } from "./oauth.mjs"
 
 /**App */
 export default async function({sandbox = false} = {}) {
@@ -231,7 +232,7 @@ export default async function({sandbox = false} = {}) {
       //Create a state to protect against cross-site request forgery attacks
       const state = crypto.randomBytes(64).toString("hex")
       const scopes = new url.URLSearchParams(req.query).get("scopes")
-      const from = new url.URLSearchParams(req.query).get("scopes")
+      const from = sameSite(new url.URLSearchParams(req.query).get("from"), conf.settings.oauth.url)
       states.set(state, {from, scopes})
       console.debug(`metrics/app/oauth > request ${state}`)
       //OAuth through GitHub
@@ -271,7 +272,7 @@ export default async function({sandbox = false} = {}) {
         console.debug(`metrics/app/oauth > created session ${session.substring(0, 6)}`)
         //Redirect user back
         const {from} = states.get(state)
-        return res.redirect(`/.oauth/redirect?${new url.URLSearchParams({to: from, session})}`)
+        return res.redirect(`/.oauth/redirect?${new url.URLSearchParams({...(from ? {to: from} : {}), session})}`)
       }
       catch {
         console.debug("metrics/app/oauth > authorization failed")
