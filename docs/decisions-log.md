@@ -170,7 +170,7 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 
 **How it was applied.** This machine blocks the team from editing workflow files, so the plan carried the exact patch and Sean applied it himself after approving the plan. The pushed change was checked line by line against the approved patch.
 
-**Follow-up PR #44.** #43 merged before its final review finished. The audit found that two words in its plan (`linting`, `rebases`) failed the spelling check on master and on every PR. They're added to the dictionary, together with these notes. The security review found nothing to fix, and the audit found no problem in the workflow itself.
+**Follow-up PR #46.** #43 merged before its final review finished. The audit found that two words in its plan (`linting`, `rebases`) failed the spelling check on master and on every PR. They're added to the dictionary, together with these notes. The security review found nothing to fix, and the audit found no problem in the workflow itself.
 
 **Process notes:** the plan check and the second security review were skipped (their review service is at its monthly quota).
 
