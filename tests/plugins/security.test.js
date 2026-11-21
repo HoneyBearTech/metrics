@@ -90,7 +90,7 @@ describe("Signing keys", () => {
       expect(dir).not.toBe(tmpdir)
       expect(path.dirname(dir)).toBe(tmpdir)
       expect(path.basename(dir).startsWith("metrics-gpg-")).toBe(true)
-      expect(path.basename(file)).toMatch(/^(AAAA|BBBB).gpg$/)
+      expect(path.basename(file)).toMatch(/^(1A2B3C4D|5E6F7A8B).gpg$/)
       expect(exists).toBe(true)
       expect(content).toMatch(/^key-[ab]$/)
       if (posix)

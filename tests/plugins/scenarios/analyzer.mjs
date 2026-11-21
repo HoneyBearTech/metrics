@@ -18,7 +18,7 @@ async function gpg({fail}) {
         throw new Error("shell failure")
     },
   }
-  const keys = [{key_id: "AAAA", raw_key: "key-a", emails: []}, {key_id: "BBBB", raw_key: "key-b", emails: []}]
+  const keys = [{key_id: "1A2B3C4D", raw_key: "key-a", emails: []}, {key_id: "5E6F7A8B", raw_key: "key-b", emails: []}]
   const rest = {users: {listGpgKeysForUser: async () => ({data: keys})}}
   const analyzer = new IndepthAnalyzer("octocat", {shell, rest})
   analyzer.debug = () => null
