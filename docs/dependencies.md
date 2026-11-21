@@ -29,4 +29,4 @@ A fix that needs a major upgrade or a migration is planned on the [roadmap](road
 ## Known gaps
 
 - The Docker base image (`node:24-trixie-slim`) and the Deno install script are not pinned to a digest or a release.
-- About 40 of the 52 findings of `npm audit` have no Renovate pull request, mostly in puppeteer, tar, crypto-js and express; each needs its own look. See the roadmap.
+- After the lock file refresh (2026-11-21), `npm audit` reports 34 findings (1 critical, in `tar`), down from 43. Most come from packages that puppeteer and the image library hold at old versions; the overrides job handles those, and the rest is planned in `docs/reports/2026-11-21-security-findings-plan.md`.
