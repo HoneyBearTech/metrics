@@ -1,6 +1,6 @@
 //Imports
-import pagespeed from "../../../source/plugins/pagespeed/index.mjs"
 import { formatters } from "../../../source/app/metrics/utils.mjs"
+import pagespeed from "../../../source/plugins/pagespeed/index.mjs"
 
 //Run the plugin with fake imports (no network access, `imports.url` is left out on purpose)
 async function run(url) {
