@@ -187,7 +187,7 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 
 **Docs say what the code does.** The audit checked the security pages against the code and found seven overstatements, all fixed: outside text is sanitised but not every rendering path has been reviewed; `restricted` and `maxusers` cover only the image route, not insights; the rate limiter is off by default; the action's `.env` file is removed only after a successful run; the web server's debug log prints its settings; the fork's image is reused while the package version stays the same; not every outgoing request is HTTPS. The code fixes are roadmap items.
 
-**Spelling:** the check needs its own entry for an all-caps word even when the lower-case word is listed (it failed on `CHANGELOG` with `changelog` listed). `CHANGELOG`, `HTTPS`, `PWD`, `WCAG`, `README`, `pem`, `bestpractices` and `ruleset` were added.
+**Spelling:** the check needs its own entry for an all-caps word even when the lower-case word is listed (it failed on `CHANGELOG` with `changelog` listed). An all-caps form of an ordinary dictionary word (`SECURITY`) needs no entry. Web addresses are checked too (`keepachangelog`, `developercertificate`). `CHANGELOG`, `README`, `pem`, `allowlist`, `bestpractices`, `ruleset` and those two were added.
 
 **Rejected findings:** that the private reporting form doesn't work yet (private vulnerability reporting is already on); that `GOVERNANCE.md` requiring two-factor sign-in for new collaborators is an unverified claim (it is a rule for others, not a claim about the maintainer); that the badges might overclaim (they show the project's real "in progress" level); that the plan names Sean (every plan here does).
 

@@ -1,6 +1,7 @@
 ABCDEFGHIJKLMNOPQRSTUVWXY
 actionlint
 activeline
+allowlist
 allowtransparency
 alse
 amd
@@ -56,6 +57,7 @@ deployer
 deps
 dessant
 destructuring
+developercertificate
 Dexcom
 dflag
 diffs
@@ -133,7 +135,6 @@ gnuplot
 Gollum
 google
 googlechrome
-GOVERNANCE
 gpg
 grep
 guttermarker
@@ -149,7 +150,6 @@ honzaap
 htmlescape
 htmlsanitize
 htmlunescape
-HTTPS
 hubot
 hyperlinks
 identicon
@@ -176,6 +176,7 @@ jellyfin
 jpy
 jshemas
 kacst
+keepachangelog
 keyring
 keyup
 Kotlin
@@ -281,7 +282,6 @@ puppeteergif
 purgecss
 pushcommits
 pwa
-PWD
 qmake
 rankeds
 rapidapi
@@ -309,7 +309,6 @@ SAPISIDHASH
 scorecalc
 screenshots
 SDKs
-SECURITY
 Segoe
 selfhosted
 seo
@@ -396,7 +395,6 @@ waifus
 wakapi
 wakatime
 wasm
-WCAG
 webserver
 websites
 wget
