@@ -182,6 +182,7 @@ itemprop
 itunes
 jellyfin
 jpy
+jsesc
 jshemas
 kacst
 keepachangelog

@@ -283,6 +283,13 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **Review findings:** lower-case `dco` was missing from the spelling list (verification and audit; the upper-case entry was replaced, since the lower-case one covers both); the three descriptions now name the check and all three exemptions (audit, security review).
 - **Process:** no research step (house workflow in use elsewhere). The plan check and second security review were skipped (their review service is at its monthly limit).
 
+## 2026-11-21 - lockfile-refresh
+
+- **`npm update` limited to the named packages, not `npm audit fix`:** the automatic fix would have moved the image library `canvas` back from 2.11 to 2.7.
+- **Only versions at least 3 days old:** the first update pulled in packages published on 2026-11-19 and 2026-11-20, so it was redone with npm's `--before=2026-11-18`. The newest version in the result is from 2026-11-17.
+- **What came along:** updating the test tools' `@babel` packages from 7.22 to 7.29 also moved about 20 of their own packages (including `jsesc` 2 to 3, development only) and removed some old copies. All stay within the versions their parents allow; the full test suite in CI passed with the same totals (377).
+- **`decode-uri-component` left as it is:** its parent only allows 0.2.x and the fix is 0.5.1, so it needs an override (added to the roadmap). The plan's estimate of 14 alerts closed included its 2, so expect about 12.
+- **Review findings:** none to fix. Noted: `crypto-js` is no longer maintained (roadmap); the newest versions in the lock file are only just past 3 days, so the dates must be checked again if the lock file is ever rebuilt before merging.
 ## 2026-11-21 - small-code-fixes
 
 - **Encode on the page, not only check on the server:** the server already rejects odd user names on these routes, but encoding the name where the request address is built is what stops it from changing the address, and it is what code scanning looks for. `URLSearchParams` for the cache-reset query, `encodeURIComponent` for the insights path.
