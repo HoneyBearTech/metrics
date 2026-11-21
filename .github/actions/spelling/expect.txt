@@ -27,6 +27,7 @@ blog
 brackethighlighter
 browserslist
 btn
+cacache
 cacheable
 cakeday
 captcha
