@@ -308,3 +308,12 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **The `.presets` ignore line is gone too,** which closes the "Kept" note in the drop-upstream-tests entry above: the only script that used that folder is deleted.
 - **Review findings:** none to fix. The verification pass doubled as the security pass for this deletion-only job.
 - **Process:** no research step (the roadmap and the findings plan had already checked what uses these files). The plan check, second security review and plain-English review were skipped (their review service is at its monthly limit).
+
+## 2026-11-21 - dependency-overrides
+
+- **Exact versions in the overrides,** each the newest release at least 3 days old: easy to read and review, and the lock file stays reproducible. The cost is that a later fix needs a change to `package.json`; Renovate proposes those, and `docs/dependencies.md` says how to remove each override once its parent asks for a fixed version.
+- **`tar` overridden everywhere,** not only under the image library's installer: the other users (`cacache`, `node-gyp`) already ask for `tar` 7, and 7.5.23 fits their ranges. **`tar-fs` only under puppeteer,** so the 2.x copy another installer needs stays on 2.x (updated within its range to 2.1.5).
+- **Checked by hand:** the image library's installer unpacking a real download with `tar` 7, puppeteer's browser connection with `ws` 8.23, an FTP download through `basic-ftp` 6 and a `tar-fs` 3 round trip (audit). The full test suite in CI passed.
+- **Found along the way:** `canvas` doesn't install in the Docker image at all (no ready-made build for Node 24, no build libraries in the image), on `master` too, so the `tar` override isn't exercised there today. Added to the roadmap. `decode-uri-component` can't be fixed by an override (the fixed version is a different module format); its vulnerable code is never reached, so its alerts go to the dismissal list.
+- **Review findings:** the dependency page's audit count was out of date and didn't say the overrides are exact pins (audit, security review) - fixed.
+- **Process:** no research step (researched for the findings plan). The plan check, second security review and plain-English review were skipped (their review service is at its monthly limit).
