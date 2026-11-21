@@ -316,6 +316,7 @@ readonly
 reated
 rebases
 recenttracks
+regexes
 regexp
 renovatebot
 rlreset
@@ -369,6 +370,7 @@ sudo
 sysadmin
 systemctl
 systemd
+tarball
 tempdir
 templating
 testapp
@@ -442,6 +444,7 @@ ycombinator
 ymd
 yoda
 youtube
+youtubei
 ytd
 ytmusic
 Zabcdefghijklmnopqrstuvwxyz

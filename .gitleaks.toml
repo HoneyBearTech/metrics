@@ -1,0 +1,33 @@
+# Settings for the secret scan (.github/workflows/secrets.yml), which runs gitleaks over the full history.
+# Start from gitleaks' standard rules; every exception below was reviewed and is not a real secret.
+title = "metrics secret scan"
+
+[extend]
+useDefault = true
+
+# The mock GraphQL replies log "mocking graphql api result > <name>" on their third line. The standard
+# "generic-api-key" rule mistakes that text (words around "api") for a key. It is a log message, not a credential.
+[[allowlists]]
+description = "Log message in the mock GraphQL replies is not a key"
+targetRules = ["generic-api-key"]
+paths = [
+  '''^source/app/mocks/api/github/graphql/[^/]+\.mjs$''',
+  '''^tests/mocks/api/github/graphql/[^/]+\.mjs$''',
+]
+regexTarget = "line"
+regexes = [
+  '''console\.debug\("metrics/compute/mocks > mocking graphql api result > [A-Za-z/.-]+"\)''',
+]
+
+# The music plugin calls the YouTube Music web endpoint with the public key that the site's own web client
+# sends to every visitor. It is not a private credential of this project.
+[[allowlists]]
+description = "Public web client key in the YouTube Music request of the music plugin"
+targetRules = ["gcp-api-key", "generic-api-key"]
+paths = [
+  '''^source/plugins/music/index\.mjs$''',
+]
+regexTarget = "line"
+regexes = [
+  '''music\.youtube\.com/youtubei/v1/browse\?alt=json&key=AIza''',
+]
