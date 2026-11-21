@@ -18,7 +18,7 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 
 ## In progress
 
-- **Renovate's first 15 update PRs** (review: `docs/reports/2026-11-20-renovate-review.md`): 11 to merge one at a time (7 now, 4 once their build and test pass), 2 needing a fix first, 2 to close.
+- **Renovate's first 15 update PRs** (review: `docs/reports/2026-11-20-renovate-review.md`): 11 to merge one at a time (7 now, 4 once their build and test pass), 2 needing a fix first (fixed in PR #36), 2 to close.
 
 ## Next
 
@@ -27,7 +27,8 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 - **16personalities plugin:** it scrapes the live website, which has changed, so it likely no longer works for users; its test is skipped. Fix or retire it.
 - **Formatter drift:** one file (`source/plugins/languages/analyzer/analyzer.mjs`) isn't formatted; CI formats but doesn't check.
 - **After merging #6:** check that a real Apple Music or Spotify playlist no longer shows the "Explicit" label in titles. The label is only removed when it's clearly separate from the title (see the decisions log).
-- **Fixes for two Renovate PRs:** sanitize-html to 2.18.2 instead of 2.18.0 (#20), and the six `simple-git` imports version 4 needs (#25), then a check that analysing private repositories still works.
+- **Private-repository check after PR #36:** the next real metrics run should still show languages from private repositories (simple-git 4 accepts the token clone address in local checks, but no real private clone was tried).
+- **Minimum Node version:** sanitize-html 2.18.2 needs Node 22.12 or newer. CI and the Docker image use Node 24; `package.json` doesn't state an `engines` minimum.
 - **Renovate settings:** skip the faker and Vue major versions (#22 and #26 are being closed), and add a waiting period for new releases (for example 3 days, as the profile repo uses).
 - **Vulnerabilities no Renovate PR covers:** about 40 of the lockfile audit's 52 findings, mostly inside puppeteer (needs 25), tar, crypto-js and express. Each needs its own look.
 - **Vue 3 for the web pages** (optional): a real migration of the four pages and the Prism helper, if the web server matters.

@@ -3,7 +3,7 @@ import processes from "child_process"
 import fs from "fs/promises"
 import yaml from "js-yaml"
 import paths from "path"
-import sgit from "simple-git"
+import {simpleGit as sgit} from "simple-git"
 import url from "url"
 
 //Mode
