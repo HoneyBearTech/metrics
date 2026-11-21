@@ -1,0 +1,24 @@
+name: 💡 Feature request
+description: Suggest an improvement
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This fork is maintained by one person and mostly carries fixes. Please read [CONTRIBUTING.md](https://github.com/HoneyBearTech/metrics/blob/master/CONTRIBUTING.md) first; ideas can also go in [Discussions](https://github.com/HoneyBearTech/metrics/discussions/new?category=ideas).
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered

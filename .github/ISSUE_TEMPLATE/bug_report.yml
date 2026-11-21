@@ -1,0 +1,45 @@
+name: 🐛 Bug report
+description: Something doesn't work as documented
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! For vulnerabilities, don't use this form: see the [security policy](https://github.com/HoneyBearTech/metrics/security/policy). For questions, use [Discussions](https://github.com/HoneyBearTech/metrics/discussions).
+  - type: input
+    id: version
+    attributes:
+      label: Commit or ref
+      description: The ref in your `uses:` line, or the commit you run
+      placeholder: master
+    validations:
+      required: true
+  - type: dropdown
+    id: how
+    attributes:
+      label: How do you run it?
+      options:
+        - GitHub Action
+        - Web server
+        - Docker
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect, and what happened?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: The workflow inputs or settings involved, with secrets removed
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log output
+      description: Relevant lines only. Remove tokens and other secrets.
+      render: shell

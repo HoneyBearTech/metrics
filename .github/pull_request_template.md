@@ -9,7 +9,9 @@
     - Provide a clear and concise description
 
   Note that:
-    - Your code will be automatically formatted by github-actions
     - Head branches are automatically deleted when merged
 
 -->
+
+- [ ] My commits are signed off (`git commit -s`), as described in CONTRIBUTING.md
+
