@@ -300,6 +300,7 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **Left for later:** the analyzer's cloned-repository folders, which also use a predictable name (on the roadmap).
 - **Review findings:** `uuid` in the wrong place in the spelling list (audit) - fixed.
 - **Process:** no research step (researched for the findings plan). The plan check, second security review and plain-English review were skipped (their review service is at its monthly limit).
+
 ## 2026-11-21 - remove-upstream-scripts
 
 - **Deleted rather than rewritten:** `release.mjs`, `markdown_example.mjs`, `presets_examples.mjs` and `preview.mjs` only worked against the upstream project (its maintainer, its `presets` branch, its example pages and its preview site). This fork has no use for them, and `presets_examples.mjs` held code scanning alert 17.
