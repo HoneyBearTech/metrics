@@ -162,3 +162,15 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 
 **Why it matters now:** the merge rule needs both spelling runs green on a Renovate PR, and the check scans the whole repository, so one unknown word anywhere blocks every merge.
 
+## 2026-11-21 - ci-workflow-update
+
+**Four small changes, nothing structural.** Lint skips install scripts (the only one downloaded a browser it never used: 10.5 minutes became 18 seconds). Code scanning no longer waits for lint. The formatter step is gone: it reformatted the checkout and checked nothing, so the tests ran on files that differed from the commit. Every job has a time limit (lint 15, build and test 60, code scanning 30 minutes). Job names, triggers, permissions and action versions are unchanged, because the merge rule checks the names.
+
+**Rejected:** Docker layer caching (the build is under 2 minutes of a 33-minute job, and it adds an outside action and cache surface); npm caching (the install now takes about 40 seconds); a dependency-review job and extra hardening actions (little benefit here); a real formatting check now (six files need formatting first, and Renovate's dprint update #35 would change the output).
+
+**How it was applied.** This machine blocks the team from editing workflow files, so the plan carried the exact patch and Sean applied it himself after approving the plan. The pushed change was checked line by line against the approved patch.
+
+**Follow-up PR #44.** #43 merged before its final review finished. The audit found that two words in its plan (`linting`, `rebases`) failed the spelling check on master and on every PR. They're added to the dictionary, together with these notes. The security review found nothing to fix, and the audit found no problem in the workflow itself.
+
+**Process notes:** the plan check and the second security review were skipped (their review service is at its monthly quota).
+
