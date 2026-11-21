@@ -11,7 +11,7 @@ metrics has no OpenAPI file; its interfaces are the action's inputs, `settings.j
 
 `output_action` is one of `none`, `commit`, `pull-request`, `pull-request-merge`, `pull-request-squash`, `pull-request-rebase` or `gist`. The default is `commit`.
 
-`use_prebuilt_image` has no effect in this fork: the image is always built from the `Dockerfile`.
+`use_prebuilt_image` has no effect in this fork: the image is built from the `Dockerfile`, tagged `metrics:forked-<package version>`, and reused if that tag already exists locally (see [installing](installing.md#as-a-github-action)).
 
 ## Output formats
 
@@ -25,7 +25,7 @@ Copy [`settings.example.json`](../settings.example.json) to `settings.json`. The
 | --- | --- |
 | `token` | GitHub token the server uses (required) |
 | `modes` | enabled modes, `embed` and `insights` |
-| `restricted`, `maxusers` | who may get an image, and how many users at once |
+| `restricted`, `maxusers` | who may get an image, and a cap on cached users (not a concurrency limit); both checked only on the image route, not on insights |
 | `ratelimiter` | `express-rate-limit` options for image requests |
 | `cached` | how long rendered images are cached, in milliseconds |
 | `port` | listening port (default 3000) |
@@ -37,11 +37,12 @@ Copy [`settings.example.json`](../settings.example.json) to `settings.json`. The
 
 Defined in [`source/app/web/instance.mjs`](../source/app/web/instance.mjs):
 
-- `/:login` and `/:login/:repository`: render an image for a user, organisation or repository. Query parameters are the action inputs with dots instead of underscores and without the `plugin_` prefix (for example `/octocat?languages=1&languages.limit=4`), plus `config.output` for the format. Errors come back as 400 (invalid user), 403 (not in `restricted`), 404 (unknown user), 429 (rate limit), 500 or 503 (`maxusers` reached).
+- `/:login` and `/:login/:repository`: render an image for a user, organisation or repository. Query parameters are the action inputs with dots instead of underscores and without the `plugin_` prefix (for example `/octocat?languages=1&languages.limit=4`), plus `config.output` for the format. Errors come back as 400 (invalid user), 403 (not in `restricted`), 404 (unknown user), 429 (rate limit), 500 or 503 (the cache already holds `maxusers` users).
 - `/`, `/embed/` and `/insights/` (and `/insights/:login`): the web pages. `/insights/query/:login/...` returns insights data.
 - `/.plugins`, `/.plugins.base`, `/.plugins.metadata`, `/.templates`, `/.templates/:template`, `/.modes`, `/.extras`, `/.hosted`, `/.version` and `/.requests`: descriptions of what the server offers, as JSON or text. `/.requests` reports the server's GitHub API quota.
 - `/.uncache`: clears the cached image of a user (two calls: one to get a token, one to use it).
+- `POST /.control/stop`: only when `control.token` is set in `settings.json`. The `Authorization` header must equal that token (otherwise 401). It answers 202 and the process exits with code 1 five seconds later, so a supervisor can restart it.
 - `/.oauth/...`: the sign-in flow, only when `oauth` is configured.
 - `/.css/...`, `/.js/...`, `/.templates/<name>/partials` and a few images: static files.
 
-Ordinary requests are rate limited to 60 per minute for each visitor for the pages and descriptions; image rendering follows `ratelimiter`.
+The pages and descriptions have a built-in limit of 60 requests a minute for each visitor. Image rendering is limited only if you set `ratelimiter` (null by default).

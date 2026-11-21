@@ -14,4 +14,3 @@
 -->
 
 - [ ] My commits are signed off (`git commit -s`), as described in CONTRIBUTING.md
-

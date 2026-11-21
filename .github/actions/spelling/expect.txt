@@ -148,6 +148,7 @@ honzaap
 htmlescape
 htmlsanitize
 htmlunescape
+HTTPS
 hubot
 hyperlinks
 identicon
@@ -279,6 +280,7 @@ puppeteergif
 purgecss
 pushcommits
 pwa
+PWD
 qmake
 rankeds
 rapidapi
@@ -392,6 +394,7 @@ waifus
 wakapi
 wakatime
 wasm
+WCAG
 webserver
 websites
 wget

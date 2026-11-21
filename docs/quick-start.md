@@ -28,6 +28,6 @@ Generate a metrics image for your profile with the action from this fork. It tak
 
 Notes:
 
-- `@master` follows the latest code. To stay on code you have looked at, use a full commit hash instead ([upgrading](upgrading.md)).
+- `@master` follows the latest code. To stay on code you have looked at, use a full commit hash instead ([upgrading](upgrading.md)). Pinning to a full commit hash is recommended, because the action runs with your token ([security](security.md)).
 - The runner needs Docker and `jq` (GitHub's hosted Ubuntu runners have both). The first run builds the image from the repository's `Dockerfile`, which takes a few minutes.
 - Turn plugins on with inputs such as `plugin_languages: yes`; see the [user guide](user-guide/README.md) and [interfaces](interfaces.md).

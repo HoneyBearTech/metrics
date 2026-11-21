@@ -4,7 +4,7 @@ metrics fetches data about a GitHub user, organisation or repository through Git
 
 ## Two ways to run it
 
-**The action.** A workflow runs `action.yml`, a composite step that builds an image from the `Dockerfile` on the runner and runs `source/app/action/index.mjs` in a container. The workflow's inputs are passed in as `INPUT_*` environment variables through a temporary `.env` file that is deleted after the run. The result is written to a folder on the runner and then committed to a repository, opened as a pull request, or sent to a gist (`output_action`).
+**The action.** A workflow runs `action.yml`, a composite step that builds an image from the `Dockerfile` on the runner and runs `source/app/action/index.mjs` in a container. The workflow's inputs are passed in as `INPUT_*` environment variables through a temporary `.env` file that is removed after a successful run (a failed run on a self-hosted or persistent runner can leave it behind). The result is written to a folder on the runner and then committed to a repository, opened as a pull request, or sent to a gist (`output_action`).
 
 **The web server.** `source/app/web/` is an Express server. A browser or an `<img>` tag asks it for `/<login>`; it renders the image on demand with its own token from `settings.json` (or the visitor's, after the optional OAuth sign-in) and caches the result in memory.
 
