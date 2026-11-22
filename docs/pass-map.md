@@ -48,3 +48,4 @@
 | 2026-11-22 | web-markdown-opt-in | Web server refuses markdown output unless enabled; logged-in features no longer leak between requests; 4 tests | #109 |
 | 2026-11-22 | revert-untested-majors | eslint 10, express 5 and file-type 22 reverted after they broke lint and the web server | #114 |
 | 2026-11-22 | actions-core-3 | `@actions/core` 3.0.1 with its import change | #110 |
+| 2026-11-22 | twemoji-parser-17 | `@twemoji/parser` 17.0.2 with a guard for empty matches; 1 test | #111 |

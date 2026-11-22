@@ -437,3 +437,11 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **Only `getInput` and `setFailed` are used:** the audit compared both between 1.11.1 and 3.0.1 (input names, trimming, required inputs, empty values, the exit code and the error line) and found them unchanged.
 - **Separate from the `@twemoji/parser` update (#111):** one change per pull request.
 - **Process:** Engineer, QA with the security pass, and audit (one audit for both updates); no research, since the majors review covered it. The plan check and plain-English review were skipped (their review service is at its monthly limit).
+
+## 2026-11-22 - twemoji-parser-17
+
+- **A team pull request instead of Renovate's #83:** version 17 returns empty matches that crash emoji images, and Renovate's pull request can only change the version. Renovate closes #83 itself once `master` has the new version.
+- **Skip empty matches instead of pinning 17.0.1:** the guard also protects against the empty matches older versions return, and Renovate would keep proposing 17.0.2.
+- **Characters no longer treated as emoji stay in the normal font:** that is the library's own choice from 17.0.2.
+- **Separate from the `@actions/core` update (#110):** one change per pull request.
+- **Process:** Engineer, QA with the security pass, and audit (one audit for both updates); no research, since the majors review covered it. The plan check and plain-English review were skipped (their review service is at its monthly limit).
