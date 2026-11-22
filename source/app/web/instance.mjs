@@ -15,6 +15,26 @@ import presets from "../metrics/presets.mjs"
 import setup from "../metrics/setup.mjs"
 import { sameSite } from "./oauth.mjs"
 
+/**Markdown output renders a template chosen by the request (a link or a path in a repository), which is code.
+ * It is only allowed with the extra feature "metrics.run.user.template" (or all of them), whatever the allowed outputs are, as "auto" may also lead to it.
+ */
+export function markdownForbidden({conf, q, convert}) {
+  const format = (convert) && (convert !== "auto") ? convert : conf.metadata.templates[q.template || conf.settings.templates.default]?.formats?.[0]
+  const features = conf.settings.extras?.features ?? conf.settings.extras?.default ?? false
+  return (/markdown/.test(format)) && (features !== true) && (!(Array.isArray(features) && features.includes("metrics.run.user.template")))
+}
+
+/**Add the extra features given to logged-in sessions to a copy of the configuration (the shared configuration is never changed).
+ * Unset or disabled features start from an empty list, and nothing is added when all features are already enabled.
+ */
+export function withLoggedFeatures(conf) {
+  const {extras} = conf.settings
+  if ((!extras?.logged) || (extras.features === true))
+    return conf
+  const features = [...(Array.isArray(extras.features) ? extras.features : []), ...extras.logged]
+  return {...conf, settings: {...conf.settings, extras: {...extras, features}}}
+}
+
 /**App */
 export default async function({sandbox = false} = {}) {
   //Load configuration settings
@@ -475,9 +495,7 @@ export default async function({sandbox = false} = {}) {
         let uconf = conf
         if ((octokit.login) && (conf.settings.extras?.logged) && (uconf.settings.extras?.features !== true)) {
           console.debug(`metrics/app/${login} > session is authenticated, adding additional permissions ${conf.settings.extras.logged}`)
-          uconf = {...conf, settings: {...conf.settings, extras: {...conf.settings.extras}}}
-          uconf.settings.extras.features = uconf.settings.extras.features ?? []
-          uconf.settings.extras.features.push(...conf.settings.extras.logged)
+          uconf = withLoggedFeatures(conf)
         }
         //Preset
         if ((q["config.presets"]) && ((uconf.settings.extras?.features?.includes("metrics.setup.community.presets")) || (uconf.settings.extras?.features === true) || (uconf.settings.extras?.default))) {
@@ -486,6 +504,10 @@ export default async function({sandbox = false} = {}) {
         }
         //Render
         const convert = uconf.settings.outputs.includes(q["config.output"]) ? q["config.output"] : uconf.settings.outputs[0]
+        if (markdownForbidden({conf: uconf, q, convert})) {
+          console.debug(`metrics/app/${login} > 403 (markdown output is disabled)`)
+          return res.status(403).send("Forbidden: markdown output is disabled on this server")
+        }
         const {rendered, mime} = await metrics({login, q}, {
           ...octokit,
           plugins,

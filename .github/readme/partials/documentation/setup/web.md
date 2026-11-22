@@ -115,6 +115,7 @@ The following extra features are supported:
 | `metrics.run.git`                   | Allow to run git                                          |
 | `metrics.run.licensed`              | Allow to run licensed                                     |
 | ⚠️ `metrics.run.user.cmd`           | Allow to run ANY command by user (USE WITH CAUTION! May result in token leaks by malicious users)                                                                |
+| ⚠️ `metrics.run.user.template`      | Allow markdown output (`markdown`, `markdown-pdf`, or `auto` with the markdown template): it renders a template chosen by the request, a link or a path in the repository of the requested user, as code (USE WITH CAUTION!) |
 | `metrics.run.puppeteer.scrapping`   | Allow to run puppeteer to scrape data                     |
 | `metrics.run.puppeteer.user.css`    | Allow to run CSS by user during puppeteer render          |
 | `metrics.run.puppeteer.user.js`     | Allow to run JavaScript by user during puppeteer render   |

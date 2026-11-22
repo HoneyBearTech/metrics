@@ -413,3 +413,12 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **Fix round from the audit:** the translation now scans in linear time (a large template with an unclosed delimiter took over 30 seconds before), and `{%%` and `%%}` print `{%` and `%}` as they did before.
 - **Template source left for the next job:** a markdown template is code; the action's user chooses it, and the README now says to trust it like a workflow file. The web server letting a request choose it is a separate fix.
 - **Process:** research, Engineer, QA with the security pass, and audit (two rounds). The plan check and plain-English review were skipped (their review service is at its monthly limit).
+
+## 2026-11-22 - web-markdown-opt-in
+
+- **Refuse markdown output instead of restricting template addresses:** a template from a file in any GitHub repository runs just like one from a link, and `auto` and presets can also lead to markdown, so only refusing the format closes every way in. Nothing in the project's web pages uses markdown output, and the Action doesn't go through the web server.
+- **Opt-in as an extra feature:** `metrics.run.user.template`, next to the other extra features, so a server owner who really wants markdown output can turn it on knowingly. All extra features on (as in sandbox mode) also allows it.
+- **The check runs after presets and `auto` are resolved**, and before the template is fetched. A route matrix by the audit (encoded keys, repeated keys, case changes, the repository route, presets, odd output lists) found no way past it.
+- **Fix round from the audit:** logged-in sessions' extra features were added to the shared settings, so after one login every later visitor had them. That bypassed this check when the feature was given only to logged-in users. They now go on a copy. This also fixes the same leak for every other logged-in feature.
+- **Left for the next job:** old extras flags still add features to the shared list (`metadata.mjs`); they can't add this job's feature. The 403 through the real route is checked manually and by the audit, not by an automated test, because the server reads its settings from a fixed file.
+- **Process:** research, Engineer, QA with the security pass, and audit (two rounds). The plan check and plain-English review were skipped (their review service is at its monthly limit).
