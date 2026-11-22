@@ -24,6 +24,17 @@ export function markdownForbidden({conf, q, convert}) {
   return (/markdown/.test(format)) && (features !== true) && (!(Array.isArray(features) && features.includes("metrics.run.user.template")))
 }
 
+/**Add the extra features given to logged-in sessions to a copy of the configuration (the shared configuration is never changed).
+ * Unset or disabled features start from an empty list, and nothing is added when all features are already enabled.
+ */
+export function withLoggedFeatures(conf) {
+  const {extras} = conf.settings
+  if ((!extras?.logged) || (extras.features === true))
+    return conf
+  const features = [...(Array.isArray(extras.features) ? extras.features : []), ...extras.logged]
+  return {...conf, settings: {...conf.settings, extras: {...extras, features}}}
+}
+
 /**App */
 export default async function({sandbox = false} = {}) {
   //Load configuration settings
@@ -484,9 +495,7 @@ export default async function({sandbox = false} = {}) {
         let uconf = conf
         if ((octokit.login) && (conf.settings.extras?.logged) && (uconf.settings.extras?.features !== true)) {
           console.debug(`metrics/app/${login} > session is authenticated, adding additional permissions ${conf.settings.extras.logged}`)
-          uconf = {...conf, settings: {...conf.settings, extras: {...conf.settings.extras}}}
-          uconf.settings.extras.features = uconf.settings.extras.features ?? []
-          uconf.settings.extras.features.push(...conf.settings.extras.logged)
+          uconf = withLoggedFeatures(conf)
         }
         //Preset
         if ((q["config.presets"]) && ((uconf.settings.extras?.features?.includes("metrics.setup.community.presets")) || (uconf.settings.extras?.features === true) || (uconf.settings.extras?.default))) {

@@ -1,7 +1,7 @@
 //Imports
 import axios from "axios"
 import setup from "../../../source/app/metrics/setup.mjs"
-import {markdownForbidden} from "../../../source/app/web/instance.mjs"
+import {markdownForbidden, withLoggedFeatures} from "../../../source/app/web/instance.mjs"
 
 //Marker set by a template if it is ever run (it only sets a variable, nothing else)
 const marker = "{% globalThis.__marker = 1 %}marker"
@@ -41,6 +41,25 @@ export function forbidden() {
   }
   //Default template is the markdown one
   result.defaulted = markdownForbidden({conf: {...conf, settings: {...conf.settings, templates: {default: "markdown", enabled: []}}}, q: {}, convert: "auto"})
+  return result
+}
+
+/**Add the features of logged-in sessions without changing the shared settings */
+export function logged() {
+  const result = {}
+  for (const [name, features] of Object.entries({array: ["a"], empty: [], unset: undefined, off: false, all: true})) {
+    const extras = {features, logged: ["metrics.run.user.template"]}
+    const settings = {...conf.settings, extras}
+    const merged = withLoggedFeatures({...conf, settings})
+    result[name] = {
+      features: merged.settings.extras.features,
+      sameFeatures: extras.features === features,
+      untouched: JSON.stringify(extras.features) === JSON.stringify(features),
+      forbiddenAfter: markdownForbidden({conf: {...conf, settings}, q: {template: "markdown"}, convert: "markdown"}),
+      forbiddenLogged: markdownForbidden({conf: merged, q: {template: "markdown"}, convert: "markdown"}),
+    }
+  }
+  result.none = withLoggedFeatures({...conf, settings: {...conf.settings, extras: {features: ["a"]}}}).settings.extras.features
   return result
 }
 
