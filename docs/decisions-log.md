@@ -398,3 +398,9 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **#93 held:** 2.x drops names in real use (the Polls category icon, country flags), and the tests don't cover them.
 - **The markdown template's second pass is a security problem on its own:** it exists with ejs 3 and 7 alike, so it doesn't block #92. Its public description is kept general until it is fixed.
 - **Process:** a review job: research and an independent audit (which also did the security and supply-chain review, and rendered the markdown template and its PDF with the updates applied); no plan gate. The plain-English review was skipped (its review service is at its monthly limit).
+
+## 2026-11-22 - stackoverflow-mock
+
+- **Fixed only the one pattern:** the other Stack Overflow stand-ins already matched. Other plugins' stand-ins that miss their requests stay under "Test suite fixes" on the roadmap.
+- **Unmatched requests still reach the real site:** making them fail instead would catch every such case, but it is a larger change to the shared mock code. It is left for the test suite fixes.
+- **Process:** Engineer and audit (which also did the security pass); a trivial job, so no research or separate QA. The plain-English review was skipped (its review service is at its monthly limit).

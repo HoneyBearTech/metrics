@@ -6,7 +6,7 @@ export default function({faker, url, options, login = faker.internet.userName()}
     const user_id = url.match(/[/]users[/](?<id>\d+)/)?.groups?.id ?? NaN
     const pagesize = Number(url.match(/pagesize=(?<pagesize>\d+)/)?.groups?.pagesize) || 30
     //User account
-    if (/users[/]\d+[/][?]site=stackoverflow$/.test(url)) {
+    if (/users[/]\d+[?]site=stackoverflow(?:&filter=[^&]*)?$/.test(url)) {
       console.debug(`metrics/compute/mocks > mocking stackoverflow api result > ${url}`)
       return ({
         status: 200,
