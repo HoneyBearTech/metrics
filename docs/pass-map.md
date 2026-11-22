@@ -42,3 +42,4 @@
 | 2026-11-22 | puppeteer-25-review | Review: upgrade to puppeteer 25.18.1 recommended, with four required changes (Chrome path, install script, overrides, PDF bytes) | #97 |
 | 2026-11-22 | puppeteer-25 | Puppeteer 25.18.1; no overrides left; PDF fix and test; audit 18 to 12 findings | #98 |
 | 2026-11-22 | close-browsers | Browsers closed in a `finally` in nine places; 9 tests; part 2 peaks at 301 processes | #100 |
+| 2026-11-22 | majors-review | Review of six major updates: take #80, #92, #84; #75 and #83 with code changes; hold #93 | #103 |
