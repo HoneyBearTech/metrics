@@ -422,3 +422,11 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **Fix round from the audit:** logged-in sessions' extra features were added to the shared settings, so after one login every later visitor had them. That bypassed this check when the feature was given only to logged-in users. They now go on a copy. This also fixes the same leak for every other logged-in feature.
 - **Left for the next job:** old extras flags still add features to the shared list (`metadata.mjs`); they can't add this job's feature. The 403 through the real route is checked manually and by the audit, not by an automated test, because the server reads its settings from a fixed file.
 - **Process:** research, Engineer, QA with the security pass, and audit (two rounds). The plan check and plain-English review were skipped (their review service is at its monthly limit).
+
+## 2026-11-22 - revert-untested-majors
+
+- **Revert instead of fixing forward:** Sean chose it. It makes `master` green right away, so other pull requests get their tests again. Fixing forward needs a new lint settings file and web server code changes, each worth its own review.
+- **All three reverted, file-type 22 too:** it was never tested with the project. The audit then found no code change is needed for it, so its upgrade job is mainly a test run.
+- **The package files match `master` before #101 exactly:** reverts only, with no lock regeneration.
+- **Lesson:** a failing "Lint code" check makes "Build and test" skip, and neither is a required check, so a pull request with a red lint can be merged without any tests.
+- **Process:** Engineer and audit (which also did the security pass); a trivial job, so no research or separate QA. The plan check and plain-English review were skipped (their review service is at its monthly limit). The audit's one finding (the plan said eslint 9 instead of 8) was fixed in the plan.
