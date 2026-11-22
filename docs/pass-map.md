@@ -47,3 +47,4 @@
 | 2026-11-22 | markdown-single-pass | Markdown template rendered in one pass, so plugin text is never run as template code; 4 tests; examples byte-identical | #107 |
 | 2026-11-22 | web-markdown-opt-in | Web server refuses markdown output unless enabled; logged-in features no longer leak between requests; 4 tests | #109 |
 | 2026-11-22 | revert-untested-majors | eslint 10, express 5 and file-type 22 reverted after they broke lint and the web server | #114 |
+| 2026-11-22 | actions-core-3 | `@actions/core` 3.0.1 with its import change | #110 |
