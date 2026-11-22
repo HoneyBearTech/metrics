@@ -15,7 +15,7 @@
   "mocked": false,                      "//": "Use mocked data instead of live APIs (use 'force' to use mocked token even if real token are defined)",
   "repositories": 100,                  "//": "Number of repositories to use",
   "padding": ["0", "8 + 11%"],          "//": "Image padding (default)",
-  "outputs": ["svg", "png", "json"],    "//": "Image output formats (empty to enable all)",
+  "outputs": ["svg", "png", "json"],    "//": "Image output formats (empty to enable all, markdown formats also need metrics.run.user.template)",
   "hosted": {
     "by": "",                           "//": "Web instance host (displayed in footer)",
     "link": "",                         "//": "Web instance host link (displayed in footer)"
@@ -52,6 +52,7 @@
                                         "//": "metrics.run.git                   | Allow to run git",
                                         "//": "metrics.run.licensed              | Allow to run licensed",
                                         "//": "metrics.run.user.cmd              | Allow to run ANY command by user (USE WITH CAUTION!)",
+                                        "//": "metrics.run.user.template         | Allow markdown output, which runs a template chosen by the request as code (USE WITH CAUTION!)",
                                         "//": "metrics.run.puppeteer.scrapping   | Allow to run puppeteer to scrape data",
                                         "//": "metrics.run.puppeteer.user.css    | Allow to run CSS by user during puppeteer render",
                                         "//": "metrics.run.puppeteer.user.js     | Allow to run JavaScript by user during puppeteer render",

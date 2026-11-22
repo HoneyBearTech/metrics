@@ -33,7 +33,8 @@ This section explain how *metrics* is structured.
   * `fonts.css` contains additional fonts used to render metrics
   * `template.mjs` contains template source code
 * `tests/` contains tests
-  * `metrics.test.js` contains metrics testers
+  * `metrics/` contains metrics testers (`shared.js` is the helper, each `part-N.test.js` runs a share of the cases, `community.test.js` runs the community template cases alone)
+  * `plugins/` contains focused plugin tests (`activity`, `languages`, `lines`), run in the same `test-metrics` run as the `part-N` files
   * `source/app/mocks/` contains mocked data files
   * `api/` contains mocked api data
     * `axios/` contains external REST APIs mocked data
@@ -95,7 +96,7 @@ Below is a list of used packages.
   * To render SVG images
 * [ptarjan/node-cache](https://github.com/ptarjan/node-cache)
   * To cache generated content
-* [lovell/sharp](https://github.com/lovell/sharp), [foliojs/png.js](https://github.com/foliojs/png.js) and [eugeneware/gifencoder](https://github.com/eugeneware/gifencoder)
+* [lovell/sharp](https://github.com/lovell/sharp)
   * To process images transformations
 * [svg/svgo](https://github.com/svg/svgo)
   * To optimize generated SVG

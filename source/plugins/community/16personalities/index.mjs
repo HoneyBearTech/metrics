@@ -14,47 +14,53 @@ export default async function({login, q, imports, data, account}, {enabled = fal
     //Start puppeteer and navigate to page
     console.debug(`metrics/compute/${login}/plugins > 16personalities > starting browser`)
     const browser = await imports.puppeteer.launch()
-    console.debug(`metrics/compute/${login}/plugins > 16personalities > started ${await browser.version()}`)
-    const page = await browser.newPage()
-    console.debug(`metrics/compute/${login}/plugins > 16personalities > loading ${url}`)
-    await page.goto(url, {waitUntil: imports.puppeteer.events})
+    try {
+      console.debug(`metrics/compute/${login}/plugins > 16personalities > started ${await browser.version()}`)
+      const page = await browser.newPage()
+      console.debug(`metrics/compute/${login}/plugins > 16personalities > loading ${url}`)
+      await page.goto(url, {waitUntil: imports.puppeteer.events})
 
-    //Fetch raw data
-    const raw = await page.evaluate(() => ({
-      color: getComputedStyle(document.querySelector(".card__bg")).backgroundColor, //eslint-disable-line no-undef
-      type: document.querySelector(".type__code").innerText,
-      personality: [...document.querySelectorAll(".personality-cards .sp-personality-card")].map(card => ({
-        category: card.querySelector(".card__title").innerText,
-        value: card.querySelector(".card__subtitle").innerText,
-        image: card.querySelector(".card__image").src,
-        text: card.querySelector(".card__text").innerText,
-      })),
-      traits: [...document.querySelectorAll("#traits .card__body")].map(card => ({
-        category: card.querySelector(".card__title").innerText,
-        value: card.querySelector(".card__subtitle").innerText,
-        score: card.querySelector(".center__num").innerText,
-        text: card.querySelector("p").innerText,
-      })),
-    }))
+      //Fetch raw data
+      const raw = await page.evaluate(() => ({
+        color: getComputedStyle(document.querySelector(".card__bg")).backgroundColor, //eslint-disable-line no-undef
+        type: document.querySelector(".type__code").innerText,
+        personality: [...document.querySelectorAll(".personality-cards .sp-personality-card")].map(card => ({
+          category: card.querySelector(".card__title").innerText,
+          value: card.querySelector(".card__subtitle").innerText,
+          image: card.querySelector(".card__image").src,
+          text: card.querySelector(".card__text").innerText,
+        })),
+        traits: [...document.querySelectorAll("#traits .card__body")].map(card => ({
+          category: card.querySelector(".card__title").innerText,
+          value: card.querySelector(".card__subtitle").innerText,
+          score: card.querySelector(".center__num").innerText,
+          text: card.querySelector("p").innerText,
+        })),
+      }))
 
-    //Format data
-    const {color} = raw
-    const type = raw.type.replace("(", "").replace(")", "").trim()
-    const personality = await Promise.all(raw.personality.map(async ({category, value, image, text}) => ({
-      category,
-      value: value.replace(`(${type})`, "").trim(),
-      image: await imports.imgb64(image),
-      text: text.replace(`${category}\n${value}\n`, "").trim(),
-    })))
-    const traits = raw.traits.map(({category, value, score, text}) => ({
-      category,
-      value: `${value[0]}${value.substring(1).toLocaleLowerCase()}`,
-      score: scores ? Number(score.replace("%", "")) / 100 : NaN,
-      text: text.split(".").slice(1).join("."),
-    }))
+      //Format data
+      const {color} = raw
+      const type = raw.type.replace("(", "").replace(")", "").trim()
+      const personality = await Promise.all(raw.personality.map(async ({category, value, image, text}) => ({
+        category,
+        value: value.replace(`(${type})`, "").trim(),
+        image: await imports.imgb64(image),
+        text: text.replace(`${category}\n${value}\n`, "").trim(),
+      })))
+      const traits = raw.traits.map(({category, value, score, text}) => ({
+        category,
+        value: `${value[0]}${value.substring(1).toLocaleLowerCase()}`,
+        score: scores ? Number(score.replace("%", "")) / 100 : NaN,
+        text: text.split(".").slice(1).join("."),
+      }))
 
-    //Results
-    return {sections, color, type, personality, traits}
+      //Results
+      return {sections, color, type, personality, traits}
+    }
+    finally {
+      console.debug(`metrics/compute/${login}/plugins > 16personalities > closing browser`)
+      await browser.close().catch(error => console.debug(`metrics/compute/${login}/plugins > 16personalities > failed to close browser > ${error}`))
+    }
   }
   //Handle errors
   catch (error) {

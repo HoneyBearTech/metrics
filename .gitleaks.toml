@@ -1,0 +1,44 @@
+# Settings for the secret scan (.github/workflows/secrets.yml), which runs gitleaks over the full history.
+# Start from gitleaks' standard rules; every exception below was reviewed and is not a real secret.
+title = "metrics secret scan"
+
+[extend]
+useDefault = true
+
+# Each exception below needs ALL of its conditions (condition = "AND"): the file path, the rule, and the exact
+# text gitleaks reported (music key: the extracted key; mock log: the whole match). A different value in the same
+# file, or on the same line, is still reported.
+# Fingerprints are not used, so the same mock log line in a new file under these folders stays accepted.
+
+# The mock GraphQL replies log "mocking graphql api result > <name>" on their third line. The standard
+# "generic-api-key" rule mistakes that text (words around "api") for a key and extracts the name after the ">"
+# as the secret. The exception matches the whole text gitleaks reports for the finding (the log text up to the
+# closing quote), not only the extracted name, so a longer value that merely starts with a name is still reported.
+# These five names are the only values reviewed; they are log text, not credentials.
+[[allowlists]]
+description = "Log message in the mock GraphQL replies is not a key"
+condition = "AND"
+targetRules = ["generic-api-key"]
+paths = [
+  '''^source/app/mocks/api/github/graphql/[^/]+\.mjs$''',
+  '''^tests/mocks/api/github/graphql/[^/]+\.mjs$''',
+]
+regexTarget = "match"
+regexes = [
+  '''^api result > (?:achievements/(?:organizations|ranking|total)|sponsors/default|sponsorships/default)"$''',
+]
+
+# The music plugin calls the YouTube Music web endpoint with the public key that the site's own web client
+# sends to every visitor (its INNERTUBE_API_KEY). It is not a private credential of this project. Only this exact
+# key, written as in the reviewed request ("key=<key>" and the closing quote), is accepted; any other key in that file is reported.
+[[allowlists]]
+description = "Public web client key in the YouTube Music request of the music plugin"
+condition = "AND"
+targetRules = ["gcp-api-key", "generic-api-key"]
+paths = [
+  '''^source/plugins/music/index\.mjs$''',
+]
+regexTarget = "match"
+regexes = [
+  '''^(?:key=)?AIzaSyC9XL3ZjWddXya6X74dJoCTL-WEYFDNX30"$''',
+]

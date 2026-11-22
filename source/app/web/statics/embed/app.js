@@ -216,7 +216,7 @@
         const template = (this.templates.selected !== this.templates.list[0]) ? [`template=${this.templates.selected}`] : []
         //Generated url
         const params = [...template, ...base, ...plugins, ...options, ...config].join("&")
-        return `${window.location.protocol}//${window.location.host}/${this.user}${params.length ? `?${params}` : ""}`
+        return `${window.location.protocol}//${window.location.host}/${encodeURIComponent(this.user)}${params.length ? `?${params}` : ""}`
       },
       //Embedded generated code
       embed() {
@@ -328,7 +328,8 @@
         this.generated.pending = true
         //Compute metrics
         try {
-          await axios.get(`/.uncache?&token=${(await axios.get(`/.uncache?user=${this.user}`)).data.token}`)
+          const {data: {token}} = await axios.get(`/.uncache?${new URLSearchParams({user: this.user})}`)
+          await axios.get(`/.uncache?${new URLSearchParams({token})}`)
           this.generated.content = (await axios.get(this.url)).data
           this.generated.error = null
         }

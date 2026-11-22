@@ -13,6 +13,27 @@ import mocks from "../../../tests/mocks/index.mjs"
 import metrics from "../metrics/index.mjs"
 import presets from "../metrics/presets.mjs"
 import setup from "../metrics/setup.mjs"
+import { sameSite } from "./oauth.mjs"
+
+/**Markdown output renders a template chosen by the request (a link or a path in a repository), which is code.
+ * It is only allowed with the extra feature "metrics.run.user.template" (or all of them), whatever the allowed outputs are, as "auto" may also lead to it.
+ */
+export function markdownForbidden({conf, q, convert}) {
+  const format = (convert) && (convert !== "auto") ? convert : conf.metadata.templates[q.template || conf.settings.templates.default]?.formats?.[0]
+  const features = conf.settings.extras?.features ?? conf.settings.extras?.default ?? false
+  return (/markdown/.test(format)) && (features !== true) && (!(Array.isArray(features) && features.includes("metrics.run.user.template")))
+}
+
+/**Add the extra features given to logged-in sessions to a copy of the configuration (the shared configuration is never changed).
+ * Unset or disabled features start from an empty list, and nothing is added when all features are already enabled.
+ */
+export function withLoggedFeatures(conf) {
+  const {extras} = conf.settings
+  if ((!extras?.logged) || (extras.features === true))
+    return conf
+  const features = [...(Array.isArray(extras.features) ? extras.features : []), ...extras.logged]
+  return {...conf, settings: {...conf.settings, extras: {...extras, features}}}
+}
 
 /**App */
 export default async function({sandbox = false} = {}) {
@@ -23,8 +44,10 @@ export default async function({sandbox = false} = {}) {
     console.debug("metrics/app > sandbox mode is specified, enabling advanced features")
     Object.assign(conf.settings, {sandbox: true, optimize: true, cached: 0, "plugins.default": true, extras: {default: true}})
   }
-  const {token, maxusers = 0, restricted = [], debug = false, cached = 30 * 60 * 1000, port = 3000, ratelimiter = null, plugins = null} = conf.settings
+  const {token, maxusers = 0, restricted = [], debug = false, cached = 30 * 60 * 1000, port: settingsPort = 3000, ratelimiter = null, plugins = null} = conf.settings
   const mock = sandbox || conf.settings.mocked
+  //Port (sandbox mode may take it from METRICS_SANDBOX_PORT so that test servers can run side by side)
+  const port = (sandbox) && (process.env.METRICS_SANDBOX_PORT) ? Number(process.env.METRICS_SANDBOX_PORT) : settingsPort
 
   //Process mocking and default plugin state
   for (const plugin of Object.keys(Plugins).filter(x => !["base", "core"].includes(x))) {
@@ -212,7 +235,7 @@ export default async function({sandbox = false} = {}) {
       return res.sendStatus(400)
     }
     {
-      const token = `${Math.random().toString(16).replace("0.", "")}${Math.random().toString(16).replace("0.", "")}`
+      const token = crypto.randomBytes(32).toString("hex")
       actions.flush.set(token, user)
       return res.json({token})
     }
@@ -229,7 +252,7 @@ export default async function({sandbox = false} = {}) {
       //Create a state to protect against cross-site request forgery attacks
       const state = crypto.randomBytes(64).toString("hex")
       const scopes = new url.URLSearchParams(req.query).get("scopes")
-      const from = new url.URLSearchParams(req.query).get("scopes")
+      const from = sameSite(new url.URLSearchParams(req.query).get("from"), conf.settings.oauth.url)
       states.set(state, {from, scopes})
       console.debug(`metrics/app/oauth > request ${state}`)
       //OAuth through GitHub
@@ -269,7 +292,7 @@ export default async function({sandbox = false} = {}) {
         console.debug(`metrics/app/oauth > created session ${session.substring(0, 6)}`)
         //Redirect user back
         const {from} = states.get(state)
-        return res.redirect(`/.oauth/redirect?${new url.URLSearchParams({to: from, session})}`)
+        return res.redirect(`/.oauth/redirect?${new url.URLSearchParams({...(from ? {to: from} : {}), session})}`)
       }
       catch {
         console.debug("metrics/app/oauth > authorization failed")
@@ -472,9 +495,7 @@ export default async function({sandbox = false} = {}) {
         let uconf = conf
         if ((octokit.login) && (conf.settings.extras?.logged) && (uconf.settings.extras?.features !== true)) {
           console.debug(`metrics/app/${login} > session is authenticated, adding additional permissions ${conf.settings.extras.logged}`)
-          uconf = {...conf, settings: {...conf.settings, extras: {...conf.settings.extras}}}
-          uconf.settings.extras.features = uconf.settings.extras.features ?? []
-          uconf.settings.extras.features.push(...conf.settings.extras.logged)
+          uconf = withLoggedFeatures(conf)
         }
         //Preset
         if ((q["config.presets"]) && ((uconf.settings.extras?.features?.includes("metrics.setup.community.presets")) || (uconf.settings.extras?.features === true) || (uconf.settings.extras?.default))) {
@@ -483,6 +504,10 @@ export default async function({sandbox = false} = {}) {
         }
         //Render
         const convert = uconf.settings.outputs.includes(q["config.output"]) ? q["config.output"] : uconf.settings.outputs[0]
+        if (markdownForbidden({conf: uconf, q, convert})) {
+          console.debug(`metrics/app/${login} > 403 (markdown output is disabled)`)
+          return res.status(403).send("Forbidden: markdown output is disabled on this server")
+        }
         const {rendered, mime} = await metrics({login, q}, {
           ...octokit,
           plugins,

@@ -168,10 +168,10 @@ export default async function metrics({login, q}, {graphql, rest, plugins, conf,
         return `<img class="metrics-cacheable" data-name="${name}" src="data:image/${{png: "png", jpeg: "jpeg"}[q["config.output"]] ?? "svg+xml"};base64,${Buffer.from(rendered).toString("base64")}">`
       }
       //Rendering template source
-      let rendered = source.replace(/\{\{ (?<content>[\s\S]*?) \}\}/g, "{%= $<content> %}")
-      console.debug(rendered)
-      for (const delimiters of [{openDelimiter: "<", closeDelimiter: ">"}, {openDelimiter: "{", closeDelimiter: "}"}])
-        rendered = await ejs.render(rendered, {...data, s: imports.s, f: imports.format, embed}, {views, async: true, ...delimiters})
+      //Source is translated to a single set of delimiters and rendered once, as data printed by the template must never be rendered again as template code
+      const template = imports.markdownSource(source)
+      console.debug(template)
+      const rendered = await ejs.render(template, {...data, s: imports.s, f: imports.format, embed}, {views, async: true})
       console.debug(`metrics/compute/${login} > success`)
       //Output
       if (convert === "markdown-pdf") {
@@ -300,18 +300,19 @@ metrics.insights.output = async function({login, imports, conf}, {graphql, rest,
 
   //Data processing
   const browser = await imports.puppeteer.launch()
-  const page = await browser.newPage()
-  console.debug(`metrics/compute/${login} > insights > generating data`)
-  const result = await metrics.insights({login}, {graphql, rest, conf}, {Plugins, Templates})
-  const json = JSON.stringify(result)
-  await page.goto(`${server}/insights/${login}?embed=1&localstorage=1`)
-  await page.evaluate(async json => localStorage.setItem("local.metrics", json), json) //eslint-disable-line no-undef
-  await page.goto(`${server}/insights/${login}?embed=1&localstorage=1`)
-  await page.waitForSelector(".container .user", {timeout: 10 * 60 * 1000})
+  try {
+    const page = await browser.newPage()
+    console.debug(`metrics/compute/${login} > insights > generating data`)
+    const result = await metrics.insights({login}, {graphql, rest, conf}, {Plugins, Templates})
+    const json = JSON.stringify(result)
+    await page.goto(`${server}/insights/${login}?embed=1&localstorage=1`)
+    await page.evaluate(async json => localStorage.setItem("local.metrics", json), json) //eslint-disable-line no-undef
+    await page.goto(`${server}/insights/${login}?embed=1&localstorage=1`)
+    await page.waitForSelector(".container .user", {timeout: 10 * 60 * 1000})
 
-  //Rendering
-  console.debug(`metrics/compute/${login} > insights > rendering data`)
-  const rendered = `
+    //Rendering
+    console.debug(`metrics/compute/${login} > insights > rendering data`)
+    const rendered = `
     <html>
       <head>
         <meta charset="utf-8">
@@ -323,6 +324,9 @@ metrics.insights.output = async function({login, imports, conf}, {graphql, rest,
         ${(await Promise.all([".css/style.vars.css", ".css/style.css", "insights/.statics/style.css"].map(path => utils.axios.get(`${server}/${path}`)))).map(({data: style}) => `<style>${style}</style>`).join("\n")}
       </body>
     </html>`
-  await browser.close()
-  return {mime: "text/html", rendered, errors: result.errors}
+    return {mime: "text/html", rendered, errors: result.errors}
+  }
+  finally {
+    await browser.close().catch(error => console.debug(`metrics/compute/${login} > insights > failed to close browser > ${error}`))
+  }
 }

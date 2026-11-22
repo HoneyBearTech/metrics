@@ -115,7 +115,7 @@
             this.loaded = ["base", ...Object.keys(this.metrics?.rendered?.plugins ?? {})]
             return
           }
-          const {processing, ...data} = (await axios.get(`/insights/query/${this.user}`)).data
+          const {processing, ...data} = (await axios.get(`/insights/query/${encodeURIComponent(this.user)}`)).data
           if (processing) {
             let completed = 0
             this.progress = 1 / (data.plugins.length + 1)
@@ -125,7 +125,7 @@
                 return
               do {
                 try {
-                  const {data} = await axios.get(`/insights/query/${this.user}/${plugin}`)
+                  const {data} = await axios.get(`/insights/query/${encodeURIComponent(this.user)}/${encodeURIComponent(plugin)}`)
                   if (!data)
                     throw new Error(`${plugin}: no data`)
                   if (plugin === "base")

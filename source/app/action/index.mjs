@@ -1,11 +1,11 @@
 //Imports
 import core from "@actions/core"
-import github from "@actions/github"
+import * as github from "@actions/github"
 import octokit from "@octokit/graphql"
 import processes from "child_process"
 import fs from "fs/promises"
 import paths from "path"
-import sgit from "simple-git"
+import {simpleGit as sgit} from "simple-git"
 import util from "util"
 import mocks from "../../../tests/mocks/index.mjs"
 import metrics from "../metrics/index.mjs"

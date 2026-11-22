@@ -8,7 +8,6 @@ import { minify as csso } from "csso"
 import * as d3 from "d3"
 import emoji from "emoji-name-map"
 import { fileTypeFromBuffer } from "file-type"
-import fss from "fs"
 import fs from "fs/promises"
 import { JSDOM } from "jsdom"
 import linguist from "linguist-js"
@@ -17,7 +16,6 @@ import { minimatch } from "minimatch"
 import opengraph from "open-graph-scraper"
 import os from "os"
 import paths from "path"
-import PNG from "png-js"
 import prism from "prismjs"
 import prism_lang from "prismjs/components/index.js"
 import _puppeteer from "puppeteer"
@@ -25,7 +23,7 @@ import purgecss from "purgecss"
 import readline from "readline"
 import htmlsanitize from "sanitize-html"
 import sharp from "sharp"
-import git from "simple-git"
+import {simpleGit as git} from "simple-git"
 import SVGO from "svgo"
 import url from "url"
 import util from "util"
@@ -397,6 +395,44 @@ export function highlight(code, lang) {
   return lang in prism.languages ? prism.highlight(code, prism.languages[lang]) : code
 }
 
+/**Markdown template source translator: rewrites "{{ x }}" and "{% code %}" to the default "<% %>" delimiters (existing "<% %>" blocks are left untouched) so that the source is rendered in a single pass. Tags written "{%%" and "%%}" outside of a block stay literal "{%" and "%}" (as "<%%" and "%%>" do for ejs). Source is scanned once: a delimiter without its closing one is left as text and later ones of its kind are not searched again, which keeps the time linear */
+export function markdownSource(source) {
+  source = `${source}`
+  const tags = /<%|\{\{ |\{%%?|%%\}/g
+  const closing = {"<%": "%>", "{{ ": " }}", "{%": "%}"}
+  const unclosed = new Set()
+  const output = []
+  let copied = 0
+  for (let match = tags.exec(source); match; match = tags.exec(source)) {
+    const [tag] = match
+    const {index} = match
+    //Literal brace tags are printed by a code block, so that they are neither text left for the template nor code
+    if ((tag === "{%%") || (tag === "%%}")) {
+      output.push(source.slice(copied, index), `<%- ${JSON.stringify(tag === "{%%" ? "{%" : "%}")} %>`)
+      copied = index + tag.length
+      continue
+    }
+    if (unclosed.has(tag))
+      continue
+    const from = index + tag.length
+    const to = source.indexOf(closing[tag], from)
+    //No closing delimiter is left in the rest of the source, so no later one of this kind can be closed either
+    if (to < 0) {
+      unclosed.add(tag)
+      tags.lastIndex = index + 1
+      continue
+    }
+    const content = source.slice(from, to)
+    const after = to + closing[tag].length
+    output.push(source.slice(copied, index))
+    output.push(tag === "<%" ? source.slice(index, after) : tag === "{{ " ? `<%= ${content} %>` : `<%${content}%>`)
+    copied = after
+    tags.lastIndex = after
+  }
+  output.push(source.slice(copied))
+  return output.join("")
+}
+
 /**Markdown-html sanitizer-interpreter */
 export async function markdown(text, {mode = "inline", codelines = Infinity} = {}) {
   //Sanitize user input once to prevent injections and parse into markdown
@@ -638,7 +674,7 @@ export const svg = {
     //Render through browser and print pdf
     console.debug("metrics/svg/pdf > loading svg")
     const page = await svg.resize.browser.newPage()
-    page.on("console", ({_text: text}) => console.debug(`metrics/svg/pdf > puppeteer > ${text}`))
+    page.on("console", message => console.debug(`metrics/svg/pdf > puppeteer > ${message.text()}`))
     await page.setContent(`<main class="markdown-body">${rendered}</main>`, {waitUntil: puppeteer.events})
     console.debug("metrics/svg/pdf > loaded svg successfully")
     const margins = (Array.isArray(paddings) ? paddings : paddings.split(",")).join(" ")
@@ -650,7 +686,7 @@ export const svg = {
         ${await fs.readFile(paths.join(__module(import.meta.url), "../../../node_modules", "@primer/css/dist/markdown.css")).catch(_ => "")}${style}
       `,
     })
-    rendered = await page.pdf()
+    rendered = Buffer.from(await page.pdf())
     //Result
     await page.close()
     console.debug("metrics/svg/pdf > rendering complete")
@@ -909,33 +945,27 @@ export async function record({page, width, height, frames, scale = 1, quality = 
 
 /**Create gif from puppeteer browser*/
 export async function gif({page, width, height, frames, x = 0, y = 0, repeat = true, delay = 150, quality = 10}) {
-  //Create temporary stream
-  const path = paths.join(os.tmpdir(), `${Math.round(Math.random() * 1000000000)}.gif`)
-  console.debug(`metrics/puppeteergif > set write stream to "${path}"`)
-  if (fss.existsSync(path))
-    await fs.unlink(path)
-  //Create encoder
   try {
-    const GIFEncoder = (await import("gifencoder")).default
-    const encoder = new GIFEncoder(width, height)
-    encoder.createWriteStream().pipe(fss.createWriteStream(path))
-    encoder.start()
-    encoder.setRepeat(repeat ? 0 : -1)
-    encoder.setDelay(delay)
-    encoder.setQuality(quality)
-    //Register frames
+    //Register frames as raw pixels (screenshots can be larger than requested size with a device scale factor)
+    const images = []
+    let size = null
     for (let i = 0; i < frames; i++) {
-      const buffer = new PNG(await page.screenshot({clip: {width, height, x, y}}))
-      encoder.addFrame(await new Promise(solve => buffer.decode(pixels => solve(pixels))))
+      const image = sharp(await page.screenshot({clip: {width, height, x, y}})).ensureAlpha()
+      const {data, info} = await image.raw().toBuffer({resolveWithObject: true})
+      if (!size)
+        size = {width: info.width, height: info.height}
+      if ((info.width === size.width) && (info.height === size.height))
+        images.push(data)
+      else
+        images.push(await sharp(data, {raw: {width: info.width, height: info.height, channels: 4}}).resize({width: size.width, height: size.height, fit: "fill"}).raw().toBuffer())
       if (frames % 10 === 0)
         console.debug(`metrics/puppeteergif > processed ${i}/${frames} frames`)
     }
     console.debug(`metrics/puppeteergif > processed ${frames}/${frames} frames`)
-    //Close encoder and convert to base64
-    encoder.finish()
-    const result = await fs.readFile(path, "base64")
-    await fs.unlink(path)
-    return `data:image/gif;base64,${result}`
+    //Join frames into an animated gif (delay is given for each frame because a single value only applies to the first one; quality is 1 for best to 30 for fastest, effort is 1 for fastest to 10 for best; identical frames are kept, otherwise they are merged and their delays added up)
+    const effort = Math.max(1, Math.min(10, Math.round(10 - (quality - 1) * 9 / 29)))
+    const result = await sharp(Buffer.concat(images), {raw: {width: size.width, height: size.height * frames, channels: 4, pageHeight: size.height}}).gif({loop: repeat ? 0 : 1, delay: Array(frames).fill(delay), effort, keepDuplicateFrames: true}).toBuffer()
+    return `data:image/gif;base64,${result.toString("base64")}`
   }
   catch (error) {
     console.debug(`metrics/puppeteergif > could not create gif: ${error}`)
