@@ -49,3 +49,4 @@
 | 2026-11-22 | revert-untested-majors | eslint 10, express 5 and file-type 22 reverted after they broke lint and the web server | #114 |
 | 2026-11-22 | actions-core-3 | `@actions/core` 3.0.1 with its import change | #110 |
 | 2026-11-22 | twemoji-parser-17 | `@twemoji/parser` 17.0.2 with a guard for empty matches; 1 test | #111 |
+| 2026-11-22 | extras-permissions | Extra features enforced for core options (request CSS, JavaScript, verify); old flags no longer change shared settings; 6 tests | #117 |

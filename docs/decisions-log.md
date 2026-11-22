@@ -445,3 +445,11 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **Characters no longer treated as emoji stay in the normal font:** that is the library's own choice from 17.0.2.
 - **Separate from the `@actions/core` update (#110):** one change per pull request.
 - **Process:** Engineer, QA with the security pass, and audit (one audit for both updates); no research, since the majors review covered it. The plan check and plain-English review were skipped (their review service is at its monthly limit).
+
+## 2026-11-22 - extras-permissions
+
+- **Fixed the name the check looks up, not its callers:** core inputs have no prefix in their descriptor, so the check now builds their name without one. Every core requirement is found, and plugin options are untouched. The audit compared all 27 inputs that declare a required feature, across eight settings states: only the five core rows changed, from always allowed to allowed only with their feature.
+- **The old flags still work, but on a copy:** `extras.css`, `extras.js` and `extras.presets` keep granting their feature next to a feature list, without growing the server's shared list.
+- **The Action and the sandbox are unchanged:** both turn on every extra feature.
+- **Left for later:** unchecked token options in three plugins, a 500 for presets when all features are on, and a crash on the `/.extras` page for logged-in users (all on the roadmap).
+- **Process:** research, Engineer, QA with the security pass, and audit. The plan check and plain-English review were skipped (their review service is at its monthly limit).
