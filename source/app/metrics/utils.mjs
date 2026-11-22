@@ -636,7 +636,7 @@ export const svg = {
     //Render through browser and print pdf
     console.debug("metrics/svg/pdf > loading svg")
     const page = await svg.resize.browser.newPage()
-    page.on("console", ({_text: text}) => console.debug(`metrics/svg/pdf > puppeteer > ${text}`))
+    page.on("console", message => console.debug(`metrics/svg/pdf > puppeteer > ${message.text()}`))
     await page.setContent(`<main class="markdown-body">${rendered}</main>`, {waitUntil: puppeteer.events})
     console.debug("metrics/svg/pdf > loaded svg successfully")
     const margins = (Array.isArray(paddings) ? paddings : paddings.split(",")).join(" ")
@@ -648,7 +648,7 @@ export const svg = {
         ${await fs.readFile(paths.join(__module(import.meta.url), "../../../node_modules", "@primer/css/dist/markdown.css")).catch(_ => "")}${style}
       `,
     })
-    rendered = await page.pdf()
+    rendered = Buffer.from(await page.pdf())
     //Result
     await page.close()
     console.debug("metrics/svg/pdf > rendering complete")

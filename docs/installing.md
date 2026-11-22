@@ -8,7 +8,7 @@ The usual way: see the [quick start](quick-start.md). The action is a composite 
 
 ## The web server, from source
 
-You need Node 24 and a Chrome or Chromium that puppeteer can find (the `Dockerfile` installs Google Chrome and sets `PUPPETEER_BROWSER_PATH=google-chrome-stable`).
+You need Node 24 and a Chrome or Chromium that puppeteer can find (the `Dockerfile` installs Google Chrome and sets `PUPPETEER_BROWSER_PATH=/usr/bin/google-chrome-stable`). Give the full path of the browser file; a bare name such as `google-chrome-stable` no longer works. Without `PUPPETEER_SKIP_DOWNLOAD=true`, an install downloads Chrome through puppeteer's own installer, which needs the system `unzip`; that download doesn't use a proxy setting.
 
 ```shell
 git clone https://github.com/HoneyBearTech/metrics.git

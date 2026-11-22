@@ -397,6 +397,7 @@ twemojis
 uapi
 uconf
 uid
+Uint
 uncache
 Unconfigured
 undef
