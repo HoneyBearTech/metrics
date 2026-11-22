@@ -390,3 +390,11 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **The shared browser used for image resizing and PDF output stays open on purpose:** it is reused between requests.
 - **Result:** the main test part 2 peaked at 301 processes at this machine's limit of 829, where puppeteer 25 had run out in PR #98.
 - **Process:** Engineer, QA and audit (which also did the security pass); no research. The plan check and plain-English review were skipped (their review service is at its monthly limit). QA caught a word the spelling check rejected (a capitalized entry doesn't cover the lowercase word); the comment was reworded.
+
+## 2026-11-22 - majors-review
+
+- **#75 and #83 need code changes, so Renovate's pull requests can't be merged alone:** one team job applies both versions with their fixes.
+- **#83 at 17.0.2 with a guard, not pinned at 17.0.1:** the guard also protects against empty matches older versions return, and Renovate would keep proposing 17.0.2.
+- **#93 held:** 2.x drops names in real use (the Polls category icon, country flags), and the tests don't cover them.
+- **The markdown template's second pass is a security problem on its own:** it exists with ejs 3 and 7 alike, so it doesn't block #92. Its public description is kept general until it is fixed.
+- **Process:** a review job: research and an independent audit (which also did the security and supply-chain review, and rendered the markdown template and its PDF with the updates applied); no plan gate. The plain-English review was skipped (its review service is at its monthly limit).
