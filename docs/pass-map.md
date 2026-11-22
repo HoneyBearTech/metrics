@@ -38,3 +38,4 @@
 | 2026-11-21 | actions-github-9 | `@actions/github` 9.1.1 with the namespace import; `@octokit/rest` and `@octokit/graphql` in range; alerts 13 to 15; npm audit 25 to 18; CI 391 passed | #91 |
 | 2026-11-21 | gif-without-canvas | `gif()` with `sharp`; `gifencoder`, `png-js` and `canvas` removed (23 lock entries, nothing added or changed); 6 focused tests; checked in the Docker image with headless Chrome; CI 396 passed | #94 |
 | 2026-11-22 | secret-scan | Secret scan workflow (gitleaks 8.30.1, checksum, full history); exact-match exceptions for 10 reviewed historical findings; contributor notes; GitHub secret scanning and push protection on | #95 |
+| 2026-11-22 | remove-tar-override | `tar` override removed (no lock file change; `tar` stays 7.5.23); dependency notes updated | #96 |

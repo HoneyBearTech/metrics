@@ -30,14 +30,13 @@ A fix that needs a major upgrade or a migration is planned on the [roadmap](road
 
 Some packages ask for an exact old version of a library, or an old major version, so a lock file refresh can't move them. The `overrides` section of `package.json` tells npm to use a fixed version instead. Each override is listed here so it can be removed once it is no longer needed.
 
-- **`tar` 7.5.23** (everywhere). Before, the image library `canvas` used an installer that asked for `tar` 6, which has known vulnerabilities. `canvas` is gone, and `npm ls tar --all` now shows only `node-gyp` (through `libxmljs2`) and its `cacache`, which ask for `tar` `^7.4.3`; nothing asks for `tar` 6 any more. The override only pins the fixed 7.x release that the lock file would otherwise pick on its own, so it is no longer needed. It can be removed in a later job.
 - **`tar-fs` 3.1.3, only under `@puppeteer/browsers`**. Puppeteer asks for exactly 3.0.4. The scope keeps the 2.x copy that `libxmljs2` uses (through an install helper) on 2.x; that copy needs no override because its own range already allows the fixed 2.1.4 and later. Remove it when puppeteer is upgraded to a version that asks for `tar-fs` 3.1.1 or later.
 - **`ws` 8.23.0**. Puppeteer asks for exactly 8.14.1. Remove it when puppeteer is upgraded to a version that asks for `ws` 8.21.0 or later (`jsdom` already allows it).
 - **`basic-ftp` 6.2.6**. Puppeteer's proxy support asks for 5.x. It is only used if a proxy setting is fetched over FTP, which this project never does. Remove it when puppeteer is upgraded to a version whose proxy support asks for `basic-ftp` 6.2.4 or later.
 
-`ip` and the 2.x `tar-fs` are fixed without overrides: the lock file moves them to the fixed versions their parents already allow.
+`ip` and the 2.x `tar-fs` are fixed without overrides: the lock file moves them to the fixed versions their parents already allow. The `tar` override was removed on 2026-11-22: after `canvas` left, its only users (`node-gyp`, `cacache`) ask for `^7.4.3`, which already allows the fixed 7.5.23 in the lock file.
 
-The overrides pin exact versions, so a later fix for one of these four packages does not arrive through a lock file refresh. Renovate proposes updates to override entries like any other dependency (it supports npm overrides), and Dependabot alerts still report a vulnerable pinned version. When the parent package is upgraded so that it asks for a fixed version itself, remove the override, regenerate the lock file, and check with `npm ls <package> --all` and `npm audit` that no old copy is left.
+The overrides pin exact versions, so a later fix for one of these three packages does not arrive through a lock file refresh. Renovate proposes updates to override entries like any other dependency (it supports npm overrides), and Dependabot alerts still report a vulnerable pinned version. When the parent package is upgraded so that it asks for a fixed version itself, remove the override, regenerate the lock file, and check with `npm ls <package> --all` and `npm audit` that no old copy is left.
 
 If an override breaks something, remove just that one and plan the matching alerts for dismissal or a later upgrade.
 
