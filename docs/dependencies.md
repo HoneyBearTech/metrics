@@ -35,4 +35,4 @@ If an override is needed again, list it here with the reason and the condition f
 ## Known gaps
 
 - The Docker base image (`node:24-trixie-slim`) and the Deno install script are not pinned to a digest or a release.
-- After the lock file refresh and the overrides (2026-11-21), `npm audit` reports 25 findings (none critical: 10 high, 14 moderate, 1 low), down from 43. Most of the rest are in packages that need a major upgrade, plus a few that do not affect the project. The plan is in `docs/reports/2026-11-21-security-findings-plan.md`.
+- After the puppeteer 25 upgrade (2026-11-22), `npm audit` reports 12 findings (none critical: 3 high, 8 moderate, 1 low), down from 43 before the lock file refresh. The 3 high ones are in `@faker-js/faker` (needs a major upgrade), `decode-uri-component` and `query-string` (used by the maps plugin; see the roadmap). The plan is in `docs/reports/2026-11-21-security-findings-plan.md`.
