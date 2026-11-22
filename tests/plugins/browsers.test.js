@@ -9,7 +9,7 @@ describe("Browsers started by plugins", () => {
       const {error, reason, launched, closed} = esm("browsers.mjs", "achievements_success")
       expect(launched).toBe(1)
       expect(closed).toBe(1)
-      //Totals were found, so the plugin went on until the (unconfigured) account step
+      //Totals were found, so the plugin went on until the account step, which is not configured here
       expect(error).toBe(unexpected)
       expect(reason).toBe("compute[account] is not a function")
     })
