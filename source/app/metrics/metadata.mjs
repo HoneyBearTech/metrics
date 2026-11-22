@@ -270,21 +270,22 @@ metadata.plugin = async function({__plugins, __templates, name, logger}) {
           //Legacy options handling
           if (!Array.isArray(enabled))
             throw new Error(`metrics/extras > ${name} > ${key} > extras.features is not an array`)
+          const granted = [...enabled] //Never change the shared features list
           if (extras.css) {
             console.warn(`metrics/extras > ${name} > ${key} > extras.css is deprecated, use extras.features with "metrics.run.puppeteer.user.css" instead`)
-            enabled.push("metrics.run.puppeteer.user.css")
+            granted.push("metrics.run.puppeteer.user.css")
           }
           if (extras.js) {
             console.warn(`metrics/extras > ${name} > ${key} > extras.js is deprecated, use extras.features with "metrics.run.puppeteer.user.js" instead`)
-            enabled.push("metrics.run.puppeteer.user.js")
+            granted.push("metrics.run.puppeteer.user.js")
           }
           if (extras.presets) {
             console.warn(`metrics/extras > ${name} > ${key} > extras.presets is deprecated, use extras.features with "metrics.setup.community.presets" instead`)
-            enabled.push("metrics.setup.community.presets")
+            granted.push("metrics.setup.community.presets")
           }
 
           //Check permissions
-          const missing = required.filter(permission => !enabled.includes(permission))
+          const missing = required.filter(permission => !granted.includes(permission))
           if (missing.length > 0) {
             console.debug(`metrics/extras > ${name} > ${key} > missing permissions [${missing}]`)
             throw new Error()
@@ -641,7 +642,8 @@ metadata.to = {
     const parts = []
     if (key !== "enabled")
       parts.unshift(key.replace(/\./g, "_"))
-    if (name)
+    //Core inputs have no prefix in their yaml descriptor (and "base" ones are prefixed by "base")
+    if ((name) && (name !== "core"))
       parts.unshift((name === "base") ? name : `plugin_${name}`)
     return parts.join("_")
   },
