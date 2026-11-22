@@ -810,7 +810,7 @@ export const svg = {
     //Load emojis
     console.debug("metrics/svg/twemojis > rendering twemojis")
     const emojis = new Map()
-    for (const {text: emoji, url} of twemojis.parse(rendered)) {
+    for (const {text: emoji, url} of twemojis.parse(rendered).filter(({url}) => url)) {
       if (!emojis.has(emoji))
         emojis.set(emoji, (await axios.get(url)).data.replace(/^<svg /, '<svg class="twemoji" '))
     }
