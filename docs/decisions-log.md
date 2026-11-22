@@ -453,3 +453,11 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **The Action and the sandbox are unchanged:** both turn on every extra feature.
 - **Left for later:** unchecked token options in three plugins, a 500 for presets when all features are on, and a crash on the `/.extras` page for logged-in users (all on the roadmap).
 - **Process:** research, Engineer, QA with the security pass, and audit. The plan check and plain-English review were skipped (their review service is at its monthly limit).
+
+## 2026-11-22 - plugin-token-extras
+
+- **Refuse, don't skip:** a refused token option ends the plugin with the usual "disabled on this server" error, like most plugins. Skipping it would send an empty key or break later with a confusing error.
+- **The upload needs both features:** the stat.ink upload is checked only when a request asks for it, on top of the token's own feature.
+- **A test reads every plugin's options:** it fails when an option declares a feature its plugin never checks. From the audit, comments are now ignored, so a check that was commented out doesn't count.
+- **Left for later:** the test can't tell when one of two checks for the same option is removed. Following each code path would need a much larger test (on the roadmap).
+- **Process:** research, Engineer, and one audit with the security pass, shared with web-extras-forms. Separate QA was skipped as the change is small. The plan check and plain-English review were skipped (their review service is at its monthly limit).
