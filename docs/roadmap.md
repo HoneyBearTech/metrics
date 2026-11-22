@@ -4,6 +4,7 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 
 ## Done
 
+- Browsers closed on every path: the nine places that start their own browser (achievements, 16personalities, music, skyline, starlists, support, topics, screenshot, insights output) close it in a `finally` block, with tests for achievements, music and topics; the main test part 2 now peaks at 301 processes instead of running out at 829 on this machine (PR #100)
 - Puppeteer 25.18.1: full Chrome path in the `Dockerfile`, the root install script and the last three overrides removed, PDF output kept a real PDF (`Buffer.from`) with a new test; `npm audit` 18 to 12 findings (9 to 3 high); replaces Renovate's #71 (PR #98)
 - `tar` override removed: after `canvas` left (PR #94), the only users of `tar` (`node-gyp`, `cacache`) ask for `^7.4.3`, so the lock file keeps the fixed 7.5.23 on its own and future fixes arrive through normal updates; three overrides remain (PR #96)
 - Secret scan: a new check runs gitleaks 8.30.1 (download checked against its checksum) over the whole git history on every pull request and push to `master`; `.gitleaks.toml` adds exceptions only for the exact reviewed stand-in values (mock log text, the music plugin's public web key); `CONTRIBUTING.md` says what to do when it fails. Sean turned on Secret Protection and Push protection. Closes issues #54 and #59 (PR #95)
@@ -66,7 +67,6 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 - **Vue 3 for the web pages** (optional): a real migration of the four pages and the Prism helper, if the web server matters. Remove the major-update block in `renovate.json` when done (same for faker after a test migration).
 - **Unpinned Docker inputs:** the base image and the Deno install script aren't pinned (both are inherited from upstream). Pin the base image by digest and Deno to a release.
 - **Upgrades skipped on purpose for now:** jsdom 28, eslint 9. (file-type 21 is now in Renovate's #23.)
-- **Browsers left running:** the achievements plugin never closes its browser, and the music plugin closes it only on success (`source/plugins/achievements/index.mjs:90`, `source/plugins/music/index.mjs:97`). Close them in a `finally` block. This matters more on a machine with a container process limit: on puppeteer 25 the main test part 2 used up a limit of 829 processes, so Chrome could no longer start (it passed with the limit raised and in CI).
 - **Spotify playlist test depends on the live site:** "Random track from playlist" opens the real Spotify page in the browser even with mocked data (`source/plugins/music/index.mjs`), so it can fail by chance (it did once on PR #96, then passed). The web instance also hides the plugin's own error behind "An error occurred during rendering". Mock the page and keep the original error in the log.
 - **Repository mode in `activity`:** collaborators' pushes are still hidden (an older upstream gap, not caused by the API change).
 - **Stale generated file under `.github/`:** the compatibility table. The examples workflow is gone (PR #10).

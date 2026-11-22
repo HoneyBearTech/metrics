@@ -382,3 +382,11 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **Part 2 on this machine:** it failed twice with the same chain of errors (a music playlist case first, then every later web-server case). The web server's own log showed Chrome failing to start because the container had reached its limit of 829 processes. Puppeteer 21 passed the same run with 8 processes to spare; with the limit raised to 1200, puppeteer 25 passed all 81. CI on GitHub passed the full suite (399), so this is a local limit made worse by the leaks, not a fault in the upgrade.
 - **Spelling:** the review (PR #97) used a word the check didn't know, because the word check here searched `package.json`, which the spelling check skips. #97 merged with its spelling check failing, and this PR adds the word to the list, which fixes `master` too.
 - **Process:** Engineer, QA, and audit (which also did the security review); no new research. The plan check, second security review and plain-English review were skipped (their review service is at its monthly limit).
+
+## 2026-11-22 - close-browsers
+
+- **One pattern everywhere:** each place closes its browser in a `finally`, and a failed close is logged and ignored, so it can't replace the real result or error. Before, a failed close in music or topics lost the result.
+- **Tests for three of the nine:** achievements, music and topics, the ones with loops or several steps. The others are the same simple pattern, checked by review, lint and the full suite.
+- **The shared browser used for image resizing and PDF output stays open on purpose:** it is reused between requests.
+- **Result:** the main test part 2 peaked at 301 processes at this machine's limit of 829, where puppeteer 25 had run out in PR #98.
+- **Process:** Engineer, QA and audit (which also did the security pass); no research. The plan check and plain-English review were skipped (their review service is at its monthly limit). QA caught a word the spelling check rejected (a capitalized entry doesn't cover the lowercase word); the comment was reworded.
