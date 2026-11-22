@@ -430,3 +430,11 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **The package files match `master` before #101 exactly:** reverts only, with no lock regeneration.
 - **Lesson:** a failing "Lint code" check makes "Build and test" skip, and neither is a required check, so a pull request with a red lint can be merged without any tests.
 - **Process:** Engineer and audit (which also did the security pass); a trivial job, so no research or separate QA. The plan check and plain-English review were skipped (their review service is at its monthly limit). The audit's one finding (the plan said eslint 9 instead of 8) was fixed in the plan.
+
+## 2026-11-22 - twemoji-parser-17
+
+- **A team pull request instead of Renovate's #83:** version 17 returns empty matches that crash emoji images, and Renovate's pull request can only change the version. Renovate closes #83 itself once `master` has the new version.
+- **Skip empty matches instead of pinning 17.0.1:** the guard also protects against the empty matches older versions return, and Renovate would keep proposing 17.0.2.
+- **Characters no longer treated as emoji stay in the normal font:** that is the library's own choice from 17.0.2.
+- **Separate from the `@actions/core` update (#110):** one change per pull request.
+- **Process:** Engineer, QA with the security pass, and audit (one audit for both updates); no research, since the majors review covered it. The plan check and plain-English review were skipped (their review service is at its monthly limit).
