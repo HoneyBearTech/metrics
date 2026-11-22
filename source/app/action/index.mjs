@@ -1,5 +1,5 @@
 //Imports
-import core from "@actions/core"
+import * as core from "@actions/core"
 import * as github from "@actions/github"
 import octokit from "@octokit/graphql"
 import processes from "child_process"
