@@ -11,7 +11,7 @@
 
 ## What we'll change
 
-1. **Revert the three merges,** newest first: #106, #102, then #101. This puts `package.json` and `package-lock.json` back to eslint 9, express 4 and file-type 21, as on `master` before those merges.
+1. **Revert the three merges,** newest first: #106, #102, then #101. This puts `package.json` and `package-lock.json` back to eslint 8, express 4 and file-type 21, as on `master` before those merges.
    - *Check:* the lock file matches the one before #101 for those packages, and nothing else changes.
 2. **Prove `master` works again:** lint passes, the focused tests pass, the web server starts, and CI's full suite runs and passes on the pull request.
 
