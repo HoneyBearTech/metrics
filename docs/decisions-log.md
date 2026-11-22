@@ -431,6 +431,11 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **Lesson:** a failing "Lint code" check makes "Build and test" skip, and neither is a required check, so a pull request with a red lint can be merged without any tests.
 - **Process:** Engineer and audit (which also did the security pass); a trivial job, so no research or separate QA. The plan check and plain-English review were skipped (their review service is at its monthly limit). The audit's one finding (the plan said eslint 9 instead of 8) was fixed in the plan.
 
+## 2026-11-22 - actions-core-3
+
+- **A team pull request instead of Renovate's #75:** version 3 needs the import change, and Renovate's pull request can only change the version. Renovate closes #75 itself once `master` has the new version.
+- **Only `getInput` and `setFailed` are used:** the audit compared both between 1.11.1 and 3.0.1 (input names, trimming, required inputs, empty values, the exit code and the error line) and found them unchanged.
+- **Separate from the `@twemoji/parser` update (#111):** one change per pull request.
 ## 2026-11-22 - twemoji-parser-17
 
 - **A team pull request instead of Renovate's #83:** version 17 returns empty matches that crash emoji images, and Renovate's pull request can only change the version. Renovate closes #83 itself once `master` has the new version.

@@ -4,7 +4,7 @@ import os from "os"
 import paths from "path"
 import {simpleGit as git} from "simple-git"
 import { filters } from "../../../app/metrics/utils.mjs"
-import core from "@actions/core"
+import * as core from "@actions/core"
 import crypto from "crypto"
 
 /**Analyzer */
