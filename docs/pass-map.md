@@ -44,3 +44,4 @@
 | 2026-11-22 | close-browsers | Browsers closed in a `finally` in nine places; 9 tests; part 2 peaks at 301 processes | #100 |
 | 2026-11-22 | majors-review | Review of six major updates: take #80, #92, #84; #75 and #83 with code changes; hold #93 | #103 |
 | 2026-11-22 | stackoverflow-mock | Stack Overflow stand-in matches the plugin's user-account request; 6 tests | #104 |
+| 2026-11-22 | markdown-single-pass | Markdown template rendered in one pass, so plugin text is never run as template code; 4 tests; examples byte-identical | #107 |

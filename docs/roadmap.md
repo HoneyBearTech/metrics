@@ -5,6 +5,7 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 ## Done
 
 - Stack Overflow test stand-in: the user-account pattern now matches the plugin's real request, so the test no longer reaches the live Stack Exchange site (which was blocking GitHub's test servers); a new test checks every request the plugin makes gets a stand-in (PR #104)
+- Markdown template rendered in one pass: the `{{ }}` and `{% %}` shortcuts are translated to `<% %>` and the template is rendered once, so text from plugin data is never run as template code; tests cover injected text, every documented syntax, escaped brace tags and large unclosed templates; the shipped examples render byte-identical (PR #107)
 - Browsers closed on every path: the nine places that start their own browser (achievements, 16personalities, music, skyline, starlists, support, topics, screenshot, insights output) close it in a `finally` block, with tests for achievements, music and topics; the main test part 2 now peaks at 301 processes instead of running out at 829 on this machine (PR #100)
 - Puppeteer 25.18.1: full Chrome path in the `Dockerfile`, the root install script and the last three overrides removed, PDF output kept a real PDF (`Buffer.from`) with a new test; `npm audit` 18 to 12 findings (9 to 3 high); replaces Renovate's #71 (PR #98)
 - `tar` override removed: after `canvas` left (PR #94), the only users of `tar` (`node-gyp`, `cacache`) ask for `^7.4.3`, so the lock file keeps the fixed 7.5.23 on its own and future fixes arrive through normal updates; three overrides remain (PR #96)
@@ -69,7 +70,9 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 - **Unpinned Docker inputs:** the base image and the Deno install script aren't pinned (both are inherited from upstream). Pin the base image by digest and Deno to a release.
 - **Upgrades skipped on purpose for now:** jsdom 28, eslint 9. (file-type 21 is now in Renovate's #23.)
 - **Major updates with code changes** (review: `docs/reports/2026-11-22-majors-review.md`): `@actions/core` 3.0.1 (#75) needs `import * as core` in `source/app/action/index.mjs` and `source/plugins/languages/analyzer/analyzer.mjs`; `@twemoji/parser` 17.0.2 (#83) needs empty matches skipped in `svg.twemojis` (`source/app/metrics/utils.mjs`). One team job for both.
-- **Markdown template runs plugin text as template code:** its second rendering pass treats text from the first pass, which can come from plugin data someone else controls, as template code (`source/app/metrics/index.mjs`). Security fix; do soon.
+- **Web server lets a request choose the markdown template's address:** when the server's `outputs` setting is empty (every format enabled), a request's own template runs on the server. Restrict it or require an opt-in (`source/app/web/instance.mjs`). Security fix; next job.
+- **PDF output loads raw HTML:** `markdown-pdf` loads the rendered HTML into the browser without cleaning it (`svg.pdf` in `source/app/metrics/utils.mjs`), so raw HTML printed from plugin data can load there. Look at it separately.
+- **`{% %}` isn't documented:** the markdown template's README covers `{{ }}` but not `{% %}`, which the code supports.
 - **Markdown dry run still writes:** `source/app/action/index.mjs` post-processes markdown output through the commit path even when `dryrun` is set.
 - **`emoji-name-map` stays on 1.2.9:** 2.x drops 513 names used today, including `ballot_box` (GitHub's default Polls category). Later, build the lookup from GitHub's own emoji list.
 - **Emoji images from a moving address:** twemoji SVGs are fetched from a CDN path ending in `@latest`, outside the lock file's protection.
