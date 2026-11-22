@@ -67,6 +67,11 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 - **Vue 3 for the web pages** (optional): a real migration of the four pages and the Prism helper, if the web server matters. Remove the major-update block in `renovate.json` when done (same for faker after a test migration).
 - **Unpinned Docker inputs:** the base image and the Deno install script aren't pinned (both are inherited from upstream). Pin the base image by digest and Deno to a release.
 - **Upgrades skipped on purpose for now:** jsdom 28, eslint 9. (file-type 21 is now in Renovate's #23.)
+- **Major updates with code changes** (review: `docs/reports/2026-11-22-majors-review.md`): `@actions/core` 3.0.1 (#75) needs `import * as core` in `source/app/action/index.mjs` and `source/plugins/languages/analyzer/analyzer.mjs`; `@twemoji/parser` 17.0.2 (#83) needs empty matches skipped in `svg.twemojis` (`source/app/metrics/utils.mjs`). One team job for both.
+- **Markdown template runs plugin text as template code:** its second rendering pass treats text from the first pass, which can come from plugin data someone else controls, as template code (`source/app/metrics/index.mjs`). Security fix; do soon.
+- **Markdown dry run still writes:** `source/app/action/index.mjs` post-processes markdown output through the commit path even when `dryrun` is set.
+- **`emoji-name-map` stays on 1.2.9:** 2.x drops 513 names used today, including `ballot_box` (GitHub's default Polls category). Later, build the lookup from GitHub's own emoji list.
+- **Emoji images from a moving address:** twemoji SVGs are fetched from a CDN path ending in `@latest`, outside the lock file's protection.
 - **Spotify playlist test depends on the live site:** "Random track from playlist" opens the real Spotify page in the browser even with mocked data (`source/plugins/music/index.mjs`), so it can fail by chance (it did once on PR #96, then passed). The web instance also hides the plugin's own error behind "An error occurred during rendering". Mock the page and keep the original error in the log.
 - **Repository mode in `activity`:** collaborators' pushes are still hidden (an older upstream gap, not caused by the API change).
 - **Stale generated file under `.github/`:** the compatibility table. The examples workflow is gone (PR #10).
