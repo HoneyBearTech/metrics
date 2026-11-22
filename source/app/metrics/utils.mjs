@@ -395,6 +395,14 @@ export function highlight(code, lang) {
   return lang in prism.languages ? prism.highlight(code, prism.languages[lang]) : code
 }
 
+/**Markdown template source translator: rewrites "{{ x }}" and "{% code %}" to the default "<% %>" delimiters (existing "<% %>" blocks are left untouched) so that the source is rendered in a single pass */
+export function markdownSource(source) {
+  return `${source}`.replace(/(?<code><%[\s\S]*?%>)|\{\{ (?<expression>[\s\S]*?) \}\}|\{%(?<block>[\s\S]*?)%\}/g, (...args) => {
+    const {code, expression, block} = args.at(-1)
+    return code ?? (expression !== undefined ? `<%= ${expression} %>` : `<%${block}%>`)
+  })
+}
+
 /**Markdown-html sanitizer-interpreter */
 export async function markdown(text, {mode = "inline", codelines = Infinity} = {}) {
   //Sanitize user input once to prevent injections and parse into markdown

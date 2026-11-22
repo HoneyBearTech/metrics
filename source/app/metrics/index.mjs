@@ -168,10 +168,10 @@ export default async function metrics({login, q}, {graphql, rest, plugins, conf,
         return `<img class="metrics-cacheable" data-name="${name}" src="data:image/${{png: "png", jpeg: "jpeg"}[q["config.output"]] ?? "svg+xml"};base64,${Buffer.from(rendered).toString("base64")}">`
       }
       //Rendering template source
-      let rendered = source.replace(/\{\{ (?<content>[\s\S]*?) \}\}/g, "{%= $<content> %}")
-      console.debug(rendered)
-      for (const delimiters of [{openDelimiter: "<", closeDelimiter: ">"}, {openDelimiter: "{", closeDelimiter: "}"}])
-        rendered = await ejs.render(rendered, {...data, s: imports.s, f: imports.format, embed}, {views, async: true, ...delimiters})
+      //Source is translated to a single set of delimiters and rendered once, as data printed by the template must never be rendered again as template code
+      const template = imports.markdownSource(source)
+      console.debug(template)
+      const rendered = await ejs.render(template, {...data, s: imports.s, f: imports.format, embed}, {views, async: true})
       console.debug(`metrics/compute/${login} > success`)
       //Output
       if (convert === "markdown-pdf") {
