@@ -23,7 +23,7 @@ Engineer, QA, Security Officer, Auditor. No new research: the majors review alre
 
 ## Risks
 
-- **Behaviour changes in version 3:** any change in how inputs, outputs or failures behave. The Auditor compares every function the project uses.
+- **Changes in version 3:** any change in how inputs, outputs or failures work. The Auditor compares every function the project uses.
 
 ## Out of scope
 
