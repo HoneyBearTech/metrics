@@ -368,3 +368,10 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **The lock file didn't change:** npm doesn't record overrides in it, and the resolved `tar` is the same. Regenerating it also flipped six test-tool entries from "devOptional" to "dev"; that happens on `master` too, so it was left out of this change.
 - **Found along the way (on the roadmap):** an install without the lock file picks a newer puppeteer whose installer is `install.mjs`, but the install script in `package.json` calls `install.js`; the same on `master`, and locked installs and the Docker build are not affected.
 - **Process:** a trivial job: Engineer and audit (which also did the security review); no research or separate verification. The plan check and plain-English review were skipped (their review service is at its monthly limit).
+
+## 2026-11-22 - puppeteer-25-review
+
+- **Recommended puppeteer 25.18.1 now rather than waiting:** it clears 6 high audit findings and all three overrides, and the change set is small. 21.11 (Renovate's #71) isn't a safer middle step: it already drops the `install.js` file the install script calls.
+- **The PDF fix is part of the upgrade, with a test:** the upgrade silently turns PDF output into text, and no test would catch it.
+- **The main suite was run one part at a time:** this machine's thread limit can't run CI's four workers. Three web-server playlist cases failed once and passed on their own; they reach the real music sites and also fail on puppeteer 21, so the upgrade job relies on a clean CI run.
+- **Process:** a review job: research and an independent audit (which also did the security and supply-chain review); no plan gate. The plain-English review was skipped (its review service is at its monthly limit).
