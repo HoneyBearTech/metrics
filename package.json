@@ -81,7 +81,6 @@
     "yargs-parser": "^21.1.1"
   },
   "overrides": {
-    "tar": "7.5.23",
     "@puppeteer/browsers": {
       "tar-fs": "3.1.3"
     },
