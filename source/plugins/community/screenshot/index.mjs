@@ -14,44 +14,48 @@ export default async function({login, q, imports, data, account}, {enabled = fal
     //Start puppeteer and navigate to page
     console.debug(`metrics/compute/${login}/plugins > screenshot > starting browser`)
     const browser = await imports.puppeteer.launch()
-    console.debug(`metrics/compute/${login}/plugins > screenshot > started ${await browser.version()}`)
-    const page = await browser.newPage()
-    await page.setViewport(viewport)
-    console.debug(`metrics/compute/${login}/plugins > screenshot > loading ${url}`)
-    await page.goto(url, {waitUntil: ["domcontentloaded", "networkidle2"]})
-    if (wait)
-      await new Promise(solve => setTimeout(solve, wait))
+    try {
+      console.debug(`metrics/compute/${login}/plugins > screenshot > started ${await browser.version()}`)
+      const page = await browser.newPage()
+      await page.setViewport(viewport)
+      console.debug(`metrics/compute/${login}/plugins > screenshot > loading ${url}`)
+      await page.goto(url, {waitUntil: ["domcontentloaded", "networkidle2"]})
+      if (wait)
+        await new Promise(solve => setTimeout(solve, wait))
 
-    //Screenshot
-    let content = null
-    let image = null
-    const metadata = {height: null, width: null}
-    await page.waitForSelector(selector)
-    switch (mode) {
-      case "image": {
-        const clip = await page.evaluate(selector => {
-          const {x, y, width, height} = document.querySelector(selector).getBoundingClientRect()
-          return {x, y, width, height}
-        }, selector)
-        console.debug(`metrics/compute/${login}/plugins > screenshot > coordinates ${JSON.stringify(clip)}`)
-        const [buffer] = await imports.record({page, ...clip, frames: 1, background})
-        const screenshot = await imports.sharp(Buffer.from(buffer.split(",").pop(), "base64")).resize({width: Math.min(454 * (1 + data.large), clip.width)})
-        image = `data:image/png;base64,${(await screenshot.toBuffer()).toString("base64")}`
-        Object.assign(metadata, await screenshot.metadata())
-        break
+      //Screenshot
+      let content = null
+      let image = null
+      const metadata = {height: null, width: null}
+      await page.waitForSelector(selector)
+      switch (mode) {
+        case "image": {
+          const clip = await page.evaluate(selector => {
+            const {x, y, width, height} = document.querySelector(selector).getBoundingClientRect()
+            return {x, y, width, height}
+          }, selector)
+          console.debug(`metrics/compute/${login}/plugins > screenshot > coordinates ${JSON.stringify(clip)}`)
+          const [buffer] = await imports.record({page, ...clip, frames: 1, background})
+          const screenshot = await imports.sharp(Buffer.from(buffer.split(",").pop(), "base64")).resize({width: Math.min(454 * (1 + data.large), clip.width)})
+          image = `data:image/png;base64,${(await screenshot.toBuffer()).toString("base64")}`
+          Object.assign(metadata, await screenshot.metadata())
+          break
+        }
+        case "text": {
+          content = await page.evaluate(selector => document.querySelector(selector)?.innerText ?? "", selector)
+          break
+        }
+        default:
+          throw {error: {message: `Unsupported mode "${mode}"`}}
       }
-      case "text": {
-        content = await page.evaluate(selector => document.querySelector(selector)?.innerText ?? "", selector)
-        break
-      }
-      default:
-        throw {error: {message: `Unsupported mode "${mode}"`}}
+
+      //Results
+      return {mode, image, content, title, height: metadata.height, width: metadata.width, url}
     }
-
-    await browser.close()
-
-    //Results
-    return {mode, image, content, title, height: metadata.height, width: metadata.width, url}
+    finally {
+      console.debug(`metrics/compute/${login}/plugins > screenshot > closing browser`)
+      await browser.close().catch(error => console.debug(`metrics/compute/${login}/plugins > screenshot > failed to close browser > ${error}`))
+    }
   }
   //Handle errors
   catch (error) {

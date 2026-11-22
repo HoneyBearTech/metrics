@@ -16,37 +16,39 @@ export default async function({login, data, imports, q, account}, {enabled = fal
     let topics = []
     console.debug(`metrics/compute/${login}/plugins > topics > starting browser`)
     const browser = await imports.puppeteer.launch()
-    console.debug(`metrics/compute/${login}/plugins > topics > started ${await browser.version()}`)
-    const page = await browser.newPage()
+    try {
+      console.debug(`metrics/compute/${login}/plugins > topics > started ${await browser.version()}`)
+      const page = await browser.newPage()
 
-    //Iterate through pages
-    for (let i = 1; i <= 100; i++) {
-      //Load page
-      console.debug(`metrics/compute/${login}/plugins > topics > loading page ${i}`)
-      await page.goto(`https://github.com/stars/${login}/topics?direction=desc&page=${i}&sort=${sort}`)
-      const frame = page.mainFrame()
-      //Extract topics
-      await Promise.race([frame.waitForSelector("ul.repo-list"), frame.waitForSelector(".blankslate")])
-      const starred = await frame.evaluate(() =>
-        [...document.querySelectorAll("ul.repo-list li")].map(li => ({
-          name: li.querySelector(".f3").innerText,
-          description: li.querySelector(".f5").innerText,
-          icon: li.querySelector("img")?.src ?? null,
-          url: li.querySelector("a")?.href ?? null,
-        }))
-      )
-      console.debug(`metrics/compute/${login}/plugins > topics > extracted ${starred.length} starred topics`)
-      //Check if next page exists
-      if (!starred.length) {
-        console.debug(`metrics/compute/${login}/plugins > topics > no more page to load`)
-        break
+      //Iterate through pages
+      for (let i = 1; i <= 100; i++) {
+        //Load page
+        console.debug(`metrics/compute/${login}/plugins > topics > loading page ${i}`)
+        await page.goto(`https://github.com/stars/${login}/topics?direction=desc&page=${i}&sort=${sort}`)
+        const frame = page.mainFrame()
+        //Extract topics
+        await Promise.race([frame.waitForSelector("ul.repo-list"), frame.waitForSelector(".blankslate")])
+        const starred = await frame.evaluate(() =>
+          [...document.querySelectorAll("ul.repo-list li")].map(li => ({
+            name: li.querySelector(".f3").innerText,
+            description: li.querySelector(".f5").innerText,
+            icon: li.querySelector("img")?.src ?? null,
+            url: li.querySelector("a")?.href ?? null,
+          }))
+        )
+        console.debug(`metrics/compute/${login}/plugins > topics > extracted ${starred.length} starred topics`)
+        //Check if next page exists
+        if (!starred.length) {
+          console.debug(`metrics/compute/${login}/plugins > topics > no more page to load`)
+          break
+        }
+        topics.push(...starred)
       }
-      topics.push(...starred)
     }
-
-    //Close browser
-    console.debug(`metrics/compute/${login}/plugins > topics > closing browser`)
-    await browser.close()
+    finally {
+      console.debug(`metrics/compute/${login}/plugins > topics > closing browser`)
+      await browser.close().catch(error => console.debug(`metrics/compute/${login}/plugins > topics > failed to close browser > ${error}`))
+    }
 
     //Shuffle topics
     if (shuffle) {

@@ -88,23 +88,28 @@ async function total({imports, graphql, queries}) {
             //Setup browser
             console.debug("metrics/compute/plugins > achievements > filling total from github.com/search")
             const browser = await imports.puppeteer.launch()
-            console.debug(`metrics/compute/plugins > achievements > started ${await browser.version()}`)
-            //Extracting total from github.com/search
-            for (let i = 0; (i < 4) && ((!total.users) || (!total.repositories)); i++) {
-              const page = await browser.newPage()
-              await page.goto("https://github.com/search?q=created%3A%3E%3D1970")
-              const results = await page.evaluate(() => [...[...document.querySelectorAll("h2")].filter(node => /Filter by/.test(node.innerText)).shift()?.nextSibling?.innerText.trim().matchAll(/(?<type>Repositories|Users|Issues)\n.*?(?<count>\d+)M/g) ?? []]) ?? null
-              for (const result of results) {
-                const type = result[1]?.toLowerCase()
-                console.debug(`metrics/compute/plugins > achievements > setup found ${type ?? "(?)"}`)
-                const count = result[2] ?? ""
-                if ((count !== "") && (!total[type])) {
-                  total[type] = Number(count) * 10e5
-                  console.debug(`metrics/compute/plugins > achievements > set total.${type} to ${total[type]}`)
+            try {
+              console.debug(`metrics/compute/plugins > achievements > started ${await browser.version()}`)
+              //Extracting total from github.com/search
+              for (let i = 0; (i < 4) && ((!total.users) || (!total.repositories)); i++) {
+                const page = await browser.newPage()
+                await page.goto("https://github.com/search?q=created%3A%3E%3D1970")
+                const results = await page.evaluate(() => [...[...document.querySelectorAll("h2")].filter(node => /Filter by/.test(node.innerText)).shift()?.nextSibling?.innerText.trim().matchAll(/(?<type>Repositories|Users|Issues)\n.*?(?<count>\d+)M/g) ?? []]) ?? null
+                for (const result of results) {
+                  const type = result[1]?.toLowerCase()
+                  console.debug(`metrics/compute/plugins > achievements > setup found ${type ?? "(?)"}`)
+                  const count = result[2] ?? ""
+                  if ((count !== "") && (!total[type])) {
+                    total[type] = Number(count) * 10e5
+                    console.debug(`metrics/compute/plugins > achievements > set total.${type} to ${total[type]}`)
+                  }
                 }
+                await page.close()
+                await imports.wait(10 * Math.random())
               }
-              await page.close()
-              await imports.wait(10 * Math.random())
+            }
+            finally {
+              await browser.close().catch(error => console.debug(`metrics/compute/plugins > achievements > failed to close browser > ${error}`))
             }
           }
           //Check setup state

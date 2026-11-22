@@ -95,76 +95,79 @@ export default async function({login, imports, data, q, account}, {enabled = fal
         //Start puppeteer and navigate to playlist
         console.debug(`metrics/compute/${login}/plugins > music > starting browser`)
         const browser = await imports.puppeteer.launch()
-        console.debug(`metrics/compute/${login}/plugins > music > started ${await browser.version()}`)
-        const page = await browser.newPage()
-        console.debug(`metrics/compute/${login}/plugins > music > loading page`)
-        await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.55 Safari/537.36 Edg/96.0.1054.34")
-        await page.goto(playlist)
-        const frame = page.mainFrame()
-        //Handle provider
-        switch (provider) {
-          //Apple music
-          case "apple": {
-            //Parse tracklist
-            await frame.waitForFunction(() => !!document.querySelector("embed-root").shadowRoot.querySelector(".audio-tracklist"))
-            //Apple music do a lot of lazy-loading preventing the use of networkIdle
-            await new Promise(solve => setTimeout(solve, 10 * 1000))
-            tracks = [
-              ...await frame.evaluate(() => {
-                //Only strip the label when it is separated as a badge (new line or several spaces), so titles such as "Something Explicit" are kept
-                const clean = text => (text || "").replace(/(?:\s*[\r\n]\s*|\s{2,})Explicit(?:\s+Content)?\s*$/i, "").trim()
-                const tracklist = document.querySelector("embed-root").shadowRoot.querySelector(".audio-tracklist")
-                return [...tracklist.querySelectorAll("embed-audio-tracklist-item")].map(item => ({
-                  name: clean(item.querySelector(".audio-tracklist-item__metadata h3")?.innerText ?? ""),
-                  artist: clean(item.querySelector(".audio-tracklist-item__metadata h4")?.innerText ?? ""),
-                  artwork: item.querySelector("apple-music-artwork")?.shadowRoot?.querySelector("picture source")?.srcset?.split(",")?.[0]?.replace(/\s+\d+x$/, ""),
-                }))
-              }),
-            ]
-            break
+        try {
+          console.debug(`metrics/compute/${login}/plugins > music > started ${await browser.version()}`)
+          const page = await browser.newPage()
+          console.debug(`metrics/compute/${login}/plugins > music > loading page`)
+          await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.55 Safari/537.36 Edg/96.0.1054.34")
+          await page.goto(playlist)
+          const frame = page.mainFrame()
+          //Handle provider
+          switch (provider) {
+            //Apple music
+            case "apple": {
+              //Parse tracklist
+              await frame.waitForFunction(() => !!document.querySelector("embed-root").shadowRoot.querySelector(".audio-tracklist"))
+              //Apple music do a lot of lazy-loading preventing the use of networkIdle
+              await new Promise(solve => setTimeout(solve, 10 * 1000))
+              tracks = [
+                ...await frame.evaluate(() => {
+                  //Only strip the label when it is separated as a badge (new line or several spaces), so titles such as "Something Explicit" are kept
+                  const clean = text => (text || "").replace(/(?:\s*[\r\n]\s*|\s{2,})Explicit(?:\s+Content)?\s*$/i, "").trim()
+                  const tracklist = document.querySelector("embed-root").shadowRoot.querySelector(".audio-tracklist")
+                  return [...tracklist.querySelectorAll("embed-audio-tracklist-item")].map(item => ({
+                    name: clean(item.querySelector(".audio-tracklist-item__metadata h3")?.innerText ?? ""),
+                    artist: clean(item.querySelector(".audio-tracklist-item__metadata h4")?.innerText ?? ""),
+                    artwork: item.querySelector("apple-music-artwork")?.shadowRoot?.querySelector("picture source")?.srcset?.split(",")?.[0]?.replace(/\s+\d+x$/, ""),
+                  }))
+                }),
+              ]
+              break
+            }
+            //Spotify
+            case "spotify": {
+              //Parse tracklist
+              await frame.waitForSelector("ol")
+              tracks = [
+                ...await frame.evaluate(() => {
+                  //Only strip the label when it is separated as a badge (new line or several spaces), so titles such as "Something Explicit" are kept
+                  const clean = text => (text || "").replace(/(?:\s*[\r\n]\s*|\s{2,})Explicit(?:\s+Content)?\s*$/i, "").trim()
+                  const cover = document.querySelector("div[style^='--image-src:']")
+                  return [...document.querySelectorAll("ol li")].map(tr => ({
+                    name: clean(tr.querySelector("h3")?.innerText ?? ""),
+                    artist: clean(tr.querySelector("h4")?.innerText ?? ""),
+                    //Spotify doesn't provide artworks so we fallback on playlist artwork instead
+                    artwork: cover ? window.getComputedStyle(cover).backgroundImage.match(/^url\("(?<url>https:...+)"\)$/)?.groups?.url ?? null : null,
+                  }))
+                }),
+              ]
+              break
+            }
+            //YouTube Music
+            case "youtube": {
+              while (await frame.evaluate(() => document.querySelector("yt-next-continuation")?.children.length ?? 0))
+                await frame.evaluate(() => window.scrollBy(0, window.innerHeight))
+              //Parse tracklist
+              tracks = [
+                ...await frame.evaluate(() =>
+                  [...document.querySelectorAll("ytmusic-playlist-shelf-renderer ytmusic-responsive-list-item-renderer")].map(item => ({
+                    name: item.querySelector("yt-formatted-string.title > a")?.innerText ?? "",
+                    artist: item.querySelector(".secondary-flex-columns > yt-formatted-string > a")?.innerText ?? "",
+                    artwork: item.querySelector("img").src,
+                  }))
+                ),
+              ]
+              break
+            }
+            //Unsupported
+            default:
+              throw {error: {message: `Unsupported mode "${mode}" for provider "${provider}"`}, ...raw}
           }
-          //Spotify
-          case "spotify": {
-            //Parse tracklist
-            await frame.waitForSelector("ol")
-            tracks = [
-              ...await frame.evaluate(() => {
-                //Only strip the label when it is separated as a badge (new line or several spaces), so titles such as "Something Explicit" are kept
-                const clean = text => (text || "").replace(/(?:\s*[\r\n]\s*|\s{2,})Explicit(?:\s+Content)?\s*$/i, "").trim()
-                const cover = document.querySelector("div[style^='--image-src:']")
-                return [...document.querySelectorAll("ol li")].map(tr => ({
-                  name: clean(tr.querySelector("h3")?.innerText ?? ""),
-                  artist: clean(tr.querySelector("h4")?.innerText ?? ""),
-                  //Spotify doesn't provide artworks so we fallback on playlist artwork instead
-                  artwork: cover ? window.getComputedStyle(cover).backgroundImage.match(/^url\("(?<url>https:...+)"\)$/)?.groups?.url ?? null : null,
-                }))
-              }),
-            ]
-            break
-          }
-          //YouTube Music
-          case "youtube": {
-            while (await frame.evaluate(() => document.querySelector("yt-next-continuation")?.children.length ?? 0))
-              await frame.evaluate(() => window.scrollBy(0, window.innerHeight))
-            //Parse tracklist
-            tracks = [
-              ...await frame.evaluate(() =>
-                [...document.querySelectorAll("ytmusic-playlist-shelf-renderer ytmusic-responsive-list-item-renderer")].map(item => ({
-                  name: item.querySelector("yt-formatted-string.title > a")?.innerText ?? "",
-                  artist: item.querySelector(".secondary-flex-columns > yt-formatted-string > a")?.innerText ?? "",
-                  artwork: item.querySelector("img").src,
-                }))
-              ),
-            ]
-            break
-          }
-          //Unsupported
-          default:
-            throw {error: {message: `Unsupported mode "${mode}" for provider "${provider}"`}, ...raw}
         }
-        //Close browser
-        console.debug(`metrics/compute/${login}/plugins > music > closing browser`)
-        await browser.close()
+        finally {
+          console.debug(`metrics/compute/${login}/plugins > music > closing browser`)
+          await browser.close().catch(error => console.debug(`metrics/compute/${login}/plugins > music > failed to close browser > ${error}`))
+        }
         //Format tracks
         if (Array.isArray(tracks)) {
           //Tracks
