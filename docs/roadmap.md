@@ -4,6 +4,7 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 
 ## Done
 
+- Stack Overflow test stand-in: the user-account pattern now matches the plugin's real request, so the test no longer reaches the live Stack Exchange site (which was blocking GitHub's test servers); a new test checks every request the plugin makes gets a stand-in (PR #104)
 - Browsers closed on every path: the nine places that start their own browser (achievements, 16personalities, music, skyline, starlists, support, topics, screenshot, insights output) close it in a `finally` block, with tests for achievements, music and topics; the main test part 2 now peaks at 301 processes instead of running out at 829 on this machine (PR #100)
 - Puppeteer 25.18.1: full Chrome path in the `Dockerfile`, the root install script and the last three overrides removed, PDF output kept a real PDF (`Buffer.from`) with a new test; `npm audit` 18 to 12 findings (9 to 3 high); replaces Renovate's #71 (PR #98)
 - `tar` override removed: after `canvas` left (PR #94), the only users of `tar` (`node-gyp`, `cacache`) ask for `^7.4.3`, so the lock file keeps the fixed 7.5.23 on its own and future fixes arrive through normal updates; three overrides remain (PR #96)
