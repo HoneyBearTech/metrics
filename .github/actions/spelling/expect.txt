@@ -292,6 +292,7 @@ plugin
 poopmap
 posix
 postcss
+postinstall
 practicaldev
 prettylights
 previewable
@@ -367,6 +368,7 @@ steveukx
 streamable
 stripemojis
 stroustrup
+subarray
 sublimelinter
 substr
 sudo
@@ -397,6 +399,7 @@ twemojis
 uapi
 uconf
 uid
+Uint
 uncache
 Unconfigured
 undef
