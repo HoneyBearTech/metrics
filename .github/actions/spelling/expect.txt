@@ -122,6 +122,7 @@ FRONTEND
 fss
 FTg
 fullyear
+gcp
 gemoji
 geocodes
 geopath
@@ -137,6 +138,7 @@ gionkunz
 Gister
 githubs
 githubusercontent
+gitleaks
 gitted
 globals
 Gmap
@@ -271,6 +273,7 @@ openssf
 optimizable
 organisations
 orked
+osps
 ossf
 pageerror
 pagespeed
@@ -314,6 +317,7 @@ readonly
 reated
 rebases
 recenttracks
+regexes
 regexp
 renovatebot
 rlreset
@@ -367,6 +371,7 @@ sudo
 sysadmin
 systemctl
 systemd
+tarball
 tempdir
 templating
 testapp
@@ -376,6 +381,7 @@ timeline
 tlwg
 tmpdir
 todo
+toml
 topartists
 toptracks
 tracklist
@@ -435,10 +441,12 @@ xcb
 Xcode
 xkcd
 xmlformat
+xzf
 ycombinator
 ymd
 yoda
 youtube
+youtubei
 ytd
 ytmusic
 Zabcdefghijklmnopqrstuvwxyz

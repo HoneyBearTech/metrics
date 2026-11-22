@@ -351,3 +351,13 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **Checked:** focused tests (they fail on the old code), a real page in headless Chrome inside a locally built Docker image (verification, then audit, at two device scales), CI's full test suite with the new tests.
 - **Found along the way:** the `tar` override is no longer needed (on the roadmap). The skyline plugin no longer lists `metrics.npm.optional.gifencoder` among the settings a web instance must allow.
 - **Process:** the audit doubled as the security review (the lock file only loses entries). The plan check, second security review and plain-English review were skipped (their review service is at its monthly limit).
+
+## 2026-11-22 - secret-scan
+
+- **gitleaks run directly, not through a third-party action:** the workflow downloads the release and refuses to run it unless its checksum matches the one in the file, so the only outside code is the pinned checkout step. Updating gitleaks means changing the version and checksum together.
+- **Full history on every run:** about 20 seconds for 2,600 commits, and it catches a secret added and removed inside a pull request.
+- **The workflow file was added by Sean** on the branch (the team doesn't write workflow files directly), from a copy page.
+- **Ten findings in the history, none real:** eight are a log line in the stand-in GitHub API data (`mocking graphql api result > ...`), two are the YouTube Music web app's own public key in the music plugin (the key its website sends to every visitor). Moving the key out of the code would leave it in history and protect nothing.
+- **Exceptions match the exact reviewed detector output,** with the path and rule all required. The audit found three ways a real secret could hide behind looser exceptions: the path alone (no "AND"), a whole matched line, and a value cut short at a literal `\n`. Each was fixed and re-tested with fake tokens in a scratch copy never pushed (15 cases plus a 55-case matrix in the re-check).
+- **Accepted:** a pull request can still change `.gitleaks.toml` or the workflow, so the scan relies on review; GitHub's push protection, now on, is the independent check. `.gitleaks.toml` is left out of the spelling check (it is mostly patterns and keys).
+- **Process:** the audit doubled as QA and the security review; two fix rounds. No research step. The plan check, second security review and plain-English review were skipped (their review service is at its monthly limit).

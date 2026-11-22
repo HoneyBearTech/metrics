@@ -37,3 +37,4 @@
 | 2026-11-21 | minimatch-refresh | Seven `minimatch` copies to 3.1.5 and 5.1.9 within range (Dependabot alerts 32 to 37); npm audit high 10 to 9, three advisories closed; CI 391 passed | #90 |
 | 2026-11-21 | actions-github-9 | `@actions/github` 9.1.1 with the namespace import; `@octokit/rest` and `@octokit/graphql` in range; alerts 13 to 15; npm audit 25 to 18; CI 391 passed | #91 |
 | 2026-11-21 | gif-without-canvas | `gif()` with `sharp`; `gifencoder`, `png-js` and `canvas` removed (23 lock entries, nothing added or changed); 6 focused tests; checked in the Docker image with headless Chrome; CI 396 passed | #94 |
+| 2026-11-22 | secret-scan | Secret scan workflow (gitleaks 8.30.1, checksum, full history); exact-match exceptions for 10 reviewed historical findings; contributor notes; GitHub secret scanning and push protection on | #95 |
