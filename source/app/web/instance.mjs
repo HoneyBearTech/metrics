@@ -15,6 +15,15 @@ import presets from "../metrics/presets.mjs"
 import setup from "../metrics/setup.mjs"
 import { sameSite } from "./oauth.mjs"
 
+/**Markdown output renders a template chosen by the request (a link or a path in a repository), which is code.
+ * It is only allowed with the extra feature "metrics.run.user.template" (or all of them), whatever the allowed outputs are, as "auto" may also lead to it.
+ */
+export function markdownForbidden({conf, q, convert}) {
+  const format = (convert) && (convert !== "auto") ? convert : conf.metadata.templates[q.template || conf.settings.templates.default]?.formats?.[0]
+  const features = conf.settings.extras?.features ?? conf.settings.extras?.default ?? false
+  return (/markdown/.test(format)) && (features !== true) && (!(Array.isArray(features) && features.includes("metrics.run.user.template")))
+}
+
 /**App */
 export default async function({sandbox = false} = {}) {
   //Load configuration settings
@@ -486,6 +495,10 @@ export default async function({sandbox = false} = {}) {
         }
         //Render
         const convert = uconf.settings.outputs.includes(q["config.output"]) ? q["config.output"] : uconf.settings.outputs[0]
+        if (markdownForbidden({conf: uconf, q, convert})) {
+          console.debug(`metrics/app/${login} > 403 (markdown output is disabled)`)
+          return res.status(403).send("Forbidden: markdown output is disabled on this server")
+        }
         const {rendered, mime} = await metrics({login, q}, {
           ...octokit,
           plugins,

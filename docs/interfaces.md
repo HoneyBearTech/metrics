@@ -29,7 +29,7 @@ Copy [`settings.example.json`](../settings.example.json) to `settings.json`. The
 | `ratelimiter` | `express-rate-limit` options for image requests |
 | `cached` | how long rendered images are cached, in milliseconds |
 | `port` | listening port (default 3000) |
-| `outputs` | allowed output formats |
+| `outputs` | allowed output formats (markdown output runs a template the request chooses, so it also needs the extra feature `metrics.run.user.template`) |
 | `oauth` | GitHub OAuth client, so visitors can use their own token |
 | `templates`, `plugins`, `extras` | which templates and plugins are enabled, and which extra features are allowed |
 
