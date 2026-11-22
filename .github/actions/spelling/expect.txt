@@ -209,6 +209,7 @@ libxmljs
 libxss
 libxtst
 lichess
+lilconfig
 linting
 linux
 lng
@@ -320,6 +321,7 @@ recenttracks
 regexes
 regexp
 renovatebot
+resolver
 rlreset
 roadmap
 rssi
