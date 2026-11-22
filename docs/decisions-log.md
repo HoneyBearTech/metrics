@@ -404,3 +404,12 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **Fixed only the one pattern:** the other Stack Overflow stand-ins already matched. Other plugins' stand-ins that miss their requests stay under "Test suite fixes" on the roadmap.
 - **Unmatched requests still reach the real site:** making them fail instead would catch every such case, but it is a larger change to the shared mock code. It is left for the test suite fixes.
 - **Process:** Engineer and audit (which also did the security pass); a trivial job, so no research or separate QA. The plain-English review was skipped (its review service is at its monthly limit).
+
+## 2026-11-22 - markdown-single-pass
+
+- **One pass instead of escaping:** translating the `{{ }}` and `{% %}` shortcuts to `<% %>` and rendering once removes the cause. Escaping `{%` in printed text would have to cover every way text is printed, and dropping `{% %}` would break templates that use it.
+- **Same output:** both shipped examples render byte-identical before and after, checked by the Engineer and again by the audit. A few templates that failed before now work, such as `{%= %}` inside a `<% %>` loop, and `{{ }}` and `{% %}` now see variables set by `<% %>`.
+- **Included files use `<% %>` only:** an included file is rendered by itself, so `{%= %}` in a user's own included file now stays as text instead of getting the old second pass. The shipped partials already use `<% %>`.
+- **Fix round from the audit:** the translation now scans in linear time (a large template with an unclosed delimiter took over 30 seconds before), and `{%%` and `%%}` print `{%` and `%}` as they did before.
+- **Template source left for the next job:** a markdown template is code; the action's user chooses it, and the README now says to trust it like a workflow file. The web server letting a request choose it is a separate fix.
+- **Process:** research, Engineer, QA with the security pass, and audit (two rounds). The plan check and plain-English review were skipped (their review service is at its monthly limit).

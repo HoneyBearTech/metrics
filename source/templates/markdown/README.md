@@ -36,6 +36,8 @@ The templating engine is [EJS](https://github.com/mde/ejs) and can be used to in
 * `<%-` and `%>` are used to display raw output
 * `<%` and `%>` are used to execute JavaScript, and can also contains control statements such as conditionals and loops
 
+> ⚠️ A markdown template is code and should be trusted like a workflow file, so only use templates you control. Text coming from plugin data is printed as text and is never run as template code.
+
 *Example: basic templating*
 ```markdown
 <!-- template -->
