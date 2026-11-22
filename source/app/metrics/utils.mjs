@@ -395,12 +395,42 @@ export function highlight(code, lang) {
   return lang in prism.languages ? prism.highlight(code, prism.languages[lang]) : code
 }
 
-/**Markdown template source translator: rewrites "{{ x }}" and "{% code %}" to the default "<% %>" delimiters (existing "<% %>" blocks are left untouched) so that the source is rendered in a single pass */
+/**Markdown template source translator: rewrites "{{ x }}" and "{% code %}" to the default "<% %>" delimiters (existing "<% %>" blocks are left untouched) so that the source is rendered in a single pass. Tags written "{%%" and "%%}" outside of a block stay literal "{%" and "%}" (as "<%%" and "%%>" do for ejs). Source is scanned once: a delimiter without its closing one is left as text and later ones of its kind are not searched again, which keeps the time linear */
 export function markdownSource(source) {
-  return `${source}`.replace(/(?<code><%[\s\S]*?%>)|\{\{ (?<expression>[\s\S]*?) \}\}|\{%(?<block>[\s\S]*?)%\}/g, (...args) => {
-    const {code, expression, block} = args.at(-1)
-    return code ?? (expression !== undefined ? `<%= ${expression} %>` : `<%${block}%>`)
-  })
+  source = `${source}`
+  const tags = /<%|\{\{ |\{%%?|%%\}/g
+  const closing = {"<%": "%>", "{{ ": " }}", "{%": "%}"}
+  const unclosed = new Set()
+  const output = []
+  let copied = 0
+  for (let match = tags.exec(source); match; match = tags.exec(source)) {
+    const [tag] = match
+    const {index} = match
+    //Literal brace tags are printed by a code block, so that they are neither text left for the template nor code
+    if ((tag === "{%%") || (tag === "%%}")) {
+      output.push(source.slice(copied, index), `<%- ${JSON.stringify(tag === "{%%" ? "{%" : "%}")} %>`)
+      copied = index + tag.length
+      continue
+    }
+    if (unclosed.has(tag))
+      continue
+    const from = index + tag.length
+    const to = source.indexOf(closing[tag], from)
+    //No closing delimiter is left in the rest of the source, so no later one of this kind can be closed either
+    if (to < 0) {
+      unclosed.add(tag)
+      tags.lastIndex = index + 1
+      continue
+    }
+    const content = source.slice(from, to)
+    const after = to + closing[tag].length
+    output.push(source.slice(copied, index))
+    output.push(tag === "<%" ? source.slice(index, after) : tag === "{{ " ? `<%= ${content} %>` : `<%${content}%>`)
+    copied = after
+    tags.lastIndex = after
+  }
+  output.push(source.slice(copied))
+  return output.join("")
 }
 
 /**Markdown-html sanitizer-interpreter */

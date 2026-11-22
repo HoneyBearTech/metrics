@@ -5,6 +5,7 @@ import axios from "axios"
 import rss from "rss-parser"
 import metrics from "../../../source/app/metrics/index.mjs"
 import setup from "../../../source/app/metrics/setup.mjs"
+import {markdownSource} from "../../../source/app/metrics/utils.mjs"
 import mocks from "../../mocks/index.mjs"
 
 //Marker set by the injected text if it is ever run as template code (it only sets a variable, nothing else)
@@ -64,4 +65,23 @@ export async function syntax() {
   for (const [name, source] of Object.entries(sources))
     rendered[name] = (await render(source)).rendered
   return rendered
+}
+
+//Brace tags written with doubled percent signs print literal delimiters and are not run as template code
+export async function escapes() {
+  const literal = await render("{%% literal %%}\n")
+  const marked = await render("{%% globalThis.__marker = 1 %%} and {%% x %} then %%}\n")
+  return {literal: literal.rendered, marked: marked.rendered, executed: marked.executed}
+}
+
+//Source with delimiters that are never closed is translated in linear time and left as is
+export async function unclosed() {
+  const result = {}
+  for (const [name, opener] of Object.entries({code: "<%", block: "{%", expression: "{{ "})) {
+    const source = opener.repeat(1024 * 1024 / opener.length)
+    const start = performance.now()
+    const translated = markdownSource(source)
+    result[name] = {milliseconds: performance.now() - start, same: translated === source}
+  }
+  return result
 }

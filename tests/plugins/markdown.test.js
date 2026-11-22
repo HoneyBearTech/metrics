@@ -23,4 +23,19 @@ describe("Markdown template", () => {
     expect(rendered.string).toBe("{{ x }}|{%= 1 %}\n")
     expect(rendered.include).toMatch(/^1\n\*\*\[.*Rss feed.*\n\* \[Title\]\(https:\/\/example.invalid\/1\)\n.*\n\n2\n$/s)
   })
+
+  test("escaped brace tags stay literal and are not run", () => {
+    const {literal, marked, executed} = esm("markdown.mjs", "escapes")
+    expect(literal).toBe("{% literal %}\n")
+    expect(marked).toBe("{% globalThis.__marker = 1 %} and {% x %} then %}\n")
+    expect(executed).toBe(0)
+  })
+
+  test("delimiters that are never closed are translated in linear time", () => {
+    const result = esm("markdown.mjs", "unclosed")
+    for (const name of ["code", "block", "expression"]) {
+      expect(result[name].same).toBe(true)
+      expect(result[name].milliseconds).toBeLessThan(1000)
+    }
+  })
 })
