@@ -10,6 +10,7 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 - eslint 10, express 5 and file-type 22 reverted: they were merged while lint failed, so their tests never ran, and they broke lint and the web server (PR #114)
 - `@actions/core` 3.0.1, with `import * as core` in the Action and the languages analyzer (version 3 has no default export) (PR #110)
 - `@twemoji/parser` 17.0.2, with emoji matches that have no image skipped in `svg.twemojis`, so characters like ✌️ no longer crash emoji images; a test covers it (PR #111)
+- Extra features enforced for core options: the permission check found no requirement for them, so a request's own `extras.css`, `extras.js` and `verify` were allowed on any web server; old extras flags no longer add to the shared feature list (PR #117)
 - Browsers closed on every path: the nine places that start their own browser (achievements, 16personalities, music, skyline, starlists, support, topics, screenshot, insights output) close it in a `finally` block, with tests for achievements, music and topics; the main test part 2 now peaks at 301 processes instead of running out at 829 on this machine (PR #100)
 - Puppeteer 25.18.1: full Chrome path in the `Dockerfile`, the root install script and the last three overrides removed, PDF output kept a real PDF (`Buffer.from`) with a new test; `npm audit` 18 to 12 findings (9 to 3 high); replaces Renovate's #71 (PR #98)
 - `tar` override removed: after `canvas` left (PR #94), the only users of `tar` (`node-gyp`, `cacache`) ask for `^7.4.3`, so the lock file keeps the fixed 7.5.23 on its own and future fixes arrive through normal updates; three overrides remain (PR #96)
@@ -73,14 +74,15 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 - **Vue 3 for the web pages** (optional): a real migration of the four pages and the Prism helper, if the web server matters. Remove the major-update block in `renovate.json` when done (same for faker after a test migration).
 - **Unpinned Docker inputs:** the base image and the Deno install script aren't pinned (both are inherited from upstream). Pin the base image by digest and Deno to a release.
 - **Upgrades skipped on purpose for now:** jsdom 28, eslint 9. (file-type 21 is now in Renovate's #23.)
-- **Extra CSS and JavaScript on the web server:** the permission check for `extras.css` and `extras.js` passes for every settings file (the input names don't match the check's lookup), so a request's own CSS and JavaScript may reach the server's browser. Security fix; next job.
-- **Old extras flags change shared settings:** `source/app/metrics/metadata.mjs` (~line 275-283) adds features to the shared list each time it checks the old `extras.css`, `extras.js` and `extras.presets` flags, so they pile up for later requests. Only matters when a server sets those old flags; fix with the job above.
 - **Upgrades reverted in PR #114, each needing its own job:**
   - **eslint 10:** the two lint settings files must move to an `eslint.config.*` file. It also drops an old schema package that brings a moderate audit finding.
   - **express 5:** `/about/*`, `/insights/*` and `/embed/*` need named wildcards, and `/:login/:repository?` needs the new optional form. `req.query` is read fresh on each access, so the route's writes to `req.query.template` and `req.query.repo` (`source/app/web/instance.mjs`) must go to a copy.
   - **file-type 22:** no code change found (the one use, `fileTypeFromBuffer`, is unchanged); it needs a full test run.
 - **SVG check written backwards:** `source/app/metrics/index.mjs` (~line 219) runs the SVG verification only when `libxmljs2` failed to load (`if (!libxmljs)`), so it never verifies and crashes when the library is missing.
 - **New Renovate majors to review before merging:** #108 jest 30, #112 js-yaml 5, #113 jsdom 31.
+- **Token options that aren't checked:** steam, chess and splatoon token options declare a required extra feature, but nothing checks it; only the plugin itself is checked.
+- **Presets with all extra features on:** with `extras.features: true`, a request with `config.presets` returns 500 (`instance.mjs` calls `.includes()` on the boolean).
+- **`/.extras` page for logged-in users:** it can crash when the server's feature list is unset or false.
 - **Requests fetching addresses:** presets (when enabled) and some plugin options (when the server enables those plugins) fetch any address a request gives.
 - **Wrong error code:** "template not supported" errors are returned as 500 instead of 400 (the error check in `instance.mjs` doesn't match the message).
 - **PDF output loads raw HTML:** `markdown-pdf` loads the rendered HTML into the browser without cleaning it (`svg.pdf` in `source/app/metrics/utils.mjs`), so raw HTML printed from plugin data can load there. Look at it separately.
