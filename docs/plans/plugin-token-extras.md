@@ -4,7 +4,7 @@
 
 ## What we found
 
-- **Four options declare a feature that is never checked:** `plugin_steam_token` (`metrics.api.steam`), `plugin_chess_token` (`metrics.api.chess.any`), `plugin_splatoon_token` (`metrics.api.nintendo.splatnet`) and `plugin_splatoon_statink` (`metrics.api.statink`). Their plugins never check them. A scan of every plugin found no others; the other 24 options that need a feature are checked.
+- **Four options declare a feature that is never checked:** `plugin_steam_token` (`metrics.api.steam`), `plugin_chess_token` (`metrics.api.chess.any`), `plugin_splatoon_token` (the game service's own feature) and `plugin_splatoon_statink` (`metrics.api.statink`). Their plugins never check them. A scan of every plugin found no others; the other 24 options that need a feature are checked.
 - **What the features protect:** they're a web server owner's switch for letting visitors use the owner's own keys for those outside services. The tokens come from the server's settings, not from the request. Today, a server that turns on one of these plugins and sets its token lets every visitor use it without the feature. For stat.ink, a visitor's request also makes the server upload data with the owner's key.
 - **Not on a default server:** these plugins are off by default on a web server. The Action allows every feature, so it is unchanged.
 

@@ -125,7 +125,8 @@ export function declared() {
     const descriptor = path.join(root, folder, "metadata.yml")
     if (!fs.existsSync(descriptor))
       continue
-    const source = fs.existsSync(path.join(root, folder, "index.mjs")) ? fs.readFileSync(path.join(root, folder, "index.mjs"), "utf8") : ""
+    //Comments are removed first, so a check that was commented out does not count
+    const source = (fs.existsSync(path.join(root, folder, "index.mjs")) ? fs.readFileSync(path.join(root, folder, "index.mjs"), "utf8") : "").replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "")
     //Names the plugin passes to extras(), and whether it calls enabled() (which checks the "enabled" requirement)
     const called = new Set([...source.matchAll(/\.extras\(\s*"([^"]+)"/g)].map(([, input]) => metadata.to.yaml(input, {name})))
     if (/\.enabled\(/.test(source))
