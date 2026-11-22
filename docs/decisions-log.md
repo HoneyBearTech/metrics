@@ -341,3 +341,13 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **Checked:** two independent reviews ran all 34 GitHub API calls in `source/` against a local stand-in server, with the old and new packages, and got the same requests; CI's full test suite (which starts the Action with mocked APIs) passed with the same totals as `master`. A real run against GitHub isn't tested; the first Action run after the merge is the final check.
 - **Review findings:** none on the pull request. Before it, the audit and the research step both found the import problem and that #79 alone left the three alerts open.
 - **Process:** the audit doubled as the security review (registry, checksums, publishers, provenance). The plan check, second security review and plain-English review were skipped (their review service is at its monthly limit).
+
+## 2026-11-21 - gif-without-canvas
+
+- **`sharp` instead of fixing `canvas`:** `gifencoder` never used `canvas` the way the project calls it (it gets raw pixels); only the install failed. `sharp`, already a dependency, writes animated GIF images from raw frames, so the fix removes packages instead of adding any.
+- **Rejected:** `canvas` 3 through an override (works, but a 24 MB ready-made binary downloaded from GitHub at build time with no checksum in the lock file, and the page library `jsdom` would start loading it), and building `canvas` 2 in the image (about 200 MB of build libraries, and the old installer chain).
+- **Kept the same:** the options, one screenshot per frame, the delay per frame, looping, and the 1-pixel placeholder on errors. `quality` (1 best to 30 fastest) maps to `sharp`'s `effort` (10 to 1). Identical frames are kept rather than merged (audit finding, fixed).
+- **Accepted:** frames are now held in memory and joined at the end instead of streamed to a file; a 120-frame skyline (908 by 284) peaked at about 500 MB (audit). GIF colors can differ slightly.
+- **Checked:** focused tests (they fail on the old code), a real page in headless Chrome inside a locally built Docker image (verification, then audit, at two device scales), CI's full test suite with the new tests.
+- **Found along the way:** the `tar` override is no longer needed (on the roadmap). The skyline plugin no longer lists `metrics.npm.optional.gifencoder` among the settings a web instance must allow.
+- **Process:** the audit doubled as the security review (the lock file only loses entries). The plan check, second security review and plain-English review were skipped (their review service is at its monthly limit).

@@ -36,3 +36,4 @@
 | 2026-11-21 | embed-url-encoding | User name encoded in the embed page's image address (code scanning alert 9, left open after #86); 2 focused tests; no open alerts on the pull request; CI 391 passed | #89 |
 | 2026-11-21 | minimatch-refresh | Seven `minimatch` copies to 3.1.5 and 5.1.9 within range (Dependabot alerts 32 to 37); npm audit high 10 to 9, three advisories closed; CI 391 passed | #90 |
 | 2026-11-21 | actions-github-9 | `@actions/github` 9.1.1 with the namespace import; `@octokit/rest` and `@octokit/graphql` in range; alerts 13 to 15; npm audit 25 to 18; CI 391 passed | #91 |
+| 2026-11-21 | gif-without-canvas | `gif()` with `sharp`; `gifencoder`, `png-js` and `canvas` removed (23 lock entries, nothing added or changed); 6 focused tests; checked in the Docker image with headless Chrome; CI 396 passed | #94 |
