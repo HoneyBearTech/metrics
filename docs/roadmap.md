@@ -85,6 +85,7 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 - **SVG check written backwards:** `source/app/metrics/index.mjs` (~line 219) runs the SVG verification only when `libxmljs2` failed to load (`if (!libxmljs)`), so it never verifies and crashes when the library is missing.
 - **New Renovate majors to review before merging:** #108 jest 30, #112 js-yaml 5, #113 jsdom 31.
 - **Feature checks the scan can't see:** the test that every declared feature is checked reads each plugin's own file. A plugin that checks the same option in two places passes if only one is left.
+- **Lint misses files when the pattern is expanded by the shell:** `npm run linter` passes `source/**/*.mjs` without quotes. If a file is ever added one folder deep (like `source/plugins/x.mjs`), the shell expands the pattern itself and lint checks only that file. Putting the pattern in quotes fixes it.
 - **Requests fetching addresses:** presets (when enabled) and some plugin options (when the server enables those plugins) fetch any address a request gives.
 - **Wrong error code:** "template not supported" errors are returned as 500 instead of 400 (the error check in `instance.mjs` doesn't match the message).
 - **PDF output loads raw HTML:** `markdown-pdf` loads the rendered HTML into the browser without cleaning it (`svg.pdf` in `source/app/metrics/utils.mjs`), so raw HTML printed from plugin data can load there. Look at it separately.

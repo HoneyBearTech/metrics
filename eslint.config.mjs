@@ -15,6 +15,8 @@ export default [
       globals: {
         ...globals.node,
         ...globals.es2021,
+        // Names the newer list adds that the old settings did not know: turned off again to keep the same checks
+        ...Object.fromEntries(["CloseEvent", "ErrorEvent", "localStorage", "navigator", "Navigator", "Performance", "QuotaExceededError", "sessionStorage", "Storage", "Temporal", "URLPattern", "WebSocket"].map(name => [name, "off"])),
         // Puppeteer variables
         document: "readonly",
         window: "readonly",
@@ -38,7 +40,7 @@ export default [
       "no-useless-call": "error",
       "no-useless-constructor": "error",
       "no-useless-concat": "error",
-      "no-useless-computed-key": "error",
+      "no-useless-computed-key": ["error", {enforceForClassMembers: false}],
       "no-useless-backreference": "error",
       "no-self-compare": "error",
       "no-extra-label": "error",
@@ -119,6 +121,7 @@ export default [
       "no-mixed-spaces-and-tabs": "error",
       "no-new-native-nonconstructor": "error", // replaces no-new-symbol
       "no-constant-condition": ["error", {checkLoops: "all"}],
+      "no-shadow-restricted-names": ["error", {reportGlobalThis: false}],
 
       // Allow additional features
       "no-ex-assign": "off",
