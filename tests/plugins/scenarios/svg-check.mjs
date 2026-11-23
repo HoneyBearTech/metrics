@@ -93,3 +93,16 @@ export async function entities() {
   }
   return result
 }
+
+//Code with a known language, in both modes
+export async function markup() {
+  const text = snippet("js", 2)
+  return {inline: await markdown(text), multiline: await markdown(text, {mode: "multiline"})}
+}
+
+//A hard line break, an image, a rule and a to-do list, checked as XML when the checker is there
+export async function closed() {
+  const libxmljs = await checker()
+  const html = await markdown(["first  ", "second", "", "![logo](https://example.com/logo.png)", "", "---", "", "- [x] done", "- [ ] open"].join("\n"), {mode: "multiline"})
+  return {html, problems: libxmljs ? problems(libxmljs, `<div>${html}</div>`) : null}
+}

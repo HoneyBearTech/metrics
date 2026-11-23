@@ -11,7 +11,7 @@ import { fileTypeFromBuffer } from "file-type"
 import fs from "fs/promises"
 import { JSDOM } from "jsdom"
 import linguist from "linguist-js"
-import { marked } from "marked"
+import { Marked, marked } from "marked"
 import { minimatch } from "minimatch"
 import opengraph from "open-graph-scraper"
 import os from "os"
@@ -433,10 +433,30 @@ export function markdownSource(source) {
   return output.join("")
 }
 
+/**Escape every special character of plain text, the way marked did for code blocks */
+function plain(string) {
+  return `${string}`.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;")
+}
+
+/**Markdown parser for user content. Current versions of marked no longer mark up code or close empty tags by themselves, so the code renderer below does the first and markdown() the second */
+const parser = new Marked({
+  renderer: {
+    code({text, lang}) {
+      //Only the first word of the code block's info text is the language
+      const [language] = `${lang ?? ""}`.match(/^\S*/)
+      //Known languages are marked up by prism, any other code is shown as plain escaped text
+      const code = language in prism.languages ? highlight(text, language) : plain(text)
+      return `<pre><code${language ? ` class="language-${plain(language)}"` : ""}>${code.replace(/\n$/, "")}\n</code></pre>\n`
+    },
+  },
+})
+
 /**Markdown-html sanitizer-interpreter */
 export async function markdown(text, {mode = "inline", codelines = Infinity} = {}) {
   //Sanitize user input once to prevent injections and parse into markdown
-  let rendered = await marked.parse(htmlunescape(htmlsanitize(`${text ?? ""}`)), {highlight, silent: true, xhtml: true})
+  let rendered = await parser.parse(htmlunescape(htmlsanitize(`${text ?? ""}`)), {silent: true})
+  //Empty tags that marked leaves open are closed as XML needs it, the way marked did itself before (tags that are already closed, like those of the user's own HTML, stay as they are)
+  rendered = rendered.replace(/<(?<tag>br|hr)>/g, "<$<tag>/>").replace(/<img(?<attributes>[^>]*?)(?<!\/)>/g, "<img$<attributes>/>").replace(/<input(?<attributes>[^>]*?)(?<!\/)>/g, "<input$<attributes> />")
   //Text turned back from escapes above also leaves the & of link addresses bare, and written-out control characters (&#1;) become real ones, which XML does not allow
   rendered = rendered.replace(/&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[\dA-Fa-f]+);)/g, "&amp;")
   //Characters that XML forbids are dropped

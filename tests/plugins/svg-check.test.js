@@ -79,3 +79,21 @@ describe("Text in Markdown", () => {
     }
   })
 })
+
+describe("Markdown output", () => {
+  test("code with a known language gets markup", () => {
+    const {inline, multiline} = esm("svg-check.mjs", "markup")
+    expect(inline).toContain('<span class="token')
+    expect(multiline).toContain('<span class="token')
+  })
+
+  test("a line break, an image, a rule and a to-do list are valid XML in the multiline mode", () => {
+    const {html, problems} = esm("svg-check.mjs", "closed")
+    for (const tag of ["<br/>", "<hr/>", "<img "])
+      expect(html).toContain(tag)
+    expect(html).toMatch(/<img [^>]*\/>/)
+    expect(html).toMatch(/<input [^>]*\/>/)
+    if (problems)
+      expect(problems).toEqual([])
+  })
+})
