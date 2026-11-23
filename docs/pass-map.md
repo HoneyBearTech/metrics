@@ -55,4 +55,4 @@
 | 2026-11-23 | file-type-22-review | Review: file-type 22.3.0 recommended for #116; no code change; same image detection | #122 |
 | 2026-11-23 | eslint-10 | eslint 10.15.0 with a new `eslint.config.mjs` that keeps the eslint 8 checks; replaces Renovate's #115 | #124 |
 | 2026-11-23 | express-5 | Web server on express 5.3.0: routes in the new form, the request's options on a copy, files sent from any install folder; a route test; replaces Renovate's #118 | #126 |
-| 2026-11-23 | majors-review-2 | Review of six majors: jsdom 31 and jest 30 as they are; marked 18, Node 26, linguist-js 3 and js-yaml 5 each need a code change first | #PR |
+| 2026-11-23 | majors-review-2 | Review of six majors: jsdom 31 and jest 30 as they are; marked 18, Node 26, linguist-js 3 and js-yaml 5 each need a code change first | #128 |
