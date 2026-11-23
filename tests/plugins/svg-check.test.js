@@ -64,4 +64,18 @@ describe("Text in Markdown", () => {
     if (removed)
       expect(removed).toEqual([])
   })
+
+  test("written-out and literal forbidden characters are dropped, and entity names are matched exactly", () => {
+    const result = esm("svg-check.mjs", "entities")
+    for (const name of ["decimal", "hexadecimal", "literal"])
+      expect(result[name].html).toMatch(/^<p>a +b( +c +d)?<\/p>\n$/)
+    //A written-out zero is replaced by the replacement character, which XML allows
+    expect(result.zero.html).toBe("<p>a \ufffd b</p>\n")
+    expect(result.apos.html).toContain("&amp;APOS; x")
+    expect(result.amp.html).toBe("<p>&amp; x</p>\n")
+    for (const name of Object.keys(result)) {
+      if (result[name].problems)
+        expect(result[name].problems).toEqual([])
+    }
+  })
 })

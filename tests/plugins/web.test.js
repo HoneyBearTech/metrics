@@ -28,6 +28,11 @@ describe("Markdown output on the web server", () => {
       expect(result[name]).toBe(true)
   })
 
+  test("the verify option of a request decides if the picture is checked", () => {
+    const result = esm("web.mjs", "checking")
+    expect(result).toEqual({omitted: false, "&verify=false": false, "&verify=0": false, "&verify=true": true})
+  })
+
   test("logged-in extra features are added to a copy, never to the shared settings", () => {
     const result = esm("web.mjs", "logged")
     const feature = "metrics.run.user.template"

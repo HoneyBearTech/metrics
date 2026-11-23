@@ -156,3 +156,21 @@ export async function routes() {
   setTimeout(() => process.exit(0), 500)
   return Object.fromEntries(Object.entries(result).map(([path, {status, location, json, length}]) => [path, {status, location, q: json?.q, base: json?.base, empty: length === 0}]))
 }
+
+/**Ask the server for pictures with the verify option given in the query, and tell if the SVG check ran (it prints a line when it does) */
+export async function checking() {
+  process.env.METRICS_SANDBOX_PORT = "3919"
+  const lines = []
+  const app = (await import("../../../source/app/web/instance.mjs")).default
+  await app({sandbox: true})
+  console.debug = (...args) => lines.push(args.join(" "))
+  const result = {}
+  for (const value of ["", "&verify=false", "&verify=0", "&verify=true"]) {
+    lines.length = 0
+    const response = await fetch(`http://127.0.0.1:3919/octocat?template=classic&base=0${value}`)
+    await response.text()
+    result[value || "omitted"] = lines.some(line => /> verify SVG$/.test(line))
+  }
+  setTimeout(() => process.exit(0), 500)
+  return result
+}

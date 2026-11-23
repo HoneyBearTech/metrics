@@ -82,3 +82,15 @@ export async function text() {
   }
   return {...result, address}
 }
+
+//Written-out and literal forbidden characters, and entity names in the wrong case, each as multiline output
+export async function entities() {
+  const libxmljs = await checker()
+  const inputs = {decimal: "a &#1; b", hexadecimal: "a &#x1; b", zero: "a &#0; b", literal: "a \ufffe b \uffff c \u0001 d", apos: "&APOS; x", amp: "&AMP; x", known: "&amp; &lt; &#39; &#x27; &#X27;"}
+  const result = {}
+  for (const [name, text] of Object.entries(inputs)) {
+    const html = await markdown(text, {mode: "multiline"})
+    result[name] = {html, problems: libxmljs ? problems(libxmljs, `<div>${html}</div>`) : null}
+  }
+  return result
+}

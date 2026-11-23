@@ -435,10 +435,12 @@ export function markdownSource(source) {
 
 /**Markdown-html sanitizer-interpreter */
 export async function markdown(text, {mode = "inline", codelines = Infinity} = {}) {
-  //Sanitize user input once to prevent injections and parse into markdown (characters that XML forbids are dropped first)
-  let rendered = await marked.parse(htmlunescape(htmlsanitize(`${text ?? ""}`.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, ""))), {highlight, silent: true, xhtml: true}) //eslint-disable-line no-control-regex
-  //Text turned back from escapes above also leaves the & of link addresses bare, which XML does not allow
-  rendered = rendered.replace(/&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[\da-f]+);)/gi, "&amp;")
+  //Sanitize user input once to prevent injections and parse into markdown
+  let rendered = await marked.parse(htmlunescape(htmlsanitize(`${text ?? ""}`)), {highlight, silent: true, xhtml: true})
+  //Text turned back from escapes above also leaves the & of link addresses bare, and written-out control characters (&#1;) become real ones, which XML does not allow
+  rendered = rendered.replace(/&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[\dA-Fa-f]+);)/g, "&amp;")
+  //Characters that XML forbids are dropped
+  rendered = rendered.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\ufffe\uffff]/g, "") //eslint-disable-line no-control-regex
   //Markdown mode
   switch (mode) {
     case "inline": {
