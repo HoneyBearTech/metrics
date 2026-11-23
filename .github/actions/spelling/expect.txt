@@ -72,6 +72,7 @@ diffs
 diffstat
 dirname
 domcontentloaded
+dotfiles
 DOUBLEDOWN
 DOUBLEUP
 downvotes
@@ -355,6 +356,7 @@ sourced
 spamming
 spams
 spdx
+splat
 sponsorable
 spotify
 stackexchange

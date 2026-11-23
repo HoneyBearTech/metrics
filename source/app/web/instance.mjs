@@ -47,6 +47,9 @@ export function extrasFeatures(conf, logged = false) {
   return extras?.features ?? extras?.default ?? false
 }
 
+/**Send a file chosen by the server (never by the request): express 5 refuses paths with a dot folder, such as an installation in ~/.local, unless dotfiles are allowed */
+const sendFile = (res, file) => res.sendFile(file, {dotfiles: "allow"})
+
 /**App */
 export default async function({sandbox = false} = {}) {
   //Load configuration settings
@@ -169,11 +172,11 @@ export default async function({sandbox = false} = {}) {
     }, 15 * 1000)
   }
   //Web
-  app.get("/", limiter, (req, res) => res.sendFile(`${conf.paths.statics}/index.html`))
-  app.get("/index.html", limiter, (req, res) => res.sendFile(`${conf.paths.statics}/index.html`))
-  app.get("/favicon.ico", limiter, (req, res) => res.sendFile(`${conf.paths.statics}/favicon.png`))
-  app.get("/.favicon.png", limiter, (req, res) => res.sendFile(`${conf.paths.statics}/favicon.png`))
-  app.get("/.opengraph.png", limiter, (req, res) => conf.settings.web?.opengraph ? res.redirect(conf.settings.web?.opengraph) : res.sendFile(`${conf.paths.statics}/opengraph.png`))
+  app.get("/", limiter, (req, res) => sendFile(res, `${conf.paths.statics}/index.html`))
+  app.get("/index.html", limiter, (req, res) => sendFile(res, `${conf.paths.statics}/index.html`))
+  app.get("/favicon.ico", limiter, (req, res) => sendFile(res, `${conf.paths.statics}/favicon.png`))
+  app.get("/.favicon.png", limiter, (req, res) => sendFile(res, `${conf.paths.statics}/favicon.png`))
+  app.get("/.opengraph.png", limiter, (req, res) => conf.settings.web?.opengraph ? res.redirect(conf.settings.web?.opengraph) : sendFile(res, `${conf.paths.statics}/opengraph.png`))
   //Plugins and templates
   app.get("/.plugins", limiter, (req, res) => res.status(200).json(enabled))
   app.get("/.plugins.base", limiter, (req, res) => res.status(200).json(conf.settings.plugins.base.parts))
@@ -189,23 +192,23 @@ export default async function({sandbox = false} = {}) {
   })
   app.get("/.extras.logged", limiter, async (req, res) => res.status(200).json(conf.settings.extras?.logged ?? []))
   //Styles
-  app.get("/.css/style.css", limiter, (req, res) => res.sendFile(`${conf.paths.statics}/style.css`))
-  app.get("/.css/style.vars.css", limiter, (req, res) => res.sendFile(`${conf.paths.statics}/style.vars.css`))
-  app.get("/.css/style.prism.css", limiter, (req, res) => res.sendFile(`${conf.paths.node_modules}/prismjs/themes/prism-tomorrow.css`))
+  app.get("/.css/style.css", limiter, (req, res) => sendFile(res, `${conf.paths.statics}/style.css`))
+  app.get("/.css/style.vars.css", limiter, (req, res) => sendFile(res, `${conf.paths.statics}/style.vars.css`))
+  app.get("/.css/style.prism.css", limiter, (req, res) => sendFile(res, `${conf.paths.node_modules}/prismjs/themes/prism-tomorrow.css`))
   //Scripts
-  app.get("/.js/app.js", limiter, (req, res) => res.sendFile(`${conf.paths.statics}/app.js`))
-  app.get("/.js/ejs.min.js", limiter, (req, res) => res.sendFile(`${conf.paths.node_modules}/ejs/ejs.min.js`))
+  app.get("/.js/app.js", limiter, (req, res) => sendFile(res, `${conf.paths.statics}/app.js`))
+  app.get("/.js/ejs.min.js", limiter, (req, res) => sendFile(res, `${conf.paths.node_modules}/ejs/ejs.min.js`))
   app.get("/.js/faker.min.js", limiter, (req, res) => res.set({"Content-Type": "text/javascript"}).send("import {faker} from '/.js/faker/index.mjs';globalThis.faker=faker;globalThis.placeholder.init(globalThis)"))
   app.use("/.js/faker", express.static(`${conf.paths.node_modules}/@faker-js/faker/dist/esm`))
-  app.get("/.js/axios.min.js", limiter, (req, res) => res.sendFile(`${conf.paths.node_modules}/axios/dist/axios.min.js`))
-  app.get("/.js/axios.min.js.map", limiter, (req, res) => res.sendFile(`${conf.paths.node_modules}/axios/dist/axios.min.js.map`))
-  app.get("/.js/vue.min.js", limiter, (req, res) => res.sendFile(`${conf.paths.node_modules}/vue/dist/vue.min.js`))
-  app.get("/.js/vue.prism.min.js", limiter, (req, res) => res.sendFile(`${conf.paths.node_modules}/vue-prism-component/dist/vue-prism-component.min.js`))
-  app.get("/.js/vue-prism-component.min.js.map", limiter, (req, res) => res.sendFile(`${conf.paths.node_modules}/vue-prism-component/dist/vue-prism-component.min.js.map`))
-  app.get("/.js/prism.min.js", limiter, (req, res) => res.sendFile(`${conf.paths.node_modules}/prismjs/prism.js`))
-  app.get("/.js/prism.yaml.min.js", limiter, (req, res) => res.sendFile(`${conf.paths.node_modules}/prismjs/components/prism-yaml.min.js`))
-  app.get("/.js/prism.markdown.min.js", limiter, (req, res) => res.sendFile(`${conf.paths.node_modules}/prismjs/components/prism-markdown.min.js`))
-  app.get("/.js/clipboard.min.js", limiter, (req, res) => res.sendFile(`${conf.paths.node_modules}/clipboard/dist/clipboard.min.js`))
+  app.get("/.js/axios.min.js", limiter, (req, res) => sendFile(res, `${conf.paths.node_modules}/axios/dist/axios.min.js`))
+  app.get("/.js/axios.min.js.map", limiter, (req, res) => sendFile(res, `${conf.paths.node_modules}/axios/dist/axios.min.js.map`))
+  app.get("/.js/vue.min.js", limiter, (req, res) => sendFile(res, `${conf.paths.node_modules}/vue/dist/vue.min.js`))
+  app.get("/.js/vue.prism.min.js", limiter, (req, res) => sendFile(res, `${conf.paths.node_modules}/vue-prism-component/dist/vue-prism-component.min.js`))
+  app.get("/.js/vue-prism-component.min.js.map", limiter, (req, res) => sendFile(res, `${conf.paths.node_modules}/vue-prism-component/dist/vue-prism-component.min.js.map`))
+  app.get("/.js/prism.min.js", limiter, (req, res) => sendFile(res, `${conf.paths.node_modules}/prismjs/prism.js`))
+  app.get("/.js/prism.yaml.min.js", limiter, (req, res) => sendFile(res, `${conf.paths.node_modules}/prismjs/components/prism-yaml.min.js`))
+  app.get("/.js/prism.markdown.min.js", limiter, (req, res) => sendFile(res, `${conf.paths.node_modules}/prismjs/components/prism-markdown.min.js`))
+  app.get("/.js/clipboard.min.js", limiter, (req, res) => sendFile(res, `${conf.paths.node_modules}/clipboard/dist/clipboard.min.js`))
   //Meta
   app.get("/.version", limiter, (req, res) => res.status(200).send(conf.package.version))
   app.get("/.requests", limiter, async (req, res) => {
@@ -253,9 +256,9 @@ export default async function({sandbox = false} = {}) {
   if (conf.settings.oauth) {
     console.debug("metrics/app/oauth > enabled")
     const states = new Map()
-    app.get("/.oauth/", limiter, (req, res) => res.sendFile(`${conf.paths.statics}/oauth/index.html`))
-    app.get("/.oauth/index.html", limiter, (req, res) => res.sendFile(`${conf.paths.statics}/oauth/index.html`))
-    app.get("/.oauth/script.js", limiter, (req, res) => res.sendFile(`${conf.paths.statics}/oauth/script.js`))
+    app.get("/.oauth/", limiter, (req, res) => sendFile(res, `${conf.paths.statics}/oauth/index.html`))
+    app.get("/.oauth/index.html", limiter, (req, res) => sendFile(res, `${conf.paths.statics}/oauth/index.html`))
+    app.get("/.oauth/script.js", limiter, (req, res) => sendFile(res, `${conf.paths.statics}/oauth/script.js`))
     app.get("/.oauth/authenticate", (req, res) => {
       //Create a state to protect against cross-site request forgery attacks
       const state = crypto.randomBytes(64).toString("hex")
@@ -324,7 +327,7 @@ export default async function({sandbox = false} = {}) {
       }
       return res.status(400).send("Bad request: invalid session")
     })
-    app.get("/.oauth/redirect", limiter, (req, res) => res.sendFile(`${conf.paths.statics}/oauth/redirect.html`))
+    app.get("/.oauth/redirect", limiter, (req, res) => sendFile(res, `${conf.paths.statics}/oauth/redirect.html`))
     app.get("/.oauth/enabled", limiter, (req, res) => res.json(true))
   }
   else {
@@ -338,13 +341,13 @@ export default async function({sandbox = false} = {}) {
   if (conf.settings.modes.includes("insights")) {
     console.debug("metrics/app > setup insights mode")
     //Legacy routes
-    app.get("/about/*", (req, res) => res.redirect(req.path.replace("/about/", "/insights/")))
+    app.get("/about/{*splat}", (req, res) => res.redirect(req.path.replace("/about/", "/insights/")))
     //Static routes
-    app.get("/insights/", limiter, (req, res) => res.sendFile(`${conf.paths.statics}/insights/index.html`))
-    app.get("/insights/index.html", limiter, (req, res) => res.sendFile(`${conf.paths.statics}/insights/index.html`))
+    app.get("/insights/", limiter, (req, res) => sendFile(res, `${conf.paths.statics}/insights/index.html`))
+    app.get("/insights/index.html", limiter, (req, res) => sendFile(res, `${conf.paths.statics}/insights/index.html`))
     app.use("/insights/.statics/", express.static(`${conf.paths.statics}/insights`))
     //App routes
-    app.get("/insights/:login", limiter, (req, res) => res.sendFile(`${conf.paths.statics}/insights/index.html`))
+    app.get("/insights/:login", limiter, (req, res) => sendFile(res, `${conf.paths.statics}/insights/index.html`))
     app.get("/insights/query/:login/:plugin/", async (req, res) => {
       //Check username
       const login = req.params.login?.replace(/[\n\r]/g, "")
@@ -434,21 +437,21 @@ export default async function({sandbox = false} = {}) {
     })
   }
   else {
-    app.get("/about/*", (req, res) => res.redirect(req.path.replace("/about/", "/insights/")))
-    app.get("/insights/*", (req, res) => res.status(405).send("Method not allowed: this endpoint is not available"))
+    app.get("/about/{*splat}", (req, res) => res.redirect(req.path.replace("/about/", "/insights/")))
+    app.get("/insights/{*splat}", (req, res) => res.status(405).send("Method not allowed: this endpoint is not available"))
   }
 
   //Metrics embed
   if (conf.settings.modes.includes("embed")) {
     console.debug("metrics/app > setup embed mode")
     //Static routes
-    app.get("/embed/", limiter, (req, res) => res.sendFile(`${conf.paths.statics}/embed/index.html`))
-    app.get("/embed/index.html", limiter, (req, res) => res.sendFile(`${conf.paths.statics}/embed/index.html`))
+    app.get("/embed/", limiter, (req, res) => sendFile(res, `${conf.paths.statics}/embed/index.html`))
+    app.get("/embed/index.html", limiter, (req, res) => sendFile(res, `${conf.paths.statics}/embed/index.html`))
     app.use("/.placeholders", express.static(`${conf.paths.statics}/embed/placeholders`))
-    app.get("/.js/embed/app.js", limiter, (req, res) => res.sendFile(`${conf.paths.statics}/embed/app.js`))
-    app.get("/.js/embed/app.placeholder.js", limiter, (req, res) => res.sendFile(`${conf.paths.statics}/embed/app.placeholder.js`))
+    app.get("/.js/embed/app.js", limiter, (req, res) => sendFile(res, `${conf.paths.statics}/embed/app.js`))
+    app.get("/.js/embed/app.placeholder.js", limiter, (req, res) => sendFile(res, `${conf.paths.statics}/embed/app.placeholder.js`))
     //App routes
-    app.get("/:login/:repository?", ...middlewares, async (req, res, next) => {
+    app.get("/:login{/:repository}", ...middlewares, async (req, res, next) => {
       //Request params
       const login = req.params.login?.replace(/[\n\r]/g, "")
       const repository = req.params.repository?.replace(/[\n\r]/g, "")
@@ -486,18 +489,19 @@ export default async function({sandbox = false} = {}) {
         console.debug(`metrics/app/${login} > 503 (maximum users reached)`)
         return res.status(503).send("Service Unavailable: maximum number of users reached, only cached metrics are available")
       }
+      //Request query (a copy, as it is read again from the URL on each access)
+      const q = {...req.query}
       //Repository alias
       if (repository) {
         console.debug(`metrics/app/${login} > compute repository metrics`)
-        if (!req.query.template)
-          req.query.template = "repository"
-        req.query.repo = repository
+        if (!q.template)
+          q.template = "repository"
+        q.repo = repository
       }
 
       //Compute rendering
       try {
         //Prepare settings
-        const q = req.query
         console.debug(`metrics/app/${login} > ${util.inspect(q, {depth: Infinity, maxStringLength: 256})}`)
         const octokit = {...api, ...uapi(req.headers["x-metrics-session"])}
         let uconf = conf
@@ -568,7 +572,7 @@ export default async function({sandbox = false} = {}) {
     })
   }
   else {
-    app.get("/embed/*", (req, res) => res.status(405).send("Method not allowed: this endpoint is not available"))
+    app.get("/embed/{*splat}", (req, res) => res.status(405).send("Method not allowed: this endpoint is not available"))
   }
 
   //Control endpoints
@@ -590,7 +594,10 @@ export default async function({sandbox = false} = {}) {
   }
 
   //Listen
-  app.listen(port, () =>
+  app.listen(port, error => {
+    //Express 5 gives the error to the callback (e.g. port already in use) and does not stop the server by itself
+    if (error)
+      throw error
     console.log([
       "───────────────────────────────────────────────────────────────────",
       "── Server configuration ───────────────────────────────────────────",
@@ -620,5 +627,6 @@ export default async function({sandbox = false} = {}) {
       `Features                  │ ${Array.isArray(conf.settings.extras?.features) ? conf.settings.extras.features?.length ? conf.settings.extras?.features : "(none)" : "(default)"}`,
       "───────────────────────────────────────────────────────────────────",
       "Server ready !",
-    ].join("\n")))
+    ].join("\n"))
+  })
 }

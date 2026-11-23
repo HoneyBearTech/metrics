@@ -72,4 +72,19 @@ describe("Markdown output on the web server", () => {
     expect(json.body).toBe(true)
     expect(fetched.length).toBeGreaterThan(0)
   })
+
+  test("answers its routes, and the query of a request (and the repository alias) reaches the rendering", () => {
+    const result = esm("web.mjs", "routes")
+    for (const path of ["/", "/.css/style.css", "/.js/app.js", "/.js/faker/index.mjs", "/.templates/classic/partials/achievements.ejs", "/insights/", "/insights/octocat", "/embed/"])
+      expect(result[path]).toMatchObject({status: 200, empty: false})
+    //Legacy catch-all route, and no route for more than a login and a repository
+    expect(result["/about/"]).toMatchObject({status: 302, location: "/insights/"})
+    expect(result["/about/x/y"]).toMatchObject({status: 302, location: "/insights/x/y"})
+    expect(result["/octocat/repo/extra"].status).toBe(404)
+    //Options of the query reach the rendering
+    expect(result["/octocat?config.output=json&template=classic&base.header=0"]).toMatchObject({status: 200, q: {template: "classic", "base.header": "0"}})
+    expect(result["/octocat?config.output=json&template=classic&base.header=0"].base.header).toBe(false)
+    //Repository alias sets the repository template and the repository, unless a template is given
+    expect(result["/octocat/repo?config.output=json"]).toMatchObject({status: 200, q: {template: "repository", repo: "repo"}})
+  })
 })
