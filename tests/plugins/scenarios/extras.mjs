@@ -4,7 +4,12 @@ import octokit from "@octokit/graphql"
 import setup from "../../../source/app/metrics/setup.mjs"
 import metrics from "../../../source/app/metrics/index.mjs"
 import mocks from "../../mocks/index.mjs"
-import { svg } from "../../../source/app/metrics/utils.mjs"
+import { svg, formatters } from "../../../source/app/metrics/utils.mjs"
+import fs from "fs"
+import path from "path"
+import url from "url"
+import yaml from "js-yaml"
+import metadata from "../../../source/app/metrics/metadata.mjs"
 
 //Server settings are read the same way the server does (only the extra features change)
 const {conf, Plugins, Templates} = await setup({log: false})
@@ -104,5 +109,67 @@ export async function render() {
     svg.resize = original.resize
   }
   result.reset = (globalThis.fetch === original.fetch) && (svg.resize === original.resize)
+  return result
+}
+
+//Plugins whose options need a feature: the check must be called by the plugin itself
+const plugins = {steam: ["steam", {user: "octocat"}], chess: ["chess", {platform: "lichess.org", user: "octocat"}], splatoon: ["splatoon", {source: "mocks"}], statink: ["splatoon", {source: "mocks", statink: true}]}
+
+/**List every input that declares required features, with the feature check its plugin calls for it (the check is found by the name the parser builds from its call) */
+export function declared() {
+  const root = path.join(path.dirname(url.fileURLToPath(import.meta.url)), "../../../source/plugins")
+  const rows = []
+  const folders = fs.readdirSync(root, {withFileTypes: true}).filter(entry => entry.isDirectory()).flatMap(({name}) => name === "community" ? fs.readdirSync(path.join(root, name)).map(child => `${name}/${child}`) : [name])
+  for (const folder of folders) {
+    const name = path.basename(folder)
+    const descriptor = path.join(root, folder, "metadata.yml")
+    if (!fs.existsSync(descriptor))
+      continue
+    //Comments are removed first, so a check that was commented out does not count
+    const source = (fs.existsSync(path.join(root, folder, "index.mjs")) ? fs.readFileSync(path.join(root, folder, "index.mjs"), "utf8") : "").replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "")
+    //Names the plugin passes to extras(), and whether it calls enabled() (which checks the "enabled" requirement)
+    const called = new Set([...source.matchAll(/\.extras\(\s*"([^"]+)"/g)].map(([, input]) => metadata.to.yaml(input, {name})))
+    if (/\.enabled\(/.test(source))
+      called.add(metadata.to.yaml("enabled", {name}))
+    for (const [input, {extras}] of Object.entries(yaml.load(fs.readFileSync(descriptor, "utf8")).inputs ?? {})) {
+      if (extras)
+        rows.push({plugin: folder, input, extras: [extras].flat(), checked: called.has(input)})
+    }
+  }
+  return rows
+}
+
+/**Run a plugin whose token option needs a feature, with no network, and tell whether it was refused and what it tried to reach (plugins receive the features the way the core plugin passes them) */
+export async function token() {
+  const result = {}
+  const states = {"no extras": false, "other features": ["metrics.run.user.cmd"], "the feature": null, "both features": "both", "all features": true, "default on": true}
+  for (const [name, [plugin, inputs]] of Object.entries(plugins)) {
+    result[name] = {}
+    for (const [state, extras] of Object.entries(states)) {
+      const requests = []
+      const imports = {
+        metadata: conf.metadata,
+        axios: {get: async address => {
+          requests.push(address)
+          throw new Error("network is disabled")
+        }},
+        run: async () => requests.push("run"),
+        fs: {writeFile: async () => requests.push("write"), readdir: async () => [], readFile: async () => "{}"},
+        format: formatters().format,
+        __module: () => "/nonexistent",
+      }
+      const needed = key => [conf.metadata.plugins[plugin].inputs[`plugin_${plugin}_${key}`].extras].flat()
+      const features = extras === null ? needed("token") : extras === "both" ? [...needed("token"), ...(inputs.statink ? needed("statink") : [])] : extras
+      const q = {[plugin]: true, ...Object.fromEntries(Object.entries(inputs).map(([key, value]) => [`${plugin}.${key}`, value]))}
+      let refused = false
+      try {
+        await Plugins[plugin]({login: "octocat", q, imports, data: {warnings: []}, account: "user"}, {enabled: true, token: plugin === "splatoon" ? '{"loginState":{"sessionToken":"x"}}' : "TOKEN", extras: features})
+      }
+      catch (error) {
+        refused = error?.error?.instance?.extras === true
+      }
+      result[name][state] = {refused, requests}
+    }
+  }
   return result
 }

@@ -11,6 +11,9 @@ export default async function({login, q, imports, data, account}, {enabled = fal
 
     //Load inputs
     const {sections, "versus.limit": _versus_limit, "salmon.limit": _salmon_limit, statink, source} = imports.metadata.plugins.splatoon.inputs({data, account, q})
+    imports.metadata.plugins.splatoon.extras("token", {extras})
+    if (statink)
+      imports.metadata.plugins.splatoon.extras("statink", {extras})
 
     //Save profile
     {
