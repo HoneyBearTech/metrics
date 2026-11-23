@@ -492,3 +492,12 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **A route test:** it starts the server and checks pages, files, the old `/about/` addresses, the repository page and a request's options. It fails on Renovate's branch as it is, and also with only the route patterns fixed. From the audit, it also checks that a request's own template is kept on the repository page.
 - **The old `/about/` redirect builds its target from a fixed `/insights/` start:** code scanning flagged the old way (replacing text in the request's path) as a redirect that depends on the request. The target was always on the same site, but the new form makes that plain. It also fixes `/About/x` (any letter case), which redirected to itself on express 4 too.
 - **Process:** research, Engineer, and audit with the security and supply-chain pass. Separate QA was skipped because the audit ran the same checks. The plan check and plain-English review were skipped (their review service is at its monthly limit).
+
+## 2026-11-23 - majors-review-2
+
+- **jsdom 31 and jest 30 as they are:** no code changes. jest 30 raises npm's warning count with test-only entries, but the number of distinct advisories goes down, so it isn't a reason to wait.
+- **marked 18 is not taken as #123:** its checks pass, but it drops code highlighting and leaves tags unclosed in SVG images. The code-change job replaces the PR.
+- **Node 26 waits for a picture check fix:** the backwards SVG check crashes every image when the optional checker is missing, which is always the case on Node 26.
+- **js-yaml 5 needs more than the import change:** from the audit, empty input and merge keys in user presets must be handled too.
+- **Order:** jsdom and jest first, then the picture check fix, marked, Node 26, linguist-js; js-yaml at any point.
+- **Process:** three researchers in parallel, then one audit with the security and supply-chain pass. The audit disagreed on js-yaml (two more breaking cases) and added the doubled `class` finding. The plain-English review was skipped (its review service is at its monthly limit).
