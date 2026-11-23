@@ -83,7 +83,12 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 - **Two lint rules are off:** `no-useless-assignment` and `preserve-caught-error` were added to eslint's recommended set and are off to keep the checks unchanged. They find six spots: `source/app/action/index.mjs:582` and `:584`, `source/app/metrics/index.mjs:238`, `source/plugins/isocalendar/index.mjs:81`, `source/plugins/languages/analyzer/analyzer.mjs:121` and `source/plugins/steam/index.mjs:32`. Fix them, then turn the rules on.
 - **Old formatting rules:** eslint 10 marks the formatting rules in `eslint.config.mjs` (spacing, quotes, semicolons and the like) as old, and a later major removes them. Before then, move them to a separate style package, or run the repo's formatter settings (`.github/config/dprint.json`) in CI.
 - **SVG check written backwards:** `source/app/metrics/index.mjs` (~line 219) runs the SVG verification only when `libxmljs2` failed to load (`if (!libxmljs)`), so it never verifies and crashes when the library is missing.
-- **New Renovate majors to review before merging:** #108 jest 30, #112 js-yaml 5, #113 jsdom 31.
+- **Majors reviewed on 2026-11-23** (`docs/reports/2026-11-23-majors-review.md`): #113 jsdom 31.0.1 and #108 jest 30.5.2 can be taken as they are. These need their own jobs first, in this order:
+  - **Picture check fix:** correct the backwards SVG check in `source/app/metrics/index.mjs` and the doubled `class` on multi-line code blocks; test with the checker present and missing.
+  - **marked 18.2.1:** its own parser with highlighting, and closed tags in multi-line mode (replaces #123, which quietly breaks some images).
+  - **Node 26 (#125):** after the picture check fix; Sean merges it.
+  - **linguist-js 3.0.4:** three call sites, plus tests for the indepth mode and language types and colors (replaces #119).
+  - **js-yaml 5.5.0:** imports, writing options, empty input and merge keys in presets (replaces #112).
 - **Feature checks the scan can't see:** the test that every declared feature is checked reads each plugin's own file. A plugin that checks the same option in two places passes if only one is left.
 - **Lint misses files when the pattern is expanded by the shell:** `npm run linter` passes `source/**/*.mjs` without quotes. If a file is ever added one folder deep (like `source/plugins/x.mjs`), the shell expands the pattern itself and lint checks only that file. Putting the pattern in quotes fixes it.
 - **Requests fetching addresses:** presets (when enabled) and some plugin options (when the server enables those plugins) fetch any address a request gives.
