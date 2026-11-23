@@ -1,13 +1,18 @@
 //Imports
 import axios from "axios"
 import setup from "../../../source/app/metrics/setup.mjs"
-import {extrasFeatures, markdownForbidden, presetsAllowed, withLoggedFeatures} from "../../../source/app/web/instance.mjs"
+import {extrasFeatures, markdownForbidden, presetsAllowed, verifying, withLoggedFeatures} from "../../../source/app/web/instance.mjs"
 
 //Marker set by a template if it is ever run (it only sets a variable, nothing else)
 const marker = "{% globalThis.__marker = 1 %}marker"
 
 //Server settings are read the same way the server does (only the allowed outputs and extra features change)
 const {conf} = await setup({log: false})
+
+/**Tell what the verify option of a request turns into */
+export function verified() {
+  return Object.fromEntries([undefined, "", "false", "0", "off", "no", "true", "True", "1", "yes", "on"].map(value => [`${value}`, verifying(value)]))
+}
 
 /**Tell if a request for the given output and template is refused, for each kind of server settings */
 export function forbidden() {
@@ -150,4 +155,22 @@ export async function routes() {
     result[path] = await get(path)
   setTimeout(() => process.exit(0), 500)
   return Object.fromEntries(Object.entries(result).map(([path, {status, location, json, length}]) => [path, {status, location, q: json?.q, base: json?.base, empty: length === 0}]))
+}
+
+/**Ask the server for pictures with the verify option given in the query, and tell if the SVG check ran (it prints a line when it does) */
+export async function checking() {
+  process.env.METRICS_SANDBOX_PORT = "3919"
+  const lines = []
+  const app = (await import("../../../source/app/web/instance.mjs")).default
+  await app({sandbox: true})
+  console.debug = (...args) => lines.push(args.join(" "))
+  const result = {}
+  for (const value of ["", "&verify=false", "&verify=0", "&verify=true"]) {
+    lines.length = 0
+    const response = await fetch(`http://127.0.0.1:3919/octocat?template=classic&base=0${value}`)
+    await response.text()
+    result[value || "omitted"] = lines.some(line => /> verify SVG$/.test(line))
+  }
+  setTimeout(() => process.exit(0), 500)
+  return result
 }

@@ -6,8 +6,10 @@ allowlist
 allowtransparency
 alse
 amd
+AMP
 anilist
 apidojo
+APOS
 apostrophecms
 argv
 arobase
@@ -403,6 +405,9 @@ ttl
 twemojis
 uapi
 uconf
+ufffd
+ufffe
+uffff
 uid
 Uint
 unassigned
