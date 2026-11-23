@@ -86,5 +86,6 @@ describe("Markdown output on the web server", () => {
     expect(result["/octocat?config.output=json&template=classic&base.header=0"].base.header).toBe(false)
     //Repository alias sets the repository template and the repository, unless a template is given
     expect(result["/octocat/repo?config.output=json"]).toMatchObject({status: 200, q: {template: "repository", repo: "repo"}})
+    expect(result["/octocat/repo?config.output=json&template=markdown"]).toMatchObject({status: 200, q: {template: "markdown", repo: "repo"}})
   })
 })

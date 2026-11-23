@@ -146,7 +146,7 @@ export async function routes() {
   for (const path of ["/", "/.css/style.css", "/.js/app.js", "/.js/faker/index.mjs", "/.templates/classic/partials/achievements.ejs", "/insights/", "/insights/octocat", "/embed/", "/about/", "/about/x/y", "/octocat/repo/extra"])
     result[path] = await get(path)
   //Rendering as json shows the query it received
-  for (const path of ["/octocat?config.output=json&template=classic&base.header=0", "/octocat/repo?config.output=json", "/octocat/repo?config.output=json&template=classic"])
+  for (const path of ["/octocat?config.output=json&template=classic&base.header=0", "/octocat/repo?config.output=json", "/octocat/repo?config.output=json&template=markdown"])
     result[path] = await get(path)
   setTimeout(() => process.exit(0), 500)
   return Object.fromEntries(Object.entries(result).map(([path, {status, location, json, length}]) => [path, {status, location, q: json?.q, base: json?.base, empty: length === 0}]))
