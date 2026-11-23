@@ -57,3 +57,4 @@
 | 2026-11-23 | express-5 | Web server on express 5.3.0: routes in the new form, the request's options on a copy, files sent from any install folder; a route test; replaces Renovate's #118 | #126 |
 | 2026-11-23 | majors-review-2 | Review of six majors: jsdom 31 and jest 30 as they are; marked 18, Node 26, linguist-js 3 and js-yaml 5 each need a code change first | #128 |
 | 2026-11-23 | svg-check-fix | The SVG check now runs when the XML checker is installed (it was backwards); one `class` on multi-line code blocks; Markdown links with `&` and stray control characters no longer make invalid pictures; `verify=false` on the web server now means off | #131 |
+| 2026-11-23 | marked-18 | marked 18.2.1 with code highlighting and closed empty tags kept; spacing after HTML blocks kept; picture XML tests now run on Node 26 too | #134 |

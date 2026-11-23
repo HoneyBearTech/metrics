@@ -519,3 +519,25 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
   - two audit rounds, the first with the security pass.
   - The plan check and plain-English review were skipped (their review service is at its monthly limit).
 - **Rejected findings:** none.
+
+## 2026-11-23 - marked-18
+
+- **marked 18.2.1 through its own parser setup in `markdown()`:**
+  - a code render function keeps the old highlighting;
+  - the line break, rule, image and checkbox render functions close their tags as before;
+  - a small step keeps the blank lines after HTML blocks.
+- **Instead of #123:** that PR alone drops code highlighting and leaves tags unclosed in pictures.
+- **Closing tags as they are written, not afterwards:** the first version closed tags afterwards with a search over the whole output. The audit showed it could be made very slow (15 s on a crafted input, against 0.2 s now) and that it changed some image addresses and tag names. The render functions only touch the tags marked writes itself, never the user's own HTML.
+- **Accepted differences from marked 7:** these follow marked's newer reading of Markdown. They're never new markup, and the audit found nothing new let through.
+  - some whitespace at the end of quotes and lists;
+  - Markdown formatting inside image descriptions;
+  - text after raw HTML in a loose list now gets its own paragraph;
+  - very deeply nested quotes (around 2,000 levels) now give an error message instead of a picture.
+- **Picture tests on Node 26:** the tests' XML check falls back to the XML parser of jsdom, which the project already has, so they also run in CI. The optional checker can't load there.
+- **Generated docs:** one line in the core plugin's README now shows as a link, because of a typo in its description.
+- **Checks:**
+  - two audit rounds, the first with the security pass;
+  - the picture tests on this machine;
+  - CI's full suite.
+  - The plan check and plain-English review were skipped (their review service is at its monthly limit).
+- **Rejected findings:** none. The deep-quote limit and the whitespace gaps are accepted above.
