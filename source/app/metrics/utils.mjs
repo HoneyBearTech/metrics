@@ -460,7 +460,7 @@ export async function markdown(text, {mode = "inline", codelines = Infinity} = {
     const lines = code.trim().split("\n")
     if (lines.length > 1) {
       if (/class=".*language-[\s\S]+?.*"/.test(open))
-        open = open.replace(/>/g, ` class="language-multiline ${open.match(/class="(?<class>[\s\S]+)"/)?.groups.class}" xml:space="preserve">`)
+        open = open.replace(/class="/, 'class="language-multiline ').replace(/>$/, ' xml:space="preserve">')
       else if (!/class="[\s\S]*"/.test(open))
         open = open.replace(/>/g, ' class="language-multiline" xml:space="preserve">')
     }

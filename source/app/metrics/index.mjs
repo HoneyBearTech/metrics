@@ -2,6 +2,7 @@
 import ejs from "ejs"
 import util from "util"
 import * as utils from "./utils.mjs"
+import verification from "./verify.mjs"
 
 //Setup
 export default async function metrics({login, q}, {graphql, rest, plugins, conf, die = false, verify = false, convert = null, callbacks = null, warnings = []}, {Plugins, Templates}) {
@@ -216,12 +217,7 @@ export default async function metrics({login, q}, {graphql, rest, plugins, conf,
       catch (error) {
         console.debug(`metrics/compute/${login} > failed to import libxmljs2 (${error}), ignoring SVG verification`)
       }
-      if (!libxmljs) {
-        const parsed = libxmljs.parseXml(rendered)
-        if (parsed.errors.length)
-          throw new Error(`Malformed SVG : \n${parsed.errors.join("\n")}`)
-        console.debug(`metrics/compute/${login} > verified SVG, no parsing errors found`)
-      }
+      verification(rendered, libxmljs, login)
     }
     //Resizing
     const {resized, mime} = await imports.svg.resize(rendered, {paddings: q["config.padding"] || conf.settings.padding, convert: convert === "svg" ? null : convert, scripts: [...data.postscripts, extras.js || null].filter(x => x)})
