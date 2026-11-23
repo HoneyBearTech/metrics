@@ -501,3 +501,21 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **js-yaml 5 needs more than the import change:** from the audit, empty input and merge keys in user presets must be handled too.
 - **Order:** jsdom and jest first, then the picture check fix, marked, Node 26, linguist-js; js-yaml at any point.
 - **Process:** three researchers in parallel, then one audit with the security and supply-chain pass. The audit disagreed on js-yaml (two more breaking cases) and added the doubled `class` finding. The plain-English review was skipped (its review service is at its monthly limit).
+
+## 2026-11-23 - svg-check-fix
+
+- **The check lives in its own small file** (`source/app/metrics/verify.mjs`) so tests can call it without drawing a whole picture. A parse error the checker throws, not just the errors it lists, is reported as `Malformed SVG`.
+- **Strict checking stays strict:** where the check found invalid output, the output was fixed, not the check loosened.
+- **Fixed in this job because the working check exposed them:**
+  - a bare `&` in Markdown link addresses;
+  - control characters (also when written as `&#1;`);
+  - entity names in the wrong case (`&APOS;`);
+  - the web server reading `verify=false` as on.
+- **Left for later (roadmap):** `plugins.errors.fatal` is read the same way as `verify` was, so text like "false" counts as on.
+- **The spelling list gained five tokens** used in test strings: AMP, APOS, ufffd, ufffe, uffff.
+- **Checks:**
+  - picture tests on this machine, one part at a time, with checking on and without the browser step;
+  - the full suite in CI;
+  - two audit rounds, the first with the security pass.
+  - The plan check and plain-English review were skipped (their review service is at its monthly limit).
+- **Rejected findings:** none.
