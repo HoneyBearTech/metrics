@@ -8,6 +8,7 @@ export default async function({login, q, imports, data, account}, {token, enable
 
     //Load inputs
     let {user, sections, "games.ignored": _games_ignored, "games.limit": _games_limit, "recent.games.limit": _recent_games_limit, "achievements.limit": _achievements_limit, "playtime.threshold": _playtime_threshold, "recent.days": _recent_days, freegames} = imports.metadata.plugins.steam.inputs({data, account, q})
+    imports.metadata.plugins.steam.extras("token", {extras})
 
     const urls = {
       games: {

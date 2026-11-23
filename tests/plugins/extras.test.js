@@ -48,3 +48,33 @@ describe("Extra features of the core options", () => {
       expect(result[name]).toEqual({css: true, scripts: ["globalThis.__flag = 1"]})
   })
 })
+
+describe("Extra features of plugin options", () => {
+  test("every option that requires a feature is checked by its plugin", () => {
+    const rows = esm("extras.mjs", "declared")
+    //Core options are checked by the app itself, not by a plugin
+    const unchecked = rows.filter(({plugin, checked}) => (plugin !== "core") && (!checked)).map(({plugin, input}) => `${plugin}: ${input}`)
+    expect(rows.length).toBeGreaterThan(20)
+    expect(unchecked).toEqual([])
+  })
+
+  test("token options are refused unless the server grants their feature", () => {
+    const result = esm("extras.mjs", "token")
+    for (const name of ["steam", "chess", "splatoon", "statink"]) {
+      for (const state of ["no extras", "other features"])
+        expect(result[name][state]).toEqual({refused: true, requests: []})
+      for (const state of ["both features", "all features", "default on"]) {
+        expect(result[name][state].refused).toBe(false)
+        expect(result[name][state].requests.length).toBeGreaterThan(0)
+      }
+    }
+    for (const name of ["steam", "chess", "splatoon"])
+      expect(result[name]["the feature"].refused).toBe(false)
+  })
+
+  test("stat.ink upload needs its own feature besides the Splatnet token", () => {
+    const result = esm("extras.mjs", "token")
+    expect(result.statink["the feature"]).toEqual({refused: true, requests: []})
+    expect(result.statink["both features"].requests).toContain("write")
+  })
+})
