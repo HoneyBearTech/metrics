@@ -461,3 +461,9 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **A test reads every plugin's options:** it fails when an option declares a feature its plugin never checks. From the audit, comments are now ignored, so a check that was commented out doesn't count.
 - **Left for later:** the test can't tell when one of two checks for the same option is removed. Following each code path would need a much larger test (on the roadmap).
 - **Process:** research, Engineer, and one audit with the security pass, shared with web-extras-forms. Separate QA was skipped as the change is small. The plan check and plain-English review were skipped (their review service is at its monthly limit).
+
+## 2026-11-23 - web-extras-forms
+
+- **Two small helpers:** the presets rule and the `/.extras` answer moved into small functions in `instance.mjs`, so tests can call them directly. The presets rule means the same as before.
+- **The `/.extras` page now matches the main route:** a logged-in session's list is built the same way the main route builds it (since PR #109). With all features on by default, a logged-in session sees only its logged list on both.
+- **Process:** Engineer, and one audit with the security pass, shared with plugin-token-extras. Research and separate QA were skipped as the change is small. The plan check and plain-English review were skipped (their review service is at its monthly limit).

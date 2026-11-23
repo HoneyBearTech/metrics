@@ -38,6 +38,29 @@ describe("Markdown output on the web server", () => {
     }
   })
 
+  test("presets are allowed with all features, the feature in a list or the default state, and never throw", () => {
+    const result = esm("web.mjs", "presets")
+    expect(result).toEqual({
+      "all features": true,
+      "list with the feature": true,
+      "list without the feature": false,
+      "empty list": false,
+      off: false,
+      "unset and default on": true,
+      "unset and default off": false,
+      unset: false,
+    })
+  })
+
+  test("the extras page lists the logged-in features for every form of the setting, without changing it", () => {
+    const result = esm("web.mjs", "extras")
+    expect(result.unset).toMatchObject({logged: ["b"], visitor: false, untouched: true})
+    expect(result.off).toMatchObject({logged: ["b"], visitor: false, untouched: true})
+    expect(result.list).toMatchObject({logged: ["a", "b"], visitor: ["a"], untouched: true})
+    expect(result.all).toMatchObject({logged: true, visitor: true, untouched: true})
+    expect(result.nothing).toEqual({logged: ["a"], unset: false, default: true})
+  })
+
   test("is rendered by the sandbox server, which enables all extra features (the opt-in works)", () => {
     const {link, auto, repository, json, fetched} = esm("web.mjs", "sandbox")
     for (const result of [link, auto, repository]) {

@@ -1,7 +1,7 @@
 //Imports
 import axios from "axios"
 import setup from "../../../source/app/metrics/setup.mjs"
-import {markdownForbidden, withLoggedFeatures} from "../../../source/app/web/instance.mjs"
+import {extrasFeatures, markdownForbidden, presetsAllowed, withLoggedFeatures} from "../../../source/app/web/instance.mjs"
 
 //Marker set by a template if it is ever run (it only sets a variable, nothing else)
 const marker = "{% globalThis.__marker = 1 %}marker"
@@ -60,6 +60,46 @@ export function logged() {
     }
   }
   result.none = withLoggedFeatures({...conf, settings: {...conf.settings, extras: {features: ["a"]}}}).settings.extras.features
+  return result
+}
+
+/**Tell if presets may be loaded, for each form of the extra feature setting */
+export function presets() {
+  const settings = {
+    "all features": {features: true},
+    "list with the feature": {features: ["a", "metrics.setup.community.presets"]},
+    "list without the feature": {features: ["a"]},
+    "empty list": {features: []},
+    "off": {features: false},
+    "unset and default on": {default: true},
+    "unset and default off": {default: false},
+    "unset": undefined,
+  }
+  const result = {}
+  for (const [name, extras] of Object.entries(settings))
+    result[name] = presetsAllowed({...conf, settings: {...conf.settings, extras}})
+  return result
+}
+
+/**Extra features reported to a logged-in session, for each form of the extra feature setting, without changing the shared settings */
+export function extras() {
+  const result = {}
+  for (const [name, features] of Object.entries({unset: undefined, off: false, list: ["a"], all: true})) {
+    const extras = {features, logged: ["b"]}
+    const settings = {...conf.settings, extras}
+    const shared = {...conf, settings}
+    result[name] = {
+      logged: extrasFeatures(shared, true),
+      visitor: extrasFeatures(shared, false),
+      untouched: (shared.settings.extras === extras) && (extras.features === features) && (JSON.stringify(extras.logged) === JSON.stringify(["b"])),
+    }
+  }
+  //Nothing given to logged-in sessions, or no extras at all
+  result.nothing = {
+    logged: extrasFeatures({...conf, settings: {...conf.settings, extras: {features: ["a"]}}}, true),
+    unset: extrasFeatures({...conf, settings: {...conf.settings, extras: undefined}}, true),
+    default: extrasFeatures({...conf, settings: {...conf.settings, extras: {default: true}}}, true),
+  }
   return result
 }
 

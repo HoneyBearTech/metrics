@@ -51,3 +51,4 @@
 | 2026-11-22 | twemoji-parser-17 | `@twemoji/parser` 17.0.2 with a guard for empty matches; 1 test | #111 |
 | 2026-11-22 | extras-permissions | Extra features enforced for core options (request CSS, JavaScript, verify); old flags no longer change shared settings; 6 tests | #117 |
 | 2026-11-22 | plugin-token-extras | Extra features checked for the steam, chess and splatoon token options; a test that every declared feature is checked; 3 tests | #121 |
+| 2026-11-23 | web-extras-forms | Presets and the `/.extras` page handle every form of the extra feature list; 2 tests | #120 |

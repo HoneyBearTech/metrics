@@ -35,6 +35,18 @@ export function withLoggedFeatures(conf) {
   return {...conf, settings: {...conf.settings, extras: {...extras, features}}}
 }
 
+/**Tell if requests may load presets: all features, the presets feature in a list of features, or the default state */
+export function presetsAllowed(conf) {
+  const features = conf.settings.extras?.features
+  return (features === true) || ((Array.isArray(features)) && (features.includes("metrics.setup.community.presets"))) || (!!conf.settings.extras?.default)
+}
+
+/**Extra features reported by the web server, with the ones given to logged-in sessions added (the shared configuration is never changed) */
+export function extrasFeatures(conf, logged = false) {
+  const {settings: {extras}} = logged ? withLoggedFeatures(conf) : conf
+  return extras?.features ?? extras?.default ?? false
+}
+
 /**App */
 export default async function({sandbox = false} = {}) {
   //Load configuration settings
@@ -173,11 +185,7 @@ export default async function({sandbox = false} = {}) {
   //Modes and extras
   app.get("/.modes", limiter, (req, res) => res.status(200).json(conf.settings.modes))
   app.get("/.extras", limiter, async (req, res) => {
-    if ((authenticated.has(req.headers["x-metrics-session"])) && (conf.settings.extras?.logged)) {
-      if (conf.settings.extras?.features !== true)
-        return res.status(200).json([...conf.settings.extras.features, ...conf.settings.extras.logged])
-    }
-    res.status(200).json(conf.settings.extras?.features ?? conf.settings?.extras?.default ?? false)
+    res.status(200).json(extrasFeatures(conf, authenticated.has(req.headers["x-metrics-session"])))
   })
   app.get("/.extras.logged", limiter, async (req, res) => res.status(200).json(conf.settings.extras?.logged ?? []))
   //Styles
@@ -498,7 +506,7 @@ export default async function({sandbox = false} = {}) {
           uconf = withLoggedFeatures(conf)
         }
         //Preset
-        if ((q["config.presets"]) && ((uconf.settings.extras?.features?.includes("metrics.setup.community.presets")) || (uconf.settings.extras?.features === true) || (uconf.settings.extras?.default))) {
+        if ((q["config.presets"]) && presetsAllowed(uconf)) {
           console.debug(`metrics/app/${login} > presets have been specified, loading them`)
           Object.assign(q, await presets(q["config.presets"]))
         }
