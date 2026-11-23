@@ -66,3 +66,19 @@ export async function code() {
   }
   return result
 }
+
+//Links with an & in the address, and characters that XML forbids, checked as XML when the checker is there
+export async function text() {
+  const libxmljs = await checker()
+  const address = "https://example.com/?a=1&b=2"
+  const link = await markdown(`[Docs](${address})`, {mode: "multiline"})
+  const control = await markdown("hello\u0001 world\u000B", {mode: "multiline"})
+  const result = {link, control}
+  if (libxmljs) {
+    result.linked = problems(libxmljs, `<div>${link}</div>`)
+    result.removed = problems(libxmljs, `<div>${control}</div>`)
+    //The address read back from the parsed picture
+    result.href = libxmljs.parseXml(`<div>${link}</div>`).get("//a").attr("href").value()
+  }
+  return {...result, address}
+}

@@ -15,6 +15,11 @@ import presets from "../metrics/presets.mjs"
 import setup from "../metrics/setup.mjs"
 import { sameSite } from "./oauth.mjs"
 
+/**The "verify" option of a request is text, so it is read like the other true/false options (see metadata.mjs): "false", "off", "no" and "0" are off, "true", "on", "yes" and "1" are on, and anything else (or nothing) is off.*/
+export function verifying(value) {
+  return /^(?:[Tt]rue|[Oo]n|[Yy]es|1)$/.test(value)
+}
+
 /**Markdown output renders a template chosen by the request (a link or a path in a repository), which is code.
  * It is only allowed with the extra feature "metrics.run.user.template" (or all of them), whatever the allowed outputs are, as "auto" may also lead to it.
  */
@@ -525,7 +530,7 @@ export default async function({sandbox = false} = {}) {
           plugins,
           conf: uconf,
           die: q["plugins.errors.fatal"] ?? false,
-          verify: q.verify ?? false,
+          verify: verifying(q.verify),
           convert: convert !== "auto" ? convert : null,
         }, {Plugins, Templates})
         //Cache

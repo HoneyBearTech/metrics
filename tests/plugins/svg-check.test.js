@@ -47,3 +47,21 @@ describe("Code blocks with several lines", () => {
     expect(single.opening).not.toContain("xml:space")
   })
 })
+
+describe("Text in Markdown", () => {
+  test("a link with a &-sign in its address is valid XML and keeps the address", () => {
+    const {link, linked, href, address} = esm("svg-check.mjs", "text")
+    expect(link).toContain("&amp;b=2")
+    if (linked) {
+      expect(linked).toEqual([])
+      expect(href).toBe(address)
+    }
+  })
+
+  test("characters that XML forbids are dropped", () => {
+    const {control, removed} = esm("svg-check.mjs", "text")
+    expect(control).toContain("hello world")
+    if (removed)
+      expect(removed).toEqual([])
+  })
+})

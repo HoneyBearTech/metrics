@@ -20,6 +20,14 @@ describe("Markdown output on the web server", () => {
       expect(result[name]).toEqual({...allowed, ...others})
   })
 
+  test("the verify option is on only for a true value", () => {
+    const result = esm("web.mjs", "verified")
+    for (const name of ["undefined", "", "false", "0", "off", "no"])
+      expect(result[name]).toBe(false)
+    for (const name of ["true", "True", "1", "yes", "on"])
+      expect(result[name]).toBe(true)
+  })
+
   test("logged-in extra features are added to a copy, never to the shared settings", () => {
     const result = esm("web.mjs", "logged")
     const feature = "metrics.run.user.template"

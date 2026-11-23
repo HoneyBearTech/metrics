@@ -1,13 +1,18 @@
 //Imports
 import axios from "axios"
 import setup from "../../../source/app/metrics/setup.mjs"
-import {extrasFeatures, markdownForbidden, presetsAllowed, withLoggedFeatures} from "../../../source/app/web/instance.mjs"
+import {extrasFeatures, markdownForbidden, presetsAllowed, verifying, withLoggedFeatures} from "../../../source/app/web/instance.mjs"
 
 //Marker set by a template if it is ever run (it only sets a variable, nothing else)
 const marker = "{% globalThis.__marker = 1 %}marker"
 
 //Server settings are read the same way the server does (only the allowed outputs and extra features change)
 const {conf} = await setup({log: false})
+
+/**Tell what the verify option of a request turns into */
+export function verified() {
+  return Object.fromEntries([undefined, "", "false", "0", "off", "no", "true", "True", "1", "yes", "on"].map(value => [`${value}`, verifying(value)]))
+}
 
 /**Tell if a request for the given output and template is refused, for each kind of server settings */
 export function forbidden() {
