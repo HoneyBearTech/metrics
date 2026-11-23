@@ -108,7 +108,7 @@ describe("Markdown output", () => {
 
   test("a block of HTML keeps the blank line after it", () => {
     const {inline, multiline} = esm("svg-check.mjs", "spacing")
-    expect(inline).toBe("hello\n\nworld\n")
+    expect(inline).toBe("hello\n\n" + "world\n")
     expect(multiline).toBe("<div>hello</div>\n\n<p>world</p>\n")
   })
 })

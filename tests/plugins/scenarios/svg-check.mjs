@@ -136,6 +136,6 @@ export async function repeated() {
 
 //A block of HTML followed by a blank line, in both modes
 export async function spacing() {
-  const text = "<div>hello</div>\n\nworld"
+  const text = "<div>hello</div>\n\n" + "world"
   return {inline: await markdown(text), multiline: await markdown(text, {mode: "multiline"})}
 }
