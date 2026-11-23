@@ -79,7 +79,7 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 - **Upgrades reverted in PR #114, each needing its own job:**
   - **eslint 10:** the two lint settings files must move to an `eslint.config.*` file. It also drops an old schema package that brings a moderate audit finding.
   - **express 5:** `/about/*`, `/insights/*` and `/embed/*` need named wildcards, and `/:login/:repository?` needs the new optional form. `req.query` is read fresh on each access, so the route's writes to `req.query.template` and `req.query.repo` (`source/app/web/instance.mjs`) must go to a copy.
-  - **file-type 22:** no code change found (the one use, `fileTypeFromBuffer`, is unchanged); it needs a full test run.
+  - **file-type 22:** reviewed: no code change needed, recommended at 22.3.0 for Renovate's #116 (`docs/reports/2026-11-23-file-type-22-review.md`).
 - **SVG check written backwards:** `source/app/metrics/index.mjs` (~line 219) runs the SVG verification only when `libxmljs2` failed to load (`if (!libxmljs)`), so it never verifies and crashes when the library is missing.
 - **New Renovate majors to review before merging:** #108 jest 30, #112 js-yaml 5, #113 jsdom 31.
 - **Feature checks the scan can't see:** the test that every declared feature is checked reads each plugin's own file. A plugin that checks the same option in two places passes if only one is left.

@@ -467,3 +467,9 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **Two small helpers:** the presets rule and the `/.extras` answer moved into small functions in `instance.mjs`, so tests can call them directly. The presets rule means the same as before.
 - **The `/.extras` page now matches the main route:** a logged-in session's list is built the same way the main route builds it (since PR #109). With all features on by default, a logged-in session sees only its logged list on both.
 - **Process:** Engineer, and one audit with the security pass, shared with plugin-token-extras. Research and separate QA were skipped as the change is small. The plan check and plain-English review were skipped (their review service is at its monthly limit).
+
+## 2026-11-23 - file-type-22-review
+
+- **Recommended file-type 22.3.0 for #116:** none of its breaking changes reach the one function the project uses, and image detection is the same before and after.
+- **#116 stays with Sean:** its branch has a merge commit from the "Update branch" button, so not every commit is Renovate's, and it is behind `master`.
+- **Process:** research and one audit with the security and supply-chain pass. No plan gate for a review.
