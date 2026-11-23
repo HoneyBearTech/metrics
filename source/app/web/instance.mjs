@@ -341,7 +341,7 @@ export default async function({sandbox = false} = {}) {
   if (conf.settings.modes.includes("insights")) {
     console.debug("metrics/app > setup insights mode")
     //Legacy routes
-    app.get("/about/{*splat}", (req, res) => res.redirect(req.path.replace("/about/", "/insights/")))
+    app.get("/about/{*splat}", (req, res) => res.redirect(`/insights/${req.path.slice("/about/".length)}`))
     //Static routes
     app.get("/insights/", limiter, (req, res) => sendFile(res, `${conf.paths.statics}/insights/index.html`))
     app.get("/insights/index.html", limiter, (req, res) => sendFile(res, `${conf.paths.statics}/insights/index.html`))
@@ -437,7 +437,7 @@ export default async function({sandbox = false} = {}) {
     })
   }
   else {
-    app.get("/about/{*splat}", (req, res) => res.redirect(req.path.replace("/about/", "/insights/")))
+    app.get("/about/{*splat}", (req, res) => res.redirect(`/insights/${req.path.slice("/about/".length)}`))
     app.get("/insights/{*splat}", (req, res) => res.status(405).send("Method not allowed: this endpoint is not available"))
   }
 

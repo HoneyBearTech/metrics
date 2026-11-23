@@ -86,7 +86,6 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 - **New Renovate majors to review before merging:** #108 jest 30, #112 js-yaml 5, #113 jsdom 31.
 - **Feature checks the scan can't see:** the test that every declared feature is checked reads each plugin's own file. A plugin that checks the same option in two places passes if only one is left.
 - **Lint misses files when the pattern is expanded by the shell:** `npm run linter` passes `source/**/*.mjs` without quotes. If a file is ever added one folder deep (like `source/plugins/x.mjs`), the shell expands the pattern itself and lint checks only that file. Putting the pattern in quotes fixes it.
-- **`/About/x` redirects to itself:** the old `/about/` addresses match any letter case, but the redirect only rewrites lower case, so `/About/x` loops. It was the same on express 4.
 - **Requests fetching addresses:** presets (when enabled) and some plugin options (when the server enables those plugins) fetch any address a request gives.
 - **Wrong error code:** "template not supported" errors are returned as 500 instead of 400 (the error check in `instance.mjs` doesn't match the message).
 - **PDF output loads raw HTML:** `markdown-pdf` loads the rendered HTML into the browser without cleaning it (`svg.pdf` in `source/app/metrics/utils.mjs`), so raw HTML printed from plugin data can load there. Look at it separately.

@@ -80,6 +80,7 @@ describe("Markdown output on the web server", () => {
     //Legacy catch-all route, and no route for more than a login and a repository
     expect(result["/about/"]).toMatchObject({status: 302, location: "/insights/"})
     expect(result["/about/x/y"]).toMatchObject({status: 302, location: "/insights/x/y"})
+    expect(result["/About/x"]).toMatchObject({status: 302, location: "/insights/x"})
     expect(result["/octocat/repo/extra"].status).toBe(404)
     //Options of the query reach the rendering
     expect(result["/octocat?config.output=json&template=classic&base.header=0"]).toMatchObject({status: 200, q: {template: "classic", "base.header": "0"}})

@@ -490,5 +490,5 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **A busy port stops the server again:** express 5 passes that error to the start-up callback, so the callback throws it.
 - **Not kept:** bracket-style options (`a[b]=c`) are no longer read as nested values. Nothing in the repo uses them.
 - **A route test:** it starts the server and checks pages, files, the old `/about/` addresses, the repository page and a request's options. It fails on Renovate's branch as it is, and also with only the route patterns fixed. From the audit, it also checks that a request's own template is kept on the repository page.
-- **Left for later:** `/About/x` (any letter case) redirects to itself, as on express 4 (on the roadmap).
+- **The old `/about/` redirect builds its target from a fixed `/insights/` start:** code scanning flagged the old way (replacing text in the request's path) as a redirect that depends on the request. The target was always on the same site, but the new form makes that plain. It also fixes `/About/x` (any letter case), which redirected to itself on express 4 too.
 - **Process:** research, Engineer, and audit with the security and supply-chain pass. Separate QA was skipped because the audit ran the same checks. The plan check and plain-English review were skipped (their review service is at its monthly limit).

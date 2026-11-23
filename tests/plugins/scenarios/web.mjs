@@ -143,7 +143,7 @@ export async function routes() {
     return {status: response.status, location: response.headers.get("location"), json: type.startsWith("application/json") ? JSON.parse(body) : null, length: body.length}
   }
   const result = {}
-  for (const path of ["/", "/.css/style.css", "/.js/app.js", "/.js/faker/index.mjs", "/.templates/classic/partials/achievements.ejs", "/insights/", "/insights/octocat", "/embed/", "/about/", "/about/x/y", "/octocat/repo/extra"])
+  for (const path of ["/", "/.css/style.css", "/.js/app.js", "/.js/faker/index.mjs", "/.templates/classic/partials/achievements.ejs", "/insights/", "/insights/octocat", "/embed/", "/about/", "/about/x/y", "/About/x", "/octocat/repo/extra"])
     result[path] = await get(path)
   //Rendering as json shows the query it received
   for (const path of ["/octocat?config.output=json&template=classic&base.header=0", "/octocat/repo?config.output=json", "/octocat/repo?config.output=json&template=markdown"])
