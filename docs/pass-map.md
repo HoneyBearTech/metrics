@@ -54,3 +54,4 @@
 | 2026-11-23 | web-extras-forms | Presets and the `/.extras` page handle every form of the extra feature list; 2 tests | #120 |
 | 2026-11-23 | file-type-22-review | Review: file-type 22.3.0 recommended for #116; no code change; same image detection | #122 |
 | 2026-11-23 | eslint-10 | eslint 10.15.0 with a new `eslint.config.mjs` that keeps the eslint 8 checks; replaces Renovate's #115 | #124 |
+| 2026-11-23 | express-5 | Web server on express 5.3.0: routes in the new form, the request's options on a copy, files sent from any install folder; a route test; replaces Renovate's #118 | #126 |

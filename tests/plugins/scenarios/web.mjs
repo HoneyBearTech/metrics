@@ -130,3 +130,24 @@ export async function sandbox() {
   setTimeout(() => process.exit(0), 500)
   return result
 }
+
+/**Ask the sandbox web server for its routes: pages and files answer, the legacy and repository routes match, and the query of a request reaches the rendering */
+export async function routes() {
+  process.env.METRICS_SANDBOX_PORT = "3919"
+  const app = (await import("../../../source/app/web/instance.mjs")).default
+  await app({sandbox: true})
+  const get = async path => {
+    const response = await fetch(`http://127.0.0.1:3919${path}`, {redirect: "manual"})
+    const type = response.headers.get("content-type") ?? ""
+    const body = await response.text()
+    return {status: response.status, location: response.headers.get("location"), json: type.startsWith("application/json") ? JSON.parse(body) : null, length: body.length}
+  }
+  const result = {}
+  for (const path of ["/", "/.css/style.css", "/.js/app.js", "/.js/faker/index.mjs", "/.templates/classic/partials/achievements.ejs", "/insights/", "/insights/octocat", "/embed/", "/about/", "/about/x/y", "/About/x", "/octocat/repo/extra"])
+    result[path] = await get(path)
+  //Rendering as json shows the query it received
+  for (const path of ["/octocat?config.output=json&template=classic&base.header=0", "/octocat/repo?config.output=json", "/octocat/repo?config.output=json&template=markdown"])
+    result[path] = await get(path)
+  setTimeout(() => process.exit(0), 500)
+  return Object.fromEntries(Object.entries(result).map(([path, {status, location, json, length}]) => [path, {status, location, q: json?.q, base: json?.base, empty: length === 0}]))
+}
