@@ -46,6 +46,7 @@ codeql
 coingecko
 colorsets
 commonjs
+configs
 Consolas
 coord
 csso
@@ -258,6 +259,7 @@ NOASSERTION
 nocase
 nodeca
 nodejs
+nonconstructor
 noninteractive
 norest
 noto
@@ -401,6 +403,7 @@ uapi
 uconf
 uid
 Uint
+unassigned
 uncache
 Unconfigured
 undef

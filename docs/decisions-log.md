@@ -473,3 +473,12 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **Recommended file-type 22.3.0 for #116:** none of its breaking changes reach the one function the project uses, and image detection is the same before and after.
 - **#116 stays with Sean:** its branch has a merge commit from the "Update branch" button, so not every commit is Renovate's, and it is behind `master`.
 - **Process:** research and one audit with the security and supply-chain pass. No plan gate for a review.
+
+## 2026-11-23 - eslint-10
+
+- **Same checks, new settings file:** `eslint.config.mjs` reproduces the old settings. Where eslint 10 changed a default, the old one is set again: unused caught errors, `while(true)`, nested functions, computed class method names, a local `globalThis`, and twelve names the newer list of built-in names knows that the old one didn't. On all 72 files the results match eslint 8 exactly, and two files of deliberate mistakes are flagged the same.
+- **New recommended rules are off:** six rules joined eslint's recommended set. Two of them find six spots in today's code. Turning them on means code changes, so that is a separate job (on the roadmap).
+- **Old formatting rules kept:** eslint 10 marks them old but still runs them. A separate style package or the repo's formatter settings can replace them before a later version removes them (on the roadmap).
+- **Replaces Renovate's #115:** it adds the two helper packages the new settings need, so #115 alone would break lint again.
+- **From the audit:** three changed defaults were found and set back (computed class method names, `globalThis`, the extra built-in names). A shell quirk in the lint pattern was found that already existed; it is on the roadmap.
+- **Process:** research, Engineer, and audit with the security and supply-chain pass, two rounds. Separate QA was skipped because the audit ran the same checks. The plan check and plain-English review were skipped (their review service is at its monthly limit).

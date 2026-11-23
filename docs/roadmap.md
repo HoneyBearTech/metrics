@@ -75,14 +75,17 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 - **Vulnerabilities no Renovate PR covers:** after the puppeteer 25 upgrade, `npm audit` reports 12 findings (3 high: `@faker-js/faker`, `decode-uri-component`, `query-string`). Each needs its own look.
 - **Vue 3 for the web pages** (optional): a real migration of the four pages and the Prism helper, if the web server matters. Remove the major-update block in `renovate.json` when done (same for faker after a test migration).
 - **Unpinned Docker inputs:** the base image and the Deno install script aren't pinned (both are inherited from upstream). Pin the base image by digest and Deno to a release.
-- **Upgrades skipped on purpose for now:** jsdom 28, eslint 9. (file-type 21 is now in Renovate's #23.)
+- **Upgrades skipped on purpose for now:** jsdom 28. (file-type 21 is now in Renovate's #23.)
 - **Upgrades reverted in PR #114, each needing its own job:**
-  - **eslint 10:** the two lint settings files must move to an `eslint.config.*` file. It also drops an old schema package that brings a moderate audit finding.
+  - **eslint 10:** done: the settings now live in `eslint.config.mjs` (this replaces Renovate's #115). It also drops an old schema package that brings a moderate audit finding.
   - **express 5:** `/about/*`, `/insights/*` and `/embed/*` need named wildcards, and `/:login/:repository?` needs the new optional form. `req.query` is read fresh on each access, so the route's writes to `req.query.template` and `req.query.repo` (`source/app/web/instance.mjs`) must go to a copy.
   - **file-type 22:** reviewed: no code change needed, recommended at 22.3.0 for Renovate's #116 (`docs/reports/2026-11-23-file-type-22-review.md`).
+- **Two lint rules are off:** `no-useless-assignment` and `preserve-caught-error` were added to eslint's recommended set and are off to keep the checks unchanged. They find six spots: `source/app/action/index.mjs:582` and `:584`, `source/app/metrics/index.mjs:238`, `source/plugins/isocalendar/index.mjs:81`, `source/plugins/languages/analyzer/analyzer.mjs:121` and `source/plugins/steam/index.mjs:32`. Fix them, then turn the rules on.
+- **Old formatting rules:** eslint 10 marks the formatting rules in `eslint.config.mjs` (spacing, quotes, semicolons and the like) as old, and a later major removes them. Before then, move them to a separate style package, or run the repo's formatter settings (`.github/config/dprint.json`) in CI.
 - **SVG check written backwards:** `source/app/metrics/index.mjs` (~line 219) runs the SVG verification only when `libxmljs2` failed to load (`if (!libxmljs)`), so it never verifies and crashes when the library is missing.
 - **New Renovate majors to review before merging:** #108 jest 30, #112 js-yaml 5, #113 jsdom 31.
 - **Feature checks the scan can't see:** the test that every declared feature is checked reads each plugin's own file. A plugin that checks the same option in two places passes if only one is left.
+- **Lint misses files when the pattern is expanded by the shell:** `npm run linter` passes `source/**/*.mjs` without quotes. If a file is ever added one folder deep (like `source/plugins/x.mjs`), the shell expands the pattern itself and lint checks only that file. Putting the pattern in quotes fixes it.
 - **Requests fetching addresses:** presets (when enabled) and some plugin options (when the server enables those plugins) fetch any address a request gives.
 - **Wrong error code:** "template not supported" errors are returned as 500 instead of 400 (the error check in `instance.mjs` doesn't match the message).
 - **PDF output loads raw HTML:** `markdown-pdf` loads the rendered HTML into the browser without cleaning it (`svg.pdf` in `source/app/metrics/utils.mjs`), so raw HTML printed from plugin data can load there. Look at it separately.
