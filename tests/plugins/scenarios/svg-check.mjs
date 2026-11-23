@@ -1,5 +1,4 @@
 //Imports
-import {createRequire} from "node:module"
 import verify from "../../../source/app/metrics/verify.mjs"
 import {markdown} from "../../../source/app/metrics/utils.mjs"
 
