@@ -32,8 +32,7 @@ describe("Code blocks with several lines", () => {
     expect(js.opening).toContain("language-multiline")
     expect(js.opening).toContain("language-js")
     expect(js.opening).toContain('xml:space="preserve"')
-    if (js.errors)
-      expect(js.errors).toEqual([])
+    expect(js.errors).toEqual([])
   })
 
   test("a block without a language still gets language-multiline", () => {
@@ -52,17 +51,14 @@ describe("Text in Markdown", () => {
   test("a link with a &-sign in its address is valid XML and keeps the address", () => {
     const {link, linked, href, address} = esm("svg-check.mjs", "text")
     expect(link).toContain("&amp;b=2")
-    if (linked) {
-      expect(linked).toEqual([])
-      expect(href).toBe(address)
-    }
+    expect(linked).toEqual([])
+    expect(href).toBe(address)
   })
 
   test("characters that XML forbids are dropped", () => {
     const {control, removed} = esm("svg-check.mjs", "text")
     expect(control).toContain("hello world")
-    if (removed)
-      expect(removed).toEqual([])
+    expect(removed).toEqual([])
   })
 
   test("written-out and literal forbidden characters are dropped, and entity names are matched exactly", () => {
@@ -74,8 +70,7 @@ describe("Text in Markdown", () => {
     expect(result.apos.html).toContain("&amp;APOS; x")
     expect(result.amp.html).toBe("<p>&amp; x</p>\n")
     for (const name of Object.keys(result)) {
-      if (result[name].problems)
-        expect(result[name].problems).toEqual([])
+      expect(result[name].problems).toEqual([])
     }
   })
 })
@@ -93,7 +88,27 @@ describe("Markdown output", () => {
       expect(html).toContain(tag)
     expect(html).toMatch(/<img [^>]*\/>/)
     expect(html).toMatch(/<input [^>]*\/>/)
-    if (problems)
+    expect(problems).toEqual([])
+  })
+
+  test("tags the user wrote as text come out as written", () => {
+    const {address, group, caption} = esm("svg-check.mjs", "written")
+    expect(address.html).toBe('<img src="https://example.com/a>b.png"/>')
+    expect(group.html).toBe("<p><input-group>x</input-group></p>\n")
+    expect(caption.html).toBe('<img title="a > b"/>')
+    for (const {problems} of [address, group, caption])
       expect(problems).toEqual([])
+  })
+
+  test("many unfinished tags in a row are handled quickly", () => {
+    const {milliseconds, length} = esm("svg-check.mjs", "repeated")
+    expect(length).toBeGreaterThan(0)
+    expect(milliseconds).toBeLessThan(3000)
+  })
+
+  test("a block of HTML keeps the blank line after it", () => {
+    const {inline, multiline} = esm("svg-check.mjs", "spacing")
+    expect(inline).toBe("hello\n\nworld\n")
+    expect(multiline).toBe("<div>hello</div>\n\n<p>world</p>\n")
   })
 })

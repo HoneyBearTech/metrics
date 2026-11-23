@@ -11,7 +11,7 @@ import { fileTypeFromBuffer } from "file-type"
 import fs from "fs/promises"
 import { JSDOM } from "jsdom"
 import linguist from "linguist-js"
-import { Marked, marked } from "marked"
+import { Marked, Renderer, marked } from "marked"
 import { minimatch } from "minimatch"
 import opengraph from "open-graph-scraper"
 import os from "os"
@@ -438,8 +438,37 @@ function plain(string) {
   return `${string}`.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;")
 }
 
-/**Markdown parser for user content. Current versions of marked no longer mark up code or close empty tags by themselves, so the code renderer below does the first and markdown() the second */
+/**Close the empty tag that marked's own renderer wrote, the way marked did itself before (text that is not a tag stays as it is) */
+function closed(html, tag, space = "") {
+  return html.startsWith(`<${tag}`) ? html.replace(/>(\s*)$/, `${space}/>$1`) : html
+}
+
+/**Marked's own renderer, used to build the tags that are closed below */
+const standard = new Renderer()
+
+/**Keep the line breaks that follow a block of HTML, which marked now reports as separate "space" tokens (a block of HTML used to include them, also at the end of a quote that is followed by a blank line) */
+function spacing(tokens, inherited = "") {
+  for (const [index, token] of tokens.entries()) {
+    const next = tokens[index + 1]
+    const after = next?.type === "space" ? next.raw : (index === tokens.length - 1 ? inherited : "")
+    if ((token.type === "html") && (token.block))
+      token.text += after
+    //Only quotes pass the line break on to what they contain
+    if (token.type === "blockquote")
+      spacing(token.tokens, next?.type === "space" ? "\n" : after)
+    else if (token.type === "list")
+      token.items.forEach(item => spacing(item.tokens))
+  }
+}
+
+/**Markdown parser for user content. Current versions of marked no longer mark up code or close empty tags by themselves, so the render functions below do it */
 const parser = new Marked({
+  hooks: {
+    processAllTokens(tokens) {
+      spacing(tokens)
+      return tokens
+    },
+  },
   renderer: {
     code({text, lang}) {
       //Only the first word of the code block's info text is the language
@@ -448,6 +477,13 @@ const parser = new Marked({
       const code = language in prism.languages ? highlight(text, language) : plain(text)
       return `<pre><code${language ? ` class="language-${plain(language)}"` : ""}>${code.replace(/\n$/, "")}\n</code></pre>\n`
     },
+    //Empty tags are closed where marked writes them, so the user's own HTML is never touched
+    br: token => closed(standard.br(token), "br"),
+    hr: token => closed(standard.hr(token), "hr"),
+    image(token) {
+      return closed(standard.image.call(this, token), "img")
+    },
+    checkbox: token => closed(standard.checkbox(token), "input", " "),
   },
 })
 
@@ -455,8 +491,6 @@ const parser = new Marked({
 export async function markdown(text, {mode = "inline", codelines = Infinity} = {}) {
   //Sanitize user input once to prevent injections and parse into markdown
   let rendered = await parser.parse(htmlunescape(htmlsanitize(`${text ?? ""}`)), {silent: true})
-  //Empty tags that marked leaves open are closed as XML needs it, the way marked did itself before (tags that are already closed, like those of the user's own HTML, stay as they are)
-  rendered = rendered.replace(/<(?<tag>br|hr)>/g, "<$<tag>/>").replace(/<img(?<attributes>[^>]*?)(?<!\/)>/g, "<img$<attributes>/>").replace(/<input(?<attributes>[^>]*?)(?<!\/)>/g, "<input$<attributes> />")
   //Text turned back from escapes above also leaves the & of link addresses bare, and written-out control characters (&#1;) become real ones, which XML does not allow
   rendered = rendered.replace(/&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[\dA-Fa-f]+);)/g, "&amp;")
   //Characters that XML forbids are dropped
