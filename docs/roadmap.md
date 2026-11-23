@@ -12,6 +12,7 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 - `@twemoji/parser` 17.0.2, with emoji matches that have no image skipped in `svg.twemojis`, so characters like ✌️ no longer crash emoji images; a test covers it (PR #111)
 - Extra features enforced for core options: the permission check found no requirement for them, so a request's own `extras.css`, `extras.js` and `verify` were allowed on any web server; old extras flags no longer add to the shared feature list (PR #117)
 - Token options checked: the steam, chess and splatoon plugins now check the extra features their token options declare, and a test fails if any declared feature is never checked (PR #121)
+- Feature list in every form: presets and the `/.extras` page no longer fail when the server's extra feature list is `true`, `false` or unset (PR #120)
 - Browsers closed on every path: the nine places that start their own browser (achievements, 16personalities, music, skyline, starlists, support, topics, screenshot, insights output) close it in a `finally` block, with tests for achievements, music and topics; the main test part 2 now peaks at 301 processes instead of running out at 829 on this machine (PR #100)
 - Puppeteer 25.18.1: full Chrome path in the `Dockerfile`, the root install script and the last three overrides removed, PDF output kept a real PDF (`Buffer.from`) with a new test; `npm audit` 18 to 12 findings (9 to 3 high); replaces Renovate's #71 (PR #98)
 - `tar` override removed: after `canvas` left (PR #94), the only users of `tar` (`node-gyp`, `cacache`) ask for `^7.4.3`, so the lock file keeps the fixed 7.5.23 on its own and future fixes arrive through normal updates; three overrides remain (PR #96)
@@ -81,8 +82,6 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
   - **file-type 22:** no code change found (the one use, `fileTypeFromBuffer`, is unchanged); it needs a full test run.
 - **SVG check written backwards:** `source/app/metrics/index.mjs` (~line 219) runs the SVG verification only when `libxmljs2` failed to load (`if (!libxmljs)`), so it never verifies and crashes when the library is missing.
 - **New Renovate majors to review before merging:** #108 jest 30, #112 js-yaml 5, #113 jsdom 31.
-- **Presets with all extra features on:** with `extras.features: true`, a request with `config.presets` returns 500 (`instance.mjs` calls `.includes()` on the boolean).
-- **`/.extras` page for logged-in users:** it can crash when the server's feature list is unset or false.
 - **Feature checks the scan can't see:** the test that every declared feature is checked reads each plugin's own file. A plugin that checks the same option in two places passes if only one is left.
 - **Requests fetching addresses:** presets (when enabled) and some plugin options (when the server enables those plugins) fetch any address a request gives.
 - **Wrong error code:** "template not supported" errors are returned as 500 instead of 400 (the error check in `instance.mjs` doesn't match the message).
