@@ -1,9 +1,10 @@
 //Imports
 import fs from "fs"
-import yaml from "js-yaml"
+import * as yaml from "js-yaml"
 import { marked } from "marked"
 import path from "path"
 import url from "url"
+import {dumpOptionsPlain, load} from "./yaml.mjs"
 
 //Defined categories
 const categories = ["core", "github", "social", "community"]
@@ -325,7 +326,7 @@ metadata.plugin = async function({__plugins, __templates, name, logger}) {
               [key]: Object.fromEntries(
                 Object.entries(value).filter(([key]) => ["description", "default", "required"].includes(key)).map(([k, v]) => k === "description" ? [k, v.split("\n")[0]] : k === "default" ? [k, ((/^\$\{\{[\s\S]+\}\}$/.test(v)) || (["config_presets", "config_timezone", "use_prebuilt_image"].includes(key))) ? v : "<default-value>"] : [k, v]),
               ),
-            }, {quotingType: '"', noCompatMode: true}),
+            }, dumpOptionsPlain),
           },
         ]),
       )
@@ -414,7 +415,7 @@ metadata.plugin = async function({__plugins, __templates, name, logger}) {
       for (const template of await fs.promises.readdir(__templates)) {
         if (!(await fs.promises.lstat(path.join(__templates, template))).isDirectory())
           continue
-        templates[template] = yaml.load(`${await fs.promises.readFile(path.join(__templates, template, "metadata.yml"), "utf-8")}`)
+        templates[template] = load(`${await fs.promises.readFile(path.join(__templates, template, "metadata.yml"), "utf-8")}`)
         const partials = path.join(__templates, template, "partials")
         if ((fs.existsSync(partials)) && ((await fs.promises.lstat(partials)).isDirectory())) {
           const supported = [...await fs.promises.readdir(partials)]
@@ -547,7 +548,7 @@ metadata.template = async function({__templates, name, plugins}) {
   try {
     //Load meta descriptor
     const raw = fs.existsSync(path.join(__templates, name, "metadata.yml")) ? `${await fs.promises.readFile(path.join(__templates, name, "metadata.yml"), "utf-8")}` : ""
-    const meta = yaml.load(raw) ?? {}
+    const meta = load(raw) ?? {}
 
     //Compatibility
     const partials = path.join(__templates, name, "partials")
