@@ -541,3 +541,22 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
   - CI's full suite.
   - The plan check and plain-English review were skipped (their review service is at its monthly limit).
 - **Rejected findings:** none. The deep-quote limit and the whitespace gaps are accepted above.
+
+## 2026-11-24 - linguist-js-3
+
+- **linguist-js 3.0.4 with its default options,** instead of Renovate's #119, which fails because the package is called differently now.
+- **Language grouping:** two kinds of TypeScript files that used to show as their own languages (components with markup, and one framework's templates) now count as TypeScript, as on GitHub's own language bar.
+  - **Why not the option that keeps them separate:** turning it on would change 48 other languages away from what users see today, for example JSON with Comments instead of JSON. Without it, only these two change (checked across 69 languages that have a parent).
+- **Other accepted changes from the new version:**
+  - links to other files are no longer counted;
+  - a Dockerfile or Makefile that starts with a script line keeps its own language;
+  - files listed in a nested ignore file are left out;
+  - unknown text is measured in bytes rather than characters.
+- **Tests:** the language tests use the language data that ships with the package, not the live copy. Production still uses the live copy, as before.
+- **Spelling list:** two entries were removed. The real check splits names like these into words, and doesn't accept them whole.
+- **Checks:**
+  - one audit round with the security pass. The audit confirmed that language data requests send nothing from the analyzed code, and found no new packages or install scripts.
+  - the languages picture tests on this machine;
+  - CI's full suite.
+  - The plan check and plain-English review were skipped (their review service is at its monthly limit).
+- **Rejected findings:** none.
