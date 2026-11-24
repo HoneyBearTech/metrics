@@ -2,11 +2,12 @@
 import ejs from "ejs"
 import fss from "fs"
 import fs from "fs/promises"
-import yaml from "js-yaml"
+import * as yaml from "js-yaml"
 import paths from "path"
 import {simpleGit as sgit} from "simple-git"
 import url from "url"
 import metadata from "../../source/app/metrics/metadata.mjs"
+import {dumpOptions, dumpOptionsPlain} from "../../source/app/metrics/yaml.mjs"
 
 //Mode
 const [mode = "dryrun"] = process.argv.slice(2)
@@ -39,14 +40,14 @@ for (const id of Object.keys(plugins)) {
     readme.path,
     readme.content
       .replace(/(<!--header-->)[\s\S]*(<!--\/header-->)/g, `$1\n${header}\n$2`)
-      .replace(/(<!--examples-->)[\s\S]*(<!--\/examples-->)/g, `$1\n${examples.map(({test, prod, ...step}) => ["```yaml", yaml.dump(step, {quotingType: '"', noCompatMode: true}), "```"].join("\n")).join("\n")}\n$2`)
+      .replace(/(<!--examples-->)[\s\S]*(<!--\/examples-->)/g, `$1\n${examples.map(({test, prod, ...step}) => ["```yaml", yaml.dump(step, dumpOptionsPlain), "```"].join("\n")).join("\n")}\n$2`)
       .replace(/(<!--options-->)[\s\S]*(<!--\/options-->)/g, `$1\n${options}\n$2`),
   )
   staged.add(readme.path)
 
   //Tests
   console.log(`Generating tests/plugins/${community ? "community/" : ""}${id}.yml`)
-  await fs.writeFile(tests.path, yaml.dump(examples.map(example => testcase(plugins[id].name, "test", example)).filter(t => t)))
+  await fs.writeFile(tests.path, yaml.dump(examples.map(example => testcase(plugins[id].name, "test", example)).filter(t => t), dumpOptions))
   staged.add(tests.path)
 }
 
@@ -60,13 +61,13 @@ for (const id of Object.keys(templates)) {
     readme.path,
     readme.content
       .replace(/(<!--header-->)[\s\S]*(<!--\/header-->)/g, `$1\n${header}\n$2`)
-      .replace(/(<!--examples-->)[\s\S]*(<!--\/examples-->)/g, `$1\n${examples.map(({test, prod, ...step}) => ["```yaml", yaml.dump(step, {quotingType: '"', noCompatMode: true}), "```"].join("\n")).join("\n")}\n$2`),
+      .replace(/(<!--examples-->)[\s\S]*(<!--\/examples-->)/g, `$1\n${examples.map(({test, prod, ...step}) => ["```yaml", yaml.dump(step, dumpOptionsPlain), "```"].join("\n")).join("\n")}\n$2`),
   )
   staged.add(readme.path)
 
   //Tests
   console.log(`Generating tests/templates/${id}.yml`)
-  await fs.writeFile(tests.path, yaml.dump(examples.map(example => testcase(templates[id].name, "test", example)).filter(t => t), {quotingType: '"', noCompatMode: true}))
+  await fs.writeFile(tests.path, yaml.dump(examples.map(example => testcase(templates[id].name, "test", example)).filter(t => t), dumpOptionsPlain))
   staged.add(tests.path)
 }
 

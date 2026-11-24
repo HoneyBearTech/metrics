@@ -8,7 +8,7 @@ import { svg, formatters } from "../../../source/app/metrics/utils.mjs"
 import fs from "fs"
 import path from "path"
 import url from "url"
-import yaml from "js-yaml"
+import * as yaml from "js-yaml"
 import metadata from "../../../source/app/metrics/metadata.mjs"
 
 //Server settings are read the same way the server does (only the extra features change)

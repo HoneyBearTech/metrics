@@ -1,7 +1,7 @@
 //Imports
 import fs from "fs/promises"
-import yaml from "js-yaml"
 import metadata from "./metadata.mjs"
+import {load, schema as presetSchema} from "./yaml.mjs"
 
 /**Presets parser */
 export default async function presets(list, {log = true, core = null} = {}) {
@@ -35,7 +35,7 @@ export default async function presets(list, {log = true, core = null} = {}) {
         logger(`metrics/presets > ${file} cannot be loaded in current environment ${env}, skipping`)
         continue
       }
-      const {schema, with: inputs} = yaml.load(text)
+      const {schema, with: inputs} = load(text, {schema: presetSchema})
       logger(`metrics/presets > ${file} preset schema is ${schema}`)
 
       //Evaluate preset
