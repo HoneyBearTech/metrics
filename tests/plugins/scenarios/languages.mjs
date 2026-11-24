@@ -6,6 +6,11 @@ import { language, run, spawn } from "../../../source/app/metrics/utils.mjs"
 import { IndepthAnalyzer } from "../../../source/plugins/languages/analyzer/indepth.mjs"
 import { RecentAnalyzer } from "../../../source/plugins/languages/analyzer/recent.mjs"
 
+//Language data is not fetched from the network: without a connection linguist falls back to the data packaged with it
+globalThis.fetch = async () => {
+  throw new Error("network is disabled in tests")
+}
+
 //Push events as listed by the events api (commits are not listed anymore)
 function push({actor, repo, before, head}) {
   return {id: `${Math.random()}`, type: "PushEvent", actor: {login: actor}, repo: {name: repo}, payload: {ref: "refs/heads/main", before, head}, created_at: new Date().toISOString(), public: true}
@@ -107,6 +112,44 @@ export async function kinds() {
       py: await language({filename: "main.py", patch: "+print('hello')"}),
       none: await language({filename: "file.unknown-ext", patch: "+abc"}),
     },
+  }
+}
+
+/**Languages that belong to a parent language are kept instead of being grouped into it */
+export async function children() {
+  const login = "children-user"
+  const files = {"app.tsx": "+export const App = () => <div/>", "main.ts": "+export const a = 1"}
+  const rest = {
+    activity: {
+      async listEventsForAuthenticatedUser({page}) {
+        return {data: page > 1 ? [] : [push({actor: login, repo: `${login}/repo`, before: "A", head: "B"})]}
+      },
+    },
+    repos: {
+      async compareCommitsWithBasehead() {
+        const commits = Object.entries(files).map(([filename, line], index) => commit({sha: `${index}000000`, login, filename, patch: `@@ -0,0 +1,1 @@\n${line}`}))
+        return {data: {total_commits: commits.length, commits}}
+      },
+    },
+    async request(url) {
+      throw new Error(`unexpected request to ${url}`)
+    },
+  }
+  const recent = new RecentAnalyzer(login, {shell: {}, uid: 0, skipped: [], authoring: [login], timeout: {global: NaN, repositories: NaN}, account: "user", rest, context: {mode: "user"}, days: 14, categories: ["programming"], load: 100})
+  const {lines} = await recent.run()
+  const root = await fs.mkdtemp(paths.join(os.tmpdir(), "metrics-test-"))
+  try {
+    const git = args => run(`git -c user.name=sample -c user.email=sample@example.com ${args}`, {cwd: root}, {log: false, debug: false})
+    await git("init -q -b main")
+    await fs.writeFile(paths.join(root, "app.tsx"), "export const App = () => <div/>\n")
+    await git("add .")
+    await git("commit -q --no-gpg-sign -m first")
+    const indepth = new IndepthAnalyzer("sample", {shell: {run, spawn}, uid: 0, skipped: [], authoring: ["sample@example.com"], timeout: {global: NaN, repositories: NaN}, account: "user", categories: ["programming"]})
+    await indepth.analyze(root, {})
+    return {recent: Object.keys(lines).sort(), indepth: Object.keys(indepth.results.lines).sort(), single: await language({filename: "app.tsx", patch: "+export const App = () => <div/>"})}
+  }
+  finally {
+    await fs.rm(root, {recursive: true, force: true})
   }
 }
 

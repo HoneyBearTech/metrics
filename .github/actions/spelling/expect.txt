@@ -7,8 +7,6 @@ allowtransparency
 alse
 amd
 AMP
-analyseFolders
-analyseRawContent
 anilist
 apidojo
 APOS
@@ -403,6 +401,7 @@ triaged
 trixie
 trollface
 TSLA
+TSX
 ttl
 twemojis
 uapi
