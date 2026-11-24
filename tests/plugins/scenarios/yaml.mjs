@@ -4,7 +4,8 @@ import os from "os"
 import path from "path"
 import metadata from "../../../source/app/metrics/metadata.mjs"
 import presets from "../../../source/app/metrics/presets.mjs"
-import {load, schema} from "../../../source/app/metrics/yaml.mjs"
+import * as yaml from "js-yaml"
+import {dumpOptions, dumpOptionsPlain, load, schema} from "../../../source/app/metrics/yaml.mjs"
 
 //Read presets from their text, through the real loader (requests are answered with the given text)
 export async function preset() {
@@ -51,10 +52,10 @@ export async function types() {
 
 //Read the metadata of templates without descriptor, with an empty one and with one that only has comments
 export async function template() {
-  const folder = path.join(os.tmpdir(), `metrics-templates-${Date.now()}`)
+  const folder = await fs.promises.mkdtemp(path.join(os.tmpdir(), "metrics-templates-"))
   const result = {}
   try {
-    fs.mkdirSync(path.join(folder, "missing"), {recursive: true})
+    fs.mkdirSync(path.join(folder, "missing"))
     fs.mkdirSync(path.join(folder, "empty"))
     fs.writeFileSync(path.join(folder, "empty", "metadata.yml"), "")
     fs.mkdirSync(path.join(folder, "spaces"))
@@ -74,4 +75,10 @@ export async function template() {
     fs.rmSync(folder, {recursive: true, force: true})
   }
   return result
+}
+
+//Write long text (a link, a tab and only spaces) with both sets of options
+export function dump() {
+  const value = {link: `https://example.com/${"a".repeat(90)}`, tab: `${"x".repeat(90)}\ty`, spaces: " ".repeat(100)}
+  return {default: yaml.dump(value, dumpOptions), plain: yaml.dump(value, dumpOptionsPlain)}
 }

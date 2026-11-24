@@ -41,3 +41,13 @@ describe("Template metadata", () => {
     expect(esm("yaml.mjs", "template").two).toBeNull()
   })
 })
+
+describe("Writing", () => {
+  test("keeps long links folded and long text with tabs or only spaces quoted, as before", () => {
+    const link = `link: >-\n  https://example.com/${"a".repeat(90)}\n`
+    const tab = `tab: "${"x".repeat(90)}\\ty"\n`
+    const result = esm("yaml.mjs", "dump")
+    expect(result.default).toBe(`${link}${tab}spaces: '${" ".repeat(100)}'\n`)
+    expect(result.plain).toBe(`${link}${tab}spaces: "${" ".repeat(100)}"\n`)
+  })
+})
