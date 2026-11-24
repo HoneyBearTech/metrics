@@ -86,8 +86,8 @@ This fork carries fixes for the unmaintained upstream project (lowlighter/metric
 - **Web options read as text:** the web server passes `plugins.errors.fatal` (as `die`) to the renderer as it came in the query, so `false` and `0` count as on. The `verify` option now reads it like the other true/false options; do the same for this one.
 - **Majors reviewed on 2026-11-23** (`docs/reports/2026-11-23-majors-review.md`): #113 jsdom 31.0.1 and #108 jest 30.5.2 can be taken as they are. These need their own jobs first, in this order:
   - **Picture check fix:** done: the backwards SVG check is corrected and multi-line code blocks keep one `class`. CI's picture tests, run locally with checking on, found no other invalid pictures. Locally the browser step was skipped, because Chrome can't start here; CI's full run is still the final check.
-  - **marked 18.2.1:** its own parser with highlighting, and closed tags in multi-line mode (replaces #123, which quietly breaks some images).
-  - **Node 26 (#125):** after the picture check fix; Sean merges it.
+  - **marked 18.2.1:** done: `markdown()` has its own parser that keeps its code markup, and it closes `<br>`, `<hr>`, `<img>` and `<input>` again (replaces #123, which quietly broke some images). One generated line in `source/plugins/core/README.md` changes, because a link with a stray quote mark in its text is now a real link.
+  - **Node 26 (#125):** done: merged on 2026-11-23.
   - **linguist-js 3.0.4:** three call sites, plus tests for the indepth mode and language types and colors (replaces #119).
   - **js-yaml 5.5.0:** imports, writing options, empty input and merge keys in presets (replaces #112).
 - **Feature checks the scan can't see:** the test that every declared feature is checked reads each plugin's own file. A plugin that checks the same option in two places passes if only one is left.
