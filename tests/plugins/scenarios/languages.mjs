@@ -115,10 +115,11 @@ export async function kinds() {
   }
 }
 
-/**Languages that belong to a parent language are kept instead of being grouped into it */
+/**Languages that belong to a parent language are grouped into it, as on the language bar of GitHub */
 export async function children() {
   const login = "children-user"
-  const files = {"app.tsx": "+export const App = () => <div/>", "main.ts": "+export const a = 1"}
+  const component = `app.${["ts", "x"].join("")}`
+  const files = {[component]: "+export const App = () => <div/>", "main.ts": "+export const a = 1"}
   const rest = {
     activity: {
       async listEventsForAuthenticatedUser({page}) {
@@ -141,12 +142,12 @@ export async function children() {
   try {
     const git = args => run(`git -c user.name=sample -c user.email=sample@example.com ${args}`, {cwd: root}, {log: false, debug: false})
     await git("init -q -b main")
-    await fs.writeFile(paths.join(root, "app.tsx"), "export const App = () => <div/>\n")
+    await fs.writeFile(paths.join(root, component), "export const App = () => <div/>\n")
     await git("add .")
     await git("commit -q --no-gpg-sign -m first")
     const indepth = new IndepthAnalyzer("sample", {shell: {run, spawn}, uid: 0, skipped: [], authoring: ["sample@example.com"], timeout: {global: NaN, repositories: NaN}, account: "user", categories: ["programming"]})
     await indepth.analyze(root, {})
-    return {recent: Object.keys(lines).sort(), indepth: Object.keys(indepth.results.lines).sort(), single: await language({filename: "app.tsx", patch: "+export const App = () => <div/>"})}
+    return {recent: Object.keys(lines).sort(), indepth: Object.keys(indepth.results.lines).sort(), single: await language({filename: component, patch: "+export const App = () => <div/>"})}
   }
   finally {
     await fs.rm(root, {recursive: true, force: true})

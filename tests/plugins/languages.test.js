@@ -24,11 +24,11 @@ describe("Recently used languages", () => {
     expect(single).toEqual({js: "javascript", py: "python", none: "unknown"})
   })
 
-  test("Keeps languages that belong to a parent language", () => {
+  test("Counts a language that belongs to a parent language as the parent", () => {
     const {recent, indepth, single} = esm("languages.mjs", "children")
-    expect(recent).toEqual(["TSX", "TypeScript"])
-    expect(indepth).toEqual(["TSX"])
-    expect(single).toBe("tsx")
+    expect(recent).toEqual(["TypeScript"])
+    expect(indepth).toEqual(["TypeScript"])
+    expect(single).toBe("typescript")
   })
 })
 

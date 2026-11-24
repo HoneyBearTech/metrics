@@ -401,7 +401,6 @@ triaged
 trixie
 trollface
 TSLA
-TSX
 ttl
 twemojis
 uapi

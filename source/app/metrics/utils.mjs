@@ -207,7 +207,7 @@ export function stripemojis(string) {
 /**Language analyzer (single file) */
 export async function language({filename, patch}) {
   console.debug(`metrics/language > ${filename}`)
-  const {files: {results}} = await linguist.analyseRawContent({[filename]: patch}, {childLanguages: true})
+  const {files: {results}} = await linguist.analyseRawContent({[filename]: patch})
   const result = (results[filename] ?? "unknown").toLocaleLowerCase()
   console.debug(`metrics/language > ${filename} > result: ${result}`)
   return result
