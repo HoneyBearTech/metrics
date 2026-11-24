@@ -560,3 +560,27 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
   - CI's full suite.
   - The plan check and plain-English review were skipped (their review service is at its monthly limit).
 - **Rejected findings:** none.
+
+## 2026-11-24 - js-yaml-5
+
+- **js-yaml 5.5.0,** instead of Renovate's #112, which doesn't build.
+- **A small shared file, `source/app/metrics/yaml.mjs`:**
+  - the schema for presets;
+  - a loader that gives an empty result for empty text, as before;
+  - the writing options.
+  - The build script imports the writing options from it. This is the only change under `.github/`, within what the plan allowed: its import and its writing options.
+- **Presets** keep reading merge keys (`<<:`) and dates. The schema has only the plain types js-yaml has always read by default, and nothing that runs code. The audit followed hostile presets (`__proto__`, sets, binary data) through the preset checks and found no way around them.
+- **Writing YAML:** two extra style rules keep long links folded and whitespace-only text single-quoted, as before. Every generated file is byte for byte the same as on master (115 files).
+- **Accepted differences:**
+  - `!!set` gives a set rather than a plain object;
+  - ordered maps are not read;
+  - impossible dates stay as text;
+  - comment-only text gives `undefined` instead of `null`. Every caller treats both the same way.
+- **Left as before:** an empty `examples.yml` would stop the build with an error, which is loud, not silent. Changing it was outside what the plan allowed under `.github/`.
+- **Checks:**
+  - one audit round with the security pass;
+  - the plugin tests and one picture part on this machine;
+  - CI's full suite.
+  - The audit's two findings, a temporary folder that code scanning flagged and the order of the style rules, are fixed.
+  - The plan check and plain-English review were skipped (their review service is at its monthly limit).
+- **Rejected findings:** none.
