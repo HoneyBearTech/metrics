@@ -584,3 +584,11 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
   - The audit's two findings, a temporary folder that code scanning flagged and the order of the style rules, are fixed.
   - The plan check and plain-English review were skipped (their review service is at its monthly limit).
 - **Rejected findings:** none.
+
+## 2026-11-24 - majors-review-3
+
+- **As they are:** express-rate-limit 8.7.5, yargs-parser 22.0.0 and purgecss 9.1.0.
+- **Named imports first, in one job, before octokit and svgo 4:** the audit agreed that both import changes can be one job, because both only change how the packages are imported and work with the old and the new versions. The version updates then stay Renovate's own PRs.
+- **emoji-name-map 2 is not taken:** it would show about 265 GitHub emoji names as raw text in the Discussions plugin, for no gain beyond three fewer old packages.
+- **The SVG optimizer is left off:** it has never run on master. Turning it on is a feature change and needs its own decision.
+- **Process:** three researchers in parallel, then one audit with the security and supply-chain pass. It agreed with all six, and added the rate-limit settings caveat. The plain-English review was skipped (its review service is at its monthly limit).

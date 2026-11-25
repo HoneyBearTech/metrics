@@ -60,3 +60,4 @@
 | 2026-11-23 | marked-18 | marked 18.2.1 with code highlighting and closed empty tags kept; spacing after HTML blocks kept; picture XML tests now run on Node 26 too | #134 |
 | 2026-11-24 | linguist-js-3 | linguist-js 3.0.4 with its new functions in the three call sites; tests for the indepth analyzer, kinds and colors, without network | #135 |
 | 2026-11-24 | js-yaml-5 | js-yaml 5.5.0 with the same generated files; empty template details, merge keys and dates in presets kept as before | #136 |
+| 2026-11-24 | majors-review-3 | Review of six majors: express-rate-limit 8, yargs-parser 22 and purgecss 9 as they are; octokit and svgo 4 after named imports; emoji-name-map 2 not taken | #137 |
