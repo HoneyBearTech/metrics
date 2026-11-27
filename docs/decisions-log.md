@@ -592,3 +592,16 @@ PR #15 added the label `openssf` to `renovate.json`. Its own spelling check flag
 - **emoji-name-map 2 is not taken:** it would show about 265 GitHub emoji names as raw text in the Discussions plugin, for no gain beyond three fewer old packages.
 - **The SVG optimizer is left off:** it has never run on master. Turning it on is a feature change and needs its own decision.
 - **Process:** three researchers in parallel, then one audit with the security and supply-chain pass. It agreed with all six, and added the rate-limit settings caveat. The plain-English review was skipped (its review service is at its monthly limit).
+
+## 2026-11-27 - named-imports
+
+- **Named imports, no version changes:** the new octokit packages and svgo 4 no longer offer a default import. Loading them by name (`{Octokit}`, `{graphql as octokitGraphql}`, `* as SVGO`) works with today's versions and the new ones, so the version updates stay Renovate's own PRs (#133 and #130).
+- **`octokitGraphql` as the local name:** `instance.mjs` already has an unrelated local `octokit` further down, so the import got its own name to avoid any mix-up. `tests/plugins/scenarios/markdown.mjs` already used named imports and was left as it is.
+- **Left as before:** the SVG optimizer that has never run (see the roadmap). It still calls a function svgo removed, but only behind a setting check that never matches (it looks for `--optimize`, while only `--optimize-svg` is allowed).
+- **Checks:**
+  - CI's full suite on the PR: 458 passed, 385 skipped, the same totals as master.
+  - Locally, the plugin tests with today's packages, with #133's and with #130's; the star list, music and Action picture tests with each set.
+  - The security pass and the audit found nothing. The audit loaded every changed file with all three package sets and checked that the clients get the same token and addresses.
+  - An earlier local run had browser test failures (star lists, music, and a run of Action tests after one hung). None came back in the reruns, with any package set, and CI passed, so they came from this machine's browser, not the change.
+  - The plan check and plain-English review were skipped (their review service is at its monthly limit).
+- **Rejected findings:** none.

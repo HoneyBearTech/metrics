@@ -1,6 +1,6 @@
 //Imports
-import OctokitRest from "@octokit/rest"
-import octokit from "@octokit/graphql"
+import {Octokit} from "@octokit/rest"
+import {graphql as octokitGraphql} from "@octokit/graphql"
 import setup from "../../../source/app/metrics/setup.mjs"
 import metrics from "../../../source/app/metrics/index.mjs"
 import mocks from "../../mocks/index.mjs"
@@ -93,7 +93,7 @@ export async function render() {
     scripts.push(list)
     return {resized: rendered, mime: "image/svg+xml"}
   }
-  const api = await mocks({graphql: octokit.graphql.defaults({headers: {authorization: "token MOCKED_TOKEN"}}), rest: new OctokitRest.Octokit({auth: "MOCKED_TOKEN"})})
+  const api = await mocks({graphql: octokitGraphql.defaults({headers: {authorization: "token MOCKED_TOKEN"}}), rest: new Octokit({auth: "MOCKED_TOKEN"})})
   const result = {}
   try {
     for (const [name, extras] of Object.entries(states)) {

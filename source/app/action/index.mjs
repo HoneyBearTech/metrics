@@ -1,7 +1,7 @@
 //Imports
 import * as core from "@actions/core"
 import * as github from "@actions/github"
-import octokit from "@octokit/graphql"
+import {graphql as octokitGraphql} from "@octokit/graphql"
 import processes from "child_process"
 import fs from "fs/promises"
 import paths from "path"
@@ -179,7 +179,7 @@ function quit(reason) {
     conf.settings.token = token
     const api = {}
     const resources = {}
-    api.graphql = octokit.graphql.defaults({headers: {authorization: `token ${token}`}, baseUrl: _github_api_graphql || undefined})
+    api.graphql = octokitGraphql.defaults({headers: {authorization: `token ${token}`}, baseUrl: _github_api_graphql || undefined})
     info("GitHub GraphQL API", "ok")
     info("GitHub GraphQL API endpoint", api.graphql.baseUrl)
     const octoraw = github.getOctokit(token, {baseUrl: _github_api_rest || undefined})
