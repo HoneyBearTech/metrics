@@ -51,7 +51,7 @@
     "open-graph-scraper": "^6.11.0",
     "prismjs": "^1.29.0",
     "puppeteer": "^25.18.1",
-    "purgecss": "^5.0.0",
+    "purgecss": "^9.0.0",
     "rss-parser": "^3.13.0",
     "sanitize-html": "^2.18.2",
     "sharp": "^0.35.0",
